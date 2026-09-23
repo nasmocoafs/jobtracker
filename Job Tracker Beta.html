@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Activity & Task Suite - Auto-Sync Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .task-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .task-card:hover { transform: translateY(-2px); }
+        .calendar-cell { min-height: 110px; transition: background-color 0.15s ease; }
+        .calendar-cell:hover { background-color: rgba(99, 102, 241, 0.04); }
+        .dark .calendar-cell:hover { background-color: rgba(99, 102, 241, 0.08); }
+        @media print {
+            body { background: white !important; color: black !important; }
+            header, nav, #appToolbar, #viewSwitcherContainer, .no-print { display: none !important; }
+            #executiveReportModal { display: block !important; position: static !important; width: 100% !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+    <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Brand & Tagline -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                        Activity Hub <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300">Auto-Sync</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Repetisi & Project Management • Persistensi Real-time</p>
+                </div>
+            </div>
+
+            <!-- Global Month Navigator (Archived Historical Switcher) -->
+            <div class="flex items-center bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                <button id="btnPrevGlobalMonth" class="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition" title="Bulan Sebelumnya">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+                <div class="px-2 flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-100">
+                    <i class="fa-regular fa-calendar-check text-indigo-500 text-xs"></i>
+                    <span id="currentMonthYearLabel" class="min-w-[110px] text-center tracking-wide">September 2026</span>
+                </div>
+                <button id="btnNextGlobalMonth" class="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition" title="Bulan Berikutnya">
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+                <button id="btnCurrentMonthReset" class="ml-1 text-[11px] font-semibold px-2 py-1 bg-white dark:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-300 shadow-xs hover:bg-indigo-50 transition">
+                    Bulan Ini
+                </button>
+            </div>
+
+            <!-- Header Quick Actions & Real-Time Sync Status -->
+            <div class="flex items-center gap-2">
+                <!-- Real-time Cloud Auto-Sync Indicator -->
+                <button id="btnOpenCloudModal" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-2 border border-slate-200/80 dark:border-slate-700" title="Atur Koneksi Google Apps Script">
+                    <span id="cloudIndicatorDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span id="cloudStatusText" class="text-[11px] font-semibold">Offline / Lokal</span>
+                </button>
+
+                <!-- Pomodoro / Timer floating indicator -->
+                <button id="btnOpenPomodoroModal" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-stopwatch animate-spin-slow"></i>
+                    <span id="headerTimerBadge">25:00</span>
+                </button>
+
+                <!-- Data & Report Dropdown -->
+                <div class="relative group">
+                    <button class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-invoice text-indigo-500 text-xs"></i>
+                        <span class="hidden md:inline">Laporan & File</span>
+                    </button>
+                    <div class="absolute right-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2 hidden group-hover:block z-40">
+                        <button id="btnOpenExecReport" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-800 dark:text-slate-200 font-semibold">
+                            <i class="fa-solid fa-print text-indigo-500"></i> Ringkasan Eksekutif (PDF)
+                        </button>
+                        <button id="btnExportCSV" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <i class="fa-solid fa-file-csv text-emerald-500"></i> Ekspor ke CSV / Excel
+                        </button>
+                        <button id="btnExportJSON" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <i class="fa-solid fa-download text-blue-500"></i> Simpan Cadangan (.JSON)
+                        </button>
+                        <label class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <i class="fa-solid fa-upload text-blue-500"></i> Impor Cadangan (.JSON)
+                            <input type="file" id="inputImportJSON" accept=".json" class="hidden">
+                        </label>
+                        <button id="btnBulkExportICS" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <i class="fa-solid fa-calendar-arrow-down text-purple-500"></i> Download Kalender HP (.ICS)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dark Mode -->
+                <button id="btnToggleDark" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition">
+                    <i class="fa-regular fa-moon dark:hidden text-xs"></i>
+                    <i class="fa-regular fa-sun hidden dark:inline text-amber-400 text-xs"></i>
+                </button>
+
+                <!-- New Task Button -->
+                <button id="btnOpenModal" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-xl shadow-xs transition">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Tugas Baru</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+
+        <!-- Top Analytics & Workload Summary -->
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            <!-- Metric 1: Monthly Completion Rate -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Target <span id="labelSummaryMonth">Bulan Ini</span></span>
+                    <h3 id="statTotalPercent" class="text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">0%</h3>
+                    <p id="statTotalRatio" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">0 dari 0 selesai</p>
+                </div>
+                <div class="relative w-14 h-14 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                        <path class="text-slate-100 dark:text-slate-800" stroke-width="3.6" stroke="currentColor" fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="svgTotalRing" class="text-indigo-600 dark:text-indigo-400 transition-all duration-700 ease-out" stroke-dasharray="0, 100" stroke-width="3.6" stroke-linecap="round" stroke="currentColor" fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span id="labelRingPercent" class="absolute text-[11px] font-bold text-indigo-700 dark:text-indigo-300">0%</span>
+                </div>
+            </div>
+
+            <!-- Metric 2: Repetition & Rutin Streak -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">1. Repetisi (Rutin)</span>
+                    </div>
+                    <span id="badgeRepetisiRatio" class="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/70 px-2 py-0.5 rounded-md">0/0</span>
+                </div>
+                <div class="mt-3">
+                    <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
+                        <span>Konsistensi Siklus</span>
+                        <span id="textRepetisiPercent" class="font-bold text-slate-800 dark:text-slate-200">0%</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div id="barRepetisi" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric 3: Ad-hoc / Project Progress -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">2. Ad-hoc / Project</span>
+                    </div>
+                    <span id="badgeAdhocRatio" class="text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 px-2 py-0.5 rounded-md">0/0</span>
+                </div>
+                <div class="mt-3">
+                    <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
+                        <span>Eksekusi Target</span>
+                        <span id="textAdhocPercent" class="font-bold text-slate-800 dark:text-slate-200">0%</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div id="barAdhoc" class="h-full bg-purple-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric 4: Time Tracking / Focus Summary -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Waktu & Fokus</span>
+                    </div>
+                    <span id="statWorkloadBalance" class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md">Sehat</span>
+                </div>
+                <div class="mt-2 text-xs space-y-1">
+                    <div class="flex justify-between text-slate-500 dark:text-slate-400">
+                        <span>Estimasi Total:</span>
+                        <span id="totalEstHours" class="font-bold text-slate-800 dark:text-slate-200">0 Jam</span>
+                    </div>
+                    <div class="flex justify-between text-slate-500 dark:text-slate-400">
+                        <span>Realisasi Tercatat:</span>
+                        <span id="totalActualHours" class="font-bold text-indigo-600 dark:text-indigo-400">0 Jam</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="appToolbar" class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                
+                <!-- Search & Type Filters -->
+                <div class="flex flex-wrap items-center gap-2 flex-1">
+                    <div class="relative w-full sm:w-56">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="searchInput" placeholder="Cari aktivitas, catatan..." 
+                            class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100">
+                    </div>
+
+                    <!-- Type Filter Tabs -->
+                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                        <button data-type-filter="all" class="type-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold">
+                            Semua Tipe
+                        </button>
+                        <button data-type-filter="repetisi" class="type-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                            <i class="fa-solid fa-arrows-rotate text-[10px] mr-1 text-blue-500"></i> Repetisi
+                        </button>
+                        <button data-type-filter="adhoc" class="type-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                            <i class="fa-solid fa-diagram-project text-[10px] mr-1 text-purple-500"></i> Ad-hoc
+                        </button>
+                    </div>
+
+                    <!-- Priority Filter -->
+                    <div class="flex items-center gap-1 text-xs">
+                        <button data-priority-filter="all" class="priority-filter-btn px-2 py-1 rounded-lg bg-slate-200/70 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-[11px]">Semua</button>
+                        <button data-priority-filter="High" class="priority-filter-btn px-2 py-1 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-[11px]">High</button>
+                        <button data-priority-filter="Medium" class="priority-filter-btn px-2 py-1 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-[11px]">Med</button>
+                        <button data-priority-filter="Low" class="priority-filter-btn px-2 py-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-[11px]">Low</button>
+                    </div>
+                </div>
+
+                <!-- 5-Way View Switcher -->
+                <div id="viewSwitcherContainer" class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold overflow-x-auto">
+                    <button id="viewKanbanBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs whitespace-nowrap">
+                        <i class="fa-solid fa-table-columns text-indigo-500"></i>
+                        <span>Board</span>
+                    </button>
+                    <button id="viewListBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>Agenda</span>
+                    </button>
+                    <button id="viewCalendarBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap">
+                        <i class="fa-regular fa-calendar-days text-indigo-500"></i>
+                        <span>Kalender</span>
+                    </button>
+                    <button id="viewMatrixBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap">
+                        <i class="fa-solid fa-braille text-purple-500"></i>
+                        <span>Eisenhower</span>
+                    </button>
+                    <button id="viewAnalyticsBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap">
+                        <i class="fa-solid fa-chart-pie text-emerald-500"></i>
+                        <span>Analitik</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="kanbanView" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+            <!-- Col 1: Todo -->
+            <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                        <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Belum Mulai</h2>
+                    </div>
+                    <span id="colTodoCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
+                </div>
+                <div id="colTodo" class="space-y-3 flex-1"></div>
+            </div>
+
+            <!-- Col 2: In Progress -->
+            <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                        <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Sedang Dikerjakan</h2>
+                    </div>
+                    <span id="colProgressCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">0</span>
+                </div>
+                <div id="colProgress" class="space-y-3 flex-1"></div>
+            </div>
+
+            <!-- Col 3: Done -->
+            <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Selesai</h2>
+                    </div>
+                    <span id="colDoneCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">0</span>
+                </div>
+                <div id="colDone" class="space-y-3 flex-1"></div>
+            </div>
+        </section>
+
+        <section id="listView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-4 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                            <th class="pb-2.5 pl-2 w-8">Status</th>
+                            <th class="pb-2.5">Aktivitas & Subtugas</th>
+                            <th class="pb-2.5">Tipe & Siklus</th>
+                            <th class="pb-2.5">Prioritas</th>
+                            <th class="pb-2.5">Batas Waktu</th>
+                            <th class="pb-2.5">Durasi (Est/Aktual)</th>
+                            <th class="pb-2.5">Sinkron HP</th>
+                            <th class="pb-2.5 text-right pr-2">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/70"></tbody>
+                </table>
+                <div id="listEmptyMessage" class="hidden py-12 text-center text-xs text-slate-400">
+                    Tidak ada aktivitas yang sesuai dengan filter bulan ini.
+                </div>
+            </div>
+        </section>
+
+        <section id="calendarView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-4 sm:p-5">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
+                <div class="flex items-center gap-2">
+                    <h2 id="calendarHeaderMonth" class="text-base font-extrabold text-slate-900 dark:text-white">September 2026</h2>
+                    <span class="text-xs text-slate-400 hidden sm:inline">• Klik tanggal untuk tambah jadwal</span>
+                </div>
+                <div class="flex items-center gap-3 text-[11px] font-semibold">
+                    <span class="flex items-center gap-1 text-blue-600 dark:text-blue-400"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Repetisi</span>
+                    <span class="flex items-center gap-1 text-purple-600 dark:text-purple-400"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Project</span>
+                    <span class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><i class="fa-solid fa-check text-[9px]"></i> Selesai</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-7 text-center font-bold text-xs text-slate-400 py-2 border-b border-slate-100 dark:border-slate-800">
+                <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 border-l border-t border-slate-200/60 dark:border-slate-800"></div>
+        </section>
+
+        <section id="matrixView" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Q1: Urgent & Important -->
+            <div class="bg-rose-50/40 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 rounded-2xl p-4 min-h-[300px]">
+                <div class="flex items-center justify-between pb-2 border-b border-rose-200/60 dark:border-rose-900/60 mb-3">
+                    <div>
+                        <h3 class="text-xs font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span> Q1: Segera Kerjakan (Do First)
+                        </h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Penting & Mendesak (High Priority, Deadline Dekat)</p>
+                    </div>
+                    <span id="badgeQ1Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-200 dark:bg-rose-900 text-rose-800 dark:text-rose-200">0</span>
+                </div>
+                <div id="quadrantQ1" class="space-y-2"></div>
+            </div>
+
+            <!-- Q2: Not Urgent but Important -->
+            <div class="bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl p-4 min-h-[300px]">
+                <div class="flex items-center justify-between pb-2 border-b border-indigo-200/60 dark:border-indigo-900/60 mb-3">
+                    <div>
+                        <h3 class="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Q2: Jadwalkan (Schedule)
+                        </h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Penting tapi Tidak Mendesak (Tujuan Strategis & Repetisi)</p>
+                    </div>
+                    <span id="badgeQ2Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">0</span>
+                </div>
+                <div id="quadrantQ2" class="space-y-2"></div>
+            </div>
+
+            <!-- Q3: Urgent but Not Important -->
+            <div class="bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 min-h-[300px]">
+                <div class="flex items-center justify-between pb-2 border-b border-amber-200/60 dark:border-amber-900/60 mb-3">
+                    <div>
+                        <h3 class="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Q3: Delegasikan (Delegate)
+                        </h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Mendesak tapi Kurang Penting (Tugas Operasional Ringan)</p>
+                    </div>
+                    <span id="badgeQ3Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200">0</span>
+                </div>
+                <div id="quadrantQ3" class="space-y-2"></div>
+            </div>
+
+            <!-- Q4: Not Urgent & Not Important -->
+            <div class="bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 min-h-[300px]">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800 mb-3">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-slate-400"></span> Q4: Eliminasi / Tunda (Drop)
+                        </h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Tidak Penting & Tidak Mendesak (Prioritas Low)</p>
+                    </div>
+                    <span id="badgeQ4Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
+                </div>
+                <div id="quadrantQ4" class="space-y-2"></div>
+            </div>
+        </section>
+
+        <section id="analyticsView" class="hidden space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Category Distribution & Completion Breakdown -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-column text-indigo-500"></i> Distribusi Kategori & Status
+                    </h3>
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">1. Repetisi (Rutin)</span>
+                                <span id="analyticRepetisiText" class="text-slate-500">0 tugas</span>
+                            </div>
+                            <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                                <div id="analyticRepetisiDoneBar" class="bg-blue-600 h-full transition-all duration-500" style="width: 0%" title="Selesai"></div>
+                                <div id="analyticRepetisiPendingBar" class="bg-blue-300 dark:bg-blue-900/60 h-full transition-all duration-500" style="width: 0%" title="Belum Selesai"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">2. Ad-hoc / Project</span>
+                                <span id="analyticAdhocText" class="text-slate-500">0 tugas</span>
+                            </div>
+                            <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                                <div id="analyticAdhocDoneBar" class="bg-purple-600 h-full transition-all duration-500" style="width: 0%" title="Selesai"></div>
+                                <div id="analyticAdhocPendingBar" class="bg-purple-300 dark:bg-purple-900/60 h-full transition-all duration-500" style="width: 0%" title="Belum Selesai"></div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-100 dark:border-slate-800">
+                            <span><span class="inline-block w-2.5 h-2.5 bg-blue-600 rounded-sm mr-1"></span> Warna Gelap: Selesai</span>
+                            <span><span class="inline-block w-2.5 h-2.5 bg-blue-300 dark:bg-blue-900 rounded-sm mr-1"></span> Warna Terang: Tertunda/Proses</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Priority Workload Stress Heatmap -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-fire-flame-curved text-rose-500"></i> Beban Prioritas Bulan Ini
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-4">Deteksi kepadatan tugas High Priority untuk mencegah timbulnya *burnout*.</p>
+                    
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900">
+                            <span class="text-xs font-bold text-rose-700 dark:text-rose-300">High Priority</span>
+                            <h4 id="statCountHigh" class="text-2xl font-extrabold text-rose-900 dark:text-rose-200 mt-1">0</h4>
+                            <span id="statHighPercent" class="text-[10px] text-rose-600 dark:text-rose-400">0% dari total</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900">
+                            <span class="text-xs font-bold text-amber-700 dark:text-amber-300">Medium</span>
+                            <h4 id="statCountMed" class="text-2xl font-extrabold text-amber-900 dark:text-amber-200 mt-1">0</h4>
+                            <span id="statMedPercent" class="text-[10px] text-amber-600 dark:text-amber-400">0% dari total</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900">
+                            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">Low</span>
+                            <h4 id="statCountLow" class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-200 mt-1">0</h4>
+                            <span id="statLowPercent" class="text-[10px] text-emerald-600 dark:text-emerald-400">0% dari total</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] flex flex-col">
+            
+            <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h3 id="modalTitle" class="text-sm font-bold text-slate-800 dark:text-white">Tambah Aktivitas Baru</h3>
+                <button id="btnCloseModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-7 h-7 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            
+            <form id="taskForm" class="p-5 space-y-3.5 overflow-y-auto flex-1">
+                <input type="hidden" id="taskId">
+
+                <!-- 1. Category Selection -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">1. Kelompok Aktivitas *</label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <label class="cursor-pointer border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 flex items-start gap-2 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 dark:has-[:checked]:bg-indigo-950/30 transition">
+                            <input type="radio" name="activityType" value="repetisi" class="mt-0.5 text-indigo-600 focus:ring-indigo-500" checked>
+                            <div>
+                                <span class="text-xs font-bold text-slate-900 dark:text-white block">1. Repetisi (Rutin)</span>
+                                <span class="text-[10px] text-slate-500">Siklus berulang & streak auto-renew</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 flex items-start gap-2 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 dark:has-[:checked]:bg-indigo-950/30 transition">
+                            <input type="radio" name="activityType" value="adhoc" class="mt-0.5 text-indigo-600 focus:ring-indigo-500">
+                            <div>
+                                <span class="text-xs font-bold text-slate-900 dark:text-white block">2. Ad-hoc / Project</span>
+                                <span class="text-[10px] text-slate-500">Proyek target & nested subtasks</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Frequency selector for Repetisi -->
+                <div id="frequencyFieldWrapper">
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="taskFrequency">Frekuensi Pengulangan Siklus</label>
+                    <select id="taskFrequency" class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                        <option value="Harian">Setiap Hari (+1 Hari saat selesai)</option>
+                        <option value="Hari Kerja">Senin - Jumat (Workdays)</option>
+                        <option value="Mingguan" selected>Mingguan (+7 Hari saat selesai)</option>
+                        <option value="Bulanan">Bulanan (+1 Bulan saat selesai)</option>
+                    </select>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskTitle">Judul Aktivitas *</label>
+                    <input type="text" id="taskTitle" required placeholder="Contoh: Laporan Rekap KPI / Rilis Fitur Baru" 
+                        class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white transition">
+                </div>
+
+                <!-- Priority & Status -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskPriority">Tag Prioritas *</label>
+                        <select id="taskPriority" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white font-medium">
+                            <option value="High" class="text-rose-600 font-bold">🔴 High (Mendesak)</option>
+                            <option value="Medium" class="text-amber-600 font-bold" selected>🟡 Medium (Terjadwal)</option>
+                            <option value="Low" class="text-emerald-600 font-bold">🟢 Low (Fleksibel)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskStatus">Status</label>
+                        <select id="taskStatus" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                            <option value="todo">Belum Mulai</option>
+                            <option value="inprogress">Sedang Berjalan</option>
+                            <option value="done">Selesai</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Due Date & Time -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskDueDate">Batas Waktu (Due Date) *</label>
+                        <input type="date" id="taskDueDate" required
+                            class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskDueTime">Jam Tenggat</label>
+                        <input type="time" id="taskDueTime" value="17:00"
+                            class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                    </div>
+                </div>
+
+                <!-- Time Estimation (Hours) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskEstHours">Estimasi Waktu (Jam)</label>
+                        <input type="number" id="taskEstHours" step="0.5" min="0" value="1"
+                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskActualHours">Waktu Terpakai (Jam)</label>
+                        <input type="number" id="taskActualHours" step="0.25" min="0" value="0"
+                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                    </div>
+                </div>
+
+                <!-- Sub-tasks / Milestones Checklist Builder -->
+                <div class="border border-slate-200 dark:border-slate-700 rounded-xl p-3 bg-slate-50/50 dark:bg-slate-800/40">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-ol text-indigo-500"></i> Milestone / Sub-tugas
+                        </label>
+                        <button type="button" id="btnAddSubtaskRow" class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+                            + Tambah Item
+                        </button>
+                    </div>
+                    <div id="subtasksContainer" class="space-y-1.5"></div>
+                </div>
+
+                <!-- Notes / Description -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskNote">Catatan / Detail Rencana</label>
+                    <textarea id="taskNote" rows="2" placeholder="Tulis instruksi tambahan, target output, link referensi..." 
+                        class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white resize-none"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+                    <button type="button" id="btnCancelModal" class="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition">
+                        Simpan Aktivitas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="cloudModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-cloud text-indigo-500 text-lg"></i>
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-white">Pengaturan Cloud Auto-Sync</h3>
+                </div>
+                <button id="btnCloseCloudModal" class="text-slate-400 hover:text-slate-600 w-7 h-7 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div class="p-3 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl border border-indigo-100 dark:border-indigo-900/60 text-xs text-indigo-900 dark:text-indigo-200 leading-relaxed">
+                <p class="font-bold flex items-center gap-1.5 mb-1 text-indigo-700 dark:text-indigo-300">
+                    <i class="fa-solid fa-bolt"></i> Real-Time Auto-Save Aktif
+                </p>
+                Cukup simpan URL Web App Apps Script sekali di bawah ini. Aplikasi akan:
+                <ul class="list-disc list-inside mt-1 space-y-0.5 text-[11px] text-slate-600 dark:text-slate-400">
+                    <li>Otomatis mengambil data saat dibuka (Silent Auto-Pull)</li>
+                    <li>Otomatis menyimpan setiap kali ada perubahan data (1.5 detik debounced auto-save)</li>
+                    <li>Bebas dari klik tombol kirim/tarik manual!</li>
+                </ul>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase">Google Apps Script Web App URL</label>
+                <input type="url" id="inputWebhookUrl" placeholder="https://script.google.com/macros/s/.../exec"
+                    class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button id="btnDisconnectCloud" class="px-3 py-2 text-xs font-semibold rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
+                    Putuskan URL
+                </button>
+                <button id="btnSaveCloudConfig" class="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-1.5 shadow-xs transition">
+                    <i class="fa-solid fa-check"></i> Simpan & Hubungkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pomodoroModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 text-center space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pomodoro Focus Timer</span>
+                <button id="btnClosePomodoroModal" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div class="py-4">
+                <div id="timerDisplay" class="text-5xl font-black text-indigo-600 dark:text-indigo-400 tracking-wider">25:00</div>
+                <p id="timerActiveTaskTitle" class="text-xs text-slate-500 dark:text-slate-400 mt-2 truncate">Sesi Fokus Mandiri</p>
+            </div>
+
+            <div class="flex items-center justify-center gap-2">
+                <button id="btnTimerToggle" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition">
+                    Mulai Sesi
+                </button>
+                <button id="btnTimerReset" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="execReportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs hidden overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 my-auto">
+            <div class="flex items-center justify-between border-b pb-4 dark:border-slate-800 no-print">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-award text-indigo-600 text-xl"></i>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Laporan Kinerja & Ringkasan Eksekutif</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs">
+                        <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+                    </button>
+                    <button id="btnCloseExecReport" class="text-slate-400 hover:text-slate-600 p-1.5">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Printable Document Body -->
+            <div id="printableReportContent" class="space-y-5 text-slate-800 dark:text-slate-200">
+                <div class="flex justify-between items-start border-b pb-3 border-slate-200 dark:border-slate-800">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Laporan Akuntabilitas & Eksekusi Target</h2>
+                        <p class="text-xs text-slate-500" id="reportPeriodText">Periode: September 2026</p>
+                    </div>
+                    <div class="text-right text-xs text-slate-400">
+                        <span>Dibuat: <span id="reportGeneratedDate">23 Sep 2026</span></span>
+                    </div>
+                </div>
+
+                <!-- KPI Box Grid -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Tingkat Penyelesaian</span>
+                        <div id="reportKPIPercent" class="text-2xl font-black text-indigo-600 mt-1">0%</div>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Rasio Repetisi</span>
+                        <div id="reportKPIRepetisi" class="text-2xl font-black text-blue-600 mt-1">0/0</div>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Rasio Target Project</span>
+                        <div id="reportKPIAdhoc" class="text-2xl font-black text-purple-600 mt-1">0/0</div>
+                    </div>
+                </div>
+
+                <!-- Table Breakdown -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider mb-2 text-slate-700 dark:text-slate-300">Daftar Aktivitas Bulan Terpilih</h4>
+                    <table class="w-full text-xs text-left border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                        <thead class="bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase">
+                            <tr>
+                                <th class="p-2">Judul Aktivitas</th>
+                                <th class="p-2">Tipe</th>
+                                <th class="p-2">Prioritas</th>
+                                <th class="p-2">Due Date</th>
+                                <th class="p-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 dark:bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-xs font-medium">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toastMessage">Pembaruan berhasil</span>
+        </div>
+    </div>
+
+    <script>
+        const MONTH_NAMES_ID = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+
+        const DEFAULT_TASKS = [
+            {
+                id: 'task-101',
+                type: 'repetisi',
+                frequency: 'Harian',
+                streak: 5,
+                title: 'Review Tiket Support & Daily Standup',
+                priority: 'High',
+                dueDate: '2026-09-23',
+                dueTime: '09:30',
+                status: 'done',
+                estHours: 1,
+                actualHours: 0.75,
+                subtasks: [
+                    { id: 'st-1', title: 'Triage bug kritis di Sentry', done: true },
+                    { id: 'st-2', title: 'Sinkronisasi blocker tim engineer', done: true }
+                ],
+                note: 'Daily meeting jam 09:30 WIB'
+            },
+            {
+                id: 'task-102',
+                type: 'repetisi',
+                frequency: 'Mingguan',
+                streak: 3,
+                title: 'Laporan Rekap KPI & Penjualan Mingguan',
+                priority: 'Medium',
+                dueDate: '2026-09-25',
+                dueTime: '16:00',
+                status: 'inprogress',
+                estHours: 2.5,
+                actualHours: 1.5,
+                subtasks: [
+                    { id: 'st-3', title: 'Tarik data CRM', done: true },
+                    { id: 'st-4', title: 'Rekap grafik performa tim sales', done: false }
+                ],
+                note: 'Export spreadsheet dari CRM dan share ke direksi'
+            },
+            {
+                id: 'task-103',
+                type: 'adhoc',
+                frequency: '',
+                streak: 0,
+                title: 'Revamp Desain Landing Page Project Alpha',
+                priority: 'High',
+                dueDate: '2026-09-24',
+                dueTime: '17:00',
+                status: 'inprogress',
+                estHours: 8,
+                actualHours: 4,
+                subtasks: [
+                    { id: 'st-5', title: 'Finalisasi wireframe Figma', done: true },
+                    { id: 'st-6', title: 'User testing internal', done: true },
+                    { id: 'st-7', title: 'Handoff aset ke front-end developer', done: false }
+                ],
+                note: 'Target rilis akhir bulan'
+            },
+            {
+                id: 'task-104',
+                type: 'adhoc',
+                frequency: '',
+                streak: 0,
+                title: 'Riset Vendor Cloud Server Alternatif',
+                priority: 'Low',
+                dueDate: '2026-09-28',
+                dueTime: '14:00',
+                status: 'todo',
+                estHours: 3,
+                actualHours: 0,
+                subtasks: [],
+                note: 'Bandingkan kalkulasi biaya egress & SLA 99.99%'
+            },
+            {
+                id: 'task-105',
+                type: 'repetisi',
+                frequency: 'Bulanan',
+                streak: 8,
+                title: 'Audit Keamanan Akun & Billing Cloud',
+                priority: 'High',
+                dueDate: '2026-09-30',
+                dueTime: '18:00',
+                status: 'todo',
+                estHours: 2,
+                actualHours: 0,
+                subtasks: [
+                    { id: 'st-8', title: 'Rotasi access key IAM', done: false },
+                    { id: 'st-9', title: 'Verifikasi invoice kredit kartu', done: false }
+                ],
+                note: 'Rotasi rutin setiap akhir bulan'
+            }
+        ];
+
+        let tasks = [];
+        let activeDate = new Date(2026, 8, 23);
+        let currentTypeFilter = 'all';
+        let currentPriorityFilter = 'all';
+        let currentSearchQuery = '';
+        let currentView = 'kanban';
+
+        // Pomodoro State
+        let timerSeconds = 25 * 60;
+        let timerInterval = null;
+        let isTimerRunning = false;
+
+        // Auto-Save & Cloud Webhook State
+        let webhookUrl = localStorage.getItem('activity_hub_webhook_url') || '';
+        let autoSaveTimer = null;
+        let isSavingToCloud = false;
+
+        function updateCloudIndicator(status, message) {
+            const dot = document.getElementById('cloudIndicatorDot');
+            const text = document.getElementById('cloudStatusText');
+
+            if (status === 'synced') {
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+                text.textContent = 'Tersinkron';
+                text.className = 'text-[11px] font-semibold text-emerald-700 dark:text-emerald-400';
+            } else if (status === 'saving') {
+                dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-ping';
+                text.textContent = 'Menyimpan...';
+                text.className = 'text-[11px] font-semibold text-amber-700 dark:text-amber-400';
+            } else if (status === 'offline') {
+                dot.className = 'w-2 h-2 rounded-full bg-slate-400';
+                text.textContent = 'Offline / Lokal';
+                text.className = 'text-[11px] font-semibold text-slate-500';
+            } else if (status === 'error') {
+                dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+                text.textContent = 'Gagal Sync';
+                text.className = 'text-[11px] font-semibold text-rose-700 dark:text-rose-400';
+            }
+        }
+
+        // Trigger debounced auto-save (1.5 seconds)
+        function triggerDebouncedAutoSave() {
+            // Selalu simpan ke LocalStorage seketika
+            try {
+                localStorage.setItem('activity_hub_enterprise_tasks', JSON.stringify(tasks));
+            } catch (e) {
+                console.error("Local storage error:", e);
+            }
+
+            render();
+
+            if (!webhookUrl) {
+                updateCloudIndicator('offline');
+                return;
+            }
+
+            updateCloudIndicator('saving');
+            clearTimeout(autoSaveTimer);
+
+            autoSaveTimer = setTimeout(async () => {
+                await pushDataToCloudSilently();
+            }, 1500);
+        }
+
+        // Silent Cloud Push (No user clicks needed)
+        async function pushDataToCloudSilently() {
+            if (!webhookUrl || isSavingToCloud) return;
+            isSavingToCloud = true;
+
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'push', tasks })
+                });
+
+                updateCloudIndicator('synced');
+            } catch (err) {
+                console.warn("Auto-save sync warning:", err);
+                updateCloudIndicator('error');
+            } finally {
+                isSavingToCloud = false;
+            }
+        }
+
+        // Silent Cloud Pull on page load
+        async function pullDataFromCloudSilently() {
+            if (!webhookUrl) {
+                updateCloudIndicator('offline');
+                return;
+            }
+
+            updateCloudIndicator('saving');
+            try {
+                const res = await fetch(webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 'action=pull');
+                const result = await res.json();
+                
+                let cloudTasks = [];
+                if (result && Array.isArray(result.data)) {
+                    cloudTasks = result.data;
+                } else if (Array.isArray(result)) {
+                    cloudTasks = result;
+                }
+
+                if (cloudTasks && cloudTasks.length > 0) {
+                    tasks = cloudTasks;
+                    try {
+                        localStorage.setItem('activity_hub_enterprise_tasks', JSON.stringify(tasks));
+                    } catch (e) {}
+                    render();
+                    updateCloudIndicator('synced');
+                    showToast('Data otomatis ditarik dari Cloud!', 'fa-cloud text-indigo-400');
+                } else {
+                    updateCloudIndicator('synced');
+                }
+            } catch (err) {
+                console.warn("Auto-pull fallback to local data:", err);
+                updateCloudIndicator('offline');
+            }
+        }
+
+        function initializeData() {
+            try {
+                const stored = localStorage.getItem('activity_hub_enterprise_tasks');
+                if (stored) {
+                    tasks = JSON.parse(stored);
+                } else {
+                    tasks = [...DEFAULT_TASKS];
+                    localStorage.setItem('activity_hub_enterprise_tasks', JSON.stringify(tasks));
+                }
+            } catch (err) {
+                tasks = [...DEFAULT_TASKS];
+            }
+
+            if (webhookUrl) {
+                document.getElementById('inputWebhookUrl').value = webhookUrl;
+                pullDataFromCloudSilently();
+            } else {
+                updateCloudIndicator('offline');
+            }
+        }
+
+        function calculateNextCycleDate(dateStr, frequency) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const date = new Date(y, m - 1, d);
+
+            if (frequency === 'Harian') {
+                date.setDate(date.getDate() + 1);
+            } else if (frequency === 'Hari Kerja') {
+                const dayOfWeek = date.getDay();
+                if (dayOfWeek === 5) {
+                    date.setDate(date.getDate() + 3);
+                } else if (dayOfWeek === 6) {
+                    date.setDate(date.getDate() + 2);
+                } else {
+                    date.setDate(date.getDate() + 1);
+                }
+            } else if (frequency === 'Mingguan') {
+                date.setDate(date.getDate() + 7);
+            } else if (frequency === 'Bulanan') {
+                date.setMonth(date.getMonth() + 1);
+            } else {
+                date.setDate(date.getDate() + 7);
+            }
+
+            const ny = date.getFullYear();
+            const nm = String(date.getMonth() + 1).padStart(2, '0');
+            const nd = String(date.getDate()).padStart(2, '0');
+            return `${ny}-${nm}-${nd}`;
+        }
+
+        function handleRecurringTaskCompletion(task) {
+            if (task.type !== 'repetisi') return;
+            
+            task.streak = (task.streak || 0) + 1;
+            const nextDueDate = calculateNextCycleDate(task.dueDate || new Date().toISOString().split('T')[0], task.frequency);
+            
+            const nextCycleTask = {
+                id: Date.now().toString(),
+                type: 'repetisi',
+                frequency: task.frequency,
+                streak: task.streak,
+                title: task.title,
+                priority: task.priority,
+                dueDate: nextDueDate,
+                dueTime: task.dueTime,
+                status: 'todo',
+                estHours: task.estHours || 1,
+                actualHours: 0,
+                subtasks: (task.subtasks || []).map(st => ({ id: 'st-' + Math.random(), title: st.title, done: false })),
+                note: task.note
+            };
+
+            tasks.unshift(nextCycleTask);
+            showToast(`Siklus diperbarui otomatis! Streak: ${task.streak}🔥`);
+        }
+
+        function generateGoogleCalendarUrl(task) {
+            const title = encodeURIComponent(
+                `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${task.priority.toUpperCase()}] ${task.title}`
+            );
+            
+            let description = `Kelompok: ${task.type === 'repetisi' ? 'Repetisi (' + (task.frequency || 'Rutin') + ')' : 'Ad-hoc / Project'}\n`;
+            description += `Prioritas: ${task.priority}\n`;
+            if (task.subtasks && task.subtasks.length > 0) {
+                description += `Milestones:\n` + task.subtasks.map(s => `- [${s.done ? 'x' : ' '}] ${s.title}`).join('\n') + '\n';
+            }
+            if (task.note) description += `Catatan: ${task.note}\n`;
+            const encodedDesc = encodeURIComponent(description);
+
+            const dateStr = task.dueDate || new Date().toISOString().split('T')[0];
+            const timeStr = task.dueTime || '09:00';
+            const localStart = new Date(`${dateStr}T${timeStr}:00`);
+            const localEnd = new Date(localStart.getTime() + (task.estHours || 1) * 60 * 60 * 1000);
+
+            const formatGCalTime = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+            const dates = `${formatGCalTime(localStart)}/${formatGCalTime(localEnd)}`;
+            return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${encodedDesc}`;
+        }
+
+        function downloadICSFile(tasksToExport) {
+            if (!tasksToExport || tasksToExport.length === 0) {
+                showToast('Tidak ada tugas untuk diexport', 'fa-circle-exclamation text-amber-400');
+                return;
+            }
+
+            const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+            let ics = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Activity Planner Enterprise//ID',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH'
+            ];
+
+            tasksToExport.forEach(task => {
+                const dateStr = task.dueDate || new Date().toISOString().split('T')[0];
+                const timeStr = task.dueTime || '09:00';
+                const start = new Date(`${dateStr}T${timeStr}:00`);
+                const end = new Date(start.getTime() + (task.estHours || 1) * 60 * 60 * 1000);
+                const now = new Date();
+
+                const title = `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${task.priority}] ${task.title}`;
+                let desc = `Tipe: ${task.type === 'repetisi' ? 'Repetisi' : 'Ad-hoc/Project'}\\nPrioritas: ${task.priority}\\nCatatan: ${task.note || '-'}`;
+
+                ics.push('BEGIN:VEVENT');
+                ics.push(`UID:${task.id}-${start.getTime()}@activityplanner.hub`);
+                ics.push(`DTSTAMP:${formatICSDate(now)}`);
+                ics.push(`DTSTART:${formatICSDate(start)}`);
+                ics.push(`DTEND:${formatICSDate(end)}`);
+                ics.push(`SUMMARY:${title}`);
+                ics.push(`DESCRIPTION:${desc}`);
+                ics.push('STATUS:CONFIRMED');
+                
+                ics.push('BEGIN:VALARM');
+                ics.push('TRIGGER:-PT30M');
+                ics.push('ACTION:DISPLAY');
+                ics.push(`DESCRIPTION:Pengingat: ${task.title}`);
+                ics.push('END:VALARM');
+
+                ics.push('END:VEVENT');
+            });
+
+            ics.push('END:VCALENDAR');
+
+            const blob = new Blob([ics.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', tasksToExport.length === 1 ? `jadwal-${tasksToExport[0].id}.ics` : `jadwal-semua-aktivitas.ics`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast(`File .ICS berhasil diunduh!`);
+        }
+
+        function getDueDateStatus(dueDateStr, dueTimeStr) {
+            if (!dueDateStr) return { label: 'Tanpa Tanggal', class: 'text-slate-400 bg-slate-100 dark:bg-slate-800' };
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const [y, m, d] = dueDateStr.split('-').map(Number);
+            const taskDay = new Date(y, m - 1, d);
+
+            const diffTime = taskDay.getTime() - today.getTime();
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                return {
+                    label: 'Terlewat',
+                    class: 'text-rose-700 bg-rose-100 dark:bg-rose-950/80 dark:text-rose-300 border-rose-300 font-bold',
+                    icon: 'fa-triangle-exclamation',
+                    isUrgent: true
+                };
+            } else if (diffDays === 0) {
+                return {
+                    label: `Hari Ini (${dueTimeStr || '23:59'})`,
+                    class: 'text-amber-800 bg-amber-100 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300 font-bold',
+                    icon: 'fa-bell',
+                    isUrgent: true
+                };
+            } else if (diffDays === 1) {
+                return {
+                    label: `Besok (${dueTimeStr || '23:59'})`,
+                    class: 'text-indigo-800 bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-300 font-semibold',
+                    icon: 'fa-clock',
+                    isUrgent: true
+                };
+            } else if (diffDays <= 3) {
+                return {
+                    label: `H-${diffDays}`,
+                    class: 'text-sky-800 bg-sky-100 dark:bg-sky-950/80 dark:text-sky-300 border-sky-300 font-medium',
+                    icon: 'fa-calendar-day',
+                    isUrgent: true
+                };
+            } else {
+                return {
+                    label: `${dueDateStr}`,
+                    class: 'text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 font-normal',
+                    icon: 'fa-calendar',
+                    isUrgent: false
+                };
+            }
+        }
+
+        function getPriorityBadge(priority) {
+            switch (priority) {
+                case 'High':
+                    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> High
+                    </span>`;
+                case 'Medium':
+                    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Med
+                    </span>`;
+                default:
+                    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Low
+                    </span>`;
+            }
+        }
+
+        function getTypeBadge(type, frequency, streak = 0) {
+            if (type === 'repetisi') {
+                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                    <i class="fa-solid fa-arrows-rotate text-[9px]"></i> Repetisi (${frequency || 'Rutin'})
+                    ${streak > 0 ? `<span class="ml-1 text-[9px] font-bold text-amber-500">${streak}🔥</span>` : ''}
+                </span>`;
+            } else {
+                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-900">
+                    <i class="fa-solid fa-diagram-project text-[9px]"></i> Ad-hoc
+                </span>`;
+            }
+        }
+
+        function showToast(message, iconClass = 'fa-circle-check text-emerald-400') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.textContent = message;
+            toastIcon.className = `fa-solid ${iconClass}`;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        function getFilteredTasksForActiveMonth() {
+            const curYear = activeDate.getFullYear();
+            const curMonth = activeDate.getMonth() + 1;
+            const monthPrefix = `${curYear}-${String(curMonth).padStart(2, '0')}`;
+
+            return tasks.filter(task => {
+                const isInMonth = task.dueDate && task.dueDate.startsWith(monthPrefix);
+                const matchesType = (currentTypeFilter === 'all') || (task.type === currentTypeFilter);
+                const matchesPriority = (currentPriorityFilter === 'all') || (task.priority === currentPriorityFilter);
+                const matchesSearch = task.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                    (task.note && task.note.toLowerCase().includes(currentSearchQuery.toLowerCase()));
+
+                return isInMonth && matchesType && matchesPriority && matchesSearch;
+            });
+        }
+
+        function updateMonthlyProgressMeters() {
+            const curYear = activeDate.getFullYear();
+            const curMonth = activeDate.getMonth() + 1;
+            const monthPrefix = `${curYear}-${String(curMonth).padStart(2, '0')}`;
+
+            const monthTasks = tasks.filter(t => t.dueDate && t.dueDate.startsWith(monthPrefix));
+            const total = monthTasks.length;
+            const done = monthTasks.filter(t => t.status === 'done').length;
+            const totalPercent = total === 0 ? 0 : Math.round((done / total) * 100);
+
+            document.getElementById('statTotalPercent').textContent = `${totalPercent}%`;
+            document.getElementById('labelRingPercent').textContent = `${totalPercent}%`;
+            document.getElementById('statTotalRatio').textContent = `${done} dari ${total} tugas selesai`;
+            document.getElementById('svgTotalRing').setAttribute('stroke-dasharray', `${totalPercent}, 100`);
+
+            const repetisiTasks = monthTasks.filter(t => t.type === 'repetisi');
+            const repetisiDone = repetisiTasks.filter(t => t.status === 'done').length;
+            const repetisiPercent = repetisiTasks.length === 0 ? 0 : Math.round((repetisiDone / repetisiTasks.length) * 100);
+            
+            document.getElementById('badgeRepetisiRatio').textContent = `${repetisiDone}/${repetisiTasks.length} Selesai`;
+            document.getElementById('textRepetisiPercent').textContent = `${repetisiPercent}%`;
+            document.getElementById('barRepetisi').style.width = `${repetisiPercent}%`;
+
+            const adhocTasks = monthTasks.filter(t => t.type === 'adhoc');
+            const adhocDone = adhocTasks.filter(t => t.status === 'done').length;
+            const adhocPercent = adhocTasks.length === 0 ? 0 : Math.round((adhocDone / adhocTasks.length) * 100);
+
+            document.getElementById('badgeAdhocRatio').textContent = `${adhocDone}/${adhocTasks.length} Selesai`;
+            document.getElementById('textAdhocPercent').textContent = `${adhocPercent}%`;
+            document.getElementById('barAdhoc').style.width = `${adhocPercent}%`;
+
+            let totalEst = 0;
+            let totalActual = 0;
+            let highCount = 0;
+            let medCount = 0;
+            let lowCount = 0;
+
+            monthTasks.forEach(t => {
+                totalEst += Number(t.estHours) || 0;
+                totalActual += Number(t.actualHours) || 0;
+                if (t.priority === 'High') highCount++;
+                else if (t.priority === 'Medium') medCount++;
+                else if (t.priority === 'Low') lowCount++;
+            });
+
+            document.getElementById('totalEstHours').textContent = `${totalEst.toFixed(1)} Jam`;
+            document.getElementById('totalActualHours').textContent = `${totalActual.toFixed(1)} Jam`;
+
+            const highRatio = total > 0 ? (highCount / total) : 0;
+            const workloadBadge = document.getElementById('statWorkloadBalance');
+            if (highRatio > 0.5 && total > 4) {
+                workloadBadge.textContent = 'High Load 🔥';
+                workloadBadge.className = 'text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md';
+            } else {
+                workloadBadge.textContent = 'Seimbang ✨';
+                workloadBadge.className = 'text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md';
+            }
+
+            document.getElementById('statCountHigh').textContent = highCount;
+            document.getElementById('statCountMed').textContent = medCount;
+            document.getElementById('statCountLow').textContent = lowCount;
+
+            document.getElementById('statHighPercent').textContent = total > 0 ? `${Math.round((highCount/total)*100)}% dari total` : '0%';
+            document.getElementById('statMedPercent').textContent = total > 0 ? `${Math.round((medCount/total)*100)}% dari total` : '0%';
+            document.getElementById('statLowPercent').textContent = total > 0 ? `${Math.round((lowCount/total)*100)}% dari total` : '0%';
+
+            document.getElementById('analyticRepetisiText').textContent = `${repetisiDone} dari ${repetisiTasks.length} selesai`;
+            document.getElementById('analyticRepetisiDoneBar').style.width = `${repetisiPercent}%`;
+            document.getElementById('analyticRepetisiPendingBar').style.width = `${100 - repetisiPercent}%`;
+
+            document.getElementById('analyticAdhocText').textContent = `${adhocDone} dari ${adhocTasks.length} selesai`;
+            document.getElementById('analyticAdhocDoneBar').style.width = `${adhocPercent}%`;
+            document.getElementById('analyticAdhocPendingBar').style.width = `${100 - adhocPercent}%`;
+        }
+
+        function renderKanban(filtered) {
+            const colTodo = document.getElementById('colTodo');
+            const colProgress = document.getElementById('colProgress');
+            const colDone = document.getElementById('colDone');
+
+            colTodo.innerHTML = '';
+            colProgress.innerHTML = '';
+            colDone.innerHTML = '';
+
+            const todoTasks = filtered.filter(t => t.status === 'todo');
+            const progressTasks = filtered.filter(t => t.status === 'inprogress');
+            const doneTasks = filtered.filter(t => t.status === 'done');
+
+            document.getElementById('colTodoCount').textContent = todoTasks.length;
+            document.getElementById('colProgressCount').textContent = progressTasks.length;
+            document.getElementById('colDoneCount').textContent = doneTasks.length;
+
+            const emptyCardHtml = (msg) => `
+                <div class="py-10 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium">${msg}</p>
+                </div>
+            `;
+
+            if (todoTasks.length === 0) colTodo.innerHTML = emptyCardHtml('Kosong');
+            if (progressTasks.length === 0) colProgress.innerHTML = emptyCardHtml('Kosong');
+            if (doneTasks.length === 0) colDone.innerHTML = emptyCardHtml('Kosong');
+
+            const makeCard = (task) => {
+                const isDone = task.status === 'done';
+                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
+                const gCalUrl = generateGoogleCalendarUrl(task);
+
+                let subtasksPreview = '';
+                if (task.subtasks && task.subtasks.length > 0) {
+                    const completedSub = task.subtasks.filter(s => s.done).length;
+                    const subPercent = Math.round((completedSub / task.subtasks.length) * 100);
+                    subtasksPreview = `
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg text-[10px] space-y-1">
+                            <div class="flex justify-between font-semibold text-slate-600 dark:text-slate-300">
+                                <span>Milestones (${completedSub}/${task.subtasks.length})</span>
+                                <span>${subPercent}%</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-indigo-500 rounded-full" style="width: ${subPercent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                <div class="task-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col gap-2 relative group">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2 flex-1">
+                            <button onclick="quickToggleDone('${task.id}')" class="mt-0.5 text-base text-slate-300 hover:text-emerald-500 transition">
+                                <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+                            </button>
+                            <div class="flex-1">
+                                <h4 class="text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'} leading-snug">
+                                    ${task.title}
+                                </h4>
+                                ${task.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">${task.note}</p>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition">
+                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1" title="Edit">
+                                <i class="fa-regular fa-pen-to-square text-xs"></i>
+                            </button>
+                            <button onclick="deleteTask('${task.id}')" class="text-slate-400 hover:text-rose-600 p-1" title="Hapus">
+                                <i class="fa-regular fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${subtasksPreview}
+
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        ${getTypeBadge(task.type, task.frequency, task.streak)}
+                        ${getPriorityBadge(task.priority)}
+                        <span class="text-[10px] text-slate-400 ml-auto flex items-center gap-1">
+                            <i class="fa-regular fa-clock text-[9px]"></i> ${task.actualHours || 0}/${task.estHours || 1}h
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] ${dueStatus.class}">
+                            <i class="fa-regular ${dueStatus.icon} text-[9px]"></i>
+                            ${dueStatus.label}
+                        </span>
+
+                        <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] font-semibold py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300">
+                            <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
+                            <option value="inprogress" ${task.status === 'inprogress' ? 'selected' : ''}>Progress</option>
+                            <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 pt-1">
+                        <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" 
+                           class="flex-1 inline-flex items-center justify-center gap-1 py-1 px-2 text-[10px] font-semibold rounded-lg bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/50 text-slate-700 hover:text-indigo-700 dark:text-slate-300 transition"
+                           title="Google Calendar">
+                            <i class="fa-brands fa-google text-[10px] text-indigo-500"></i>
+                            <span>Google Cal</span>
+                        </a>
+
+                        <button onclick="downloadSingleICS('${task.id}')" 
+                                class="inline-flex items-center justify-center gap-1 py-1 px-2 text-[10px] font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+                                title="Download .ICS Kalender HP">
+                            <i class="fa-solid fa-mobile-screen-button text-[10px]"></i>
+                            <span>.ICS</span>
+                        </button>
+                    </div>
+                </div>`;
+            };
+
+            todoTasks.forEach(t => colTodo.insertAdjacentHTML('beforeend', makeCard(t)));
+            progressTasks.forEach(t => colProgress.insertAdjacentHTML('beforeend', makeCard(t)));
+            doneTasks.forEach(t => colDone.insertAdjacentHTML('beforeend', makeCard(t)));
+        }
+
+        function renderListView(filtered) {
+            const listTableBody = document.getElementById('listTableBody');
+            const listEmptyMessage = document.getElementById('listEmptyMessage');
+            listTableBody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                listEmptyMessage.classList.remove('hidden');
+                return;
+            }
+            listEmptyMessage.classList.add('hidden');
+
+            filtered.forEach(task => {
+                const isDone = task.status === 'done';
+                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
+                const gCalUrl = generateGoogleCalendarUrl(task);
+
+                let subCount = '';
+                if (task.subtasks && task.subtasks.length > 0) {
+                    const doneSt = task.subtasks.filter(s => s.done).length;
+                    subCount = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-semibold ml-1">${doneSt}/${task.subtasks.length} Sub</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition text-xs";
+                tr.innerHTML = `
+                    <td class="py-2.5 pl-2">
+                        <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
+                            <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+                        </button>
+                    </td>
+                    <td class="py-2.5 pr-2">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 ${isDone ? 'line-through text-slate-400' : ''}">
+                            ${task.title} ${subCount}
+                        </div>
+                        ${task.note ? `<div class="text-[10px] text-slate-400 line-clamp-1">${task.note}</div>` : ''}
+                    </td>
+                    <td class="py-2.5 pr-2">${getTypeBadge(task.type, task.frequency, task.streak)}</td>
+                    <td class="py-2.5 pr-2">${getPriorityBadge(task.priority)}</td>
+                    <td class="py-2.5 pr-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] ${dueStatus.class}">
+                            <i class="fa-regular ${dueStatus.icon}"></i> ${dueStatus.label}
+                        </span>
+                    </td>
+                    <td class="py-2.5 pr-2 text-[11px] text-slate-500">
+                        ${task.actualHours || 0} / ${task.estHours || 1} Jam
+                    </td>
+                    <td class="py-2.5 pr-2">
+                        <div class="inline-flex items-center gap-1">
+                            <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600">
+                                <i class="fa-brands fa-google text-[11px]"></i>
+                            </a>
+                            <button onclick="downloadSingleICS('${task.id}')" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600">
+                                <i class="fa-solid fa-mobile-screen-button text-[11px]"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-2.5 text-right pr-2">
+                        <div class="inline-flex items-center gap-1">
+                            <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border rounded">
+                                <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
+                                <option value="inprogress" ${task.status === 'inprogress' ? 'selected' : ''}>Progress</option>
+                                <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
+                            </select>
+                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteTask('${task.id}')" class="text-slate-400 hover:text-rose-600 p-1">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                listTableBody.appendChild(tr);
+            });
+        }
+
+        function renderCalendarView(filtered) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+
+            const year = activeDate.getFullYear();
+            const month = activeDate.getMonth();
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const today = new Date();
+            const isCurrentRealMonth = today.getFullYear() === year && today.getMonth() === month;
+            const currentRealDate = today.getDate();
+
+            const tasksByDate = {};
+            filtered.forEach(task => {
+                if (task.dueDate) {
+                    if (!tasksByDate[task.dueDate]) tasksByDate[task.dueDate] = [];
+                    tasksByDate[task.dueDate].push(task);
+                }
+            });
+
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = daysInPrevMonth - i;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
+                cell.innerHTML = `<span class="text-xs font-semibold">${dayNum}</span>`;
+                calendarGrid.appendChild(cell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayStr = String(day).padStart(2, '0');
+                const monthStr = String(month + 1).padStart(2, '0');
+                const fullDateKey = `${year}-${monthStr}-${dayStr}`;
+                const isToday = isCurrentRealMonth && day === currentRealDate;
+
+                const dayTasks = tasksByDate[fullDateKey] || [];
+
+                const cell = document.createElement('div');
+                cell.className = `calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 flex flex-col justify-between group relative cursor-pointer ${
+                    isToday ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : ''
+                }`;
+
+                let headerHtml = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold ${
+                            isToday ? 'w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-700 dark:text-slate-300'
+                        }">${day}</span>
+                        <button onclick="openModalWithDate('${fullDateKey}'); event.stopPropagation();" 
+                            class="opacity-0 group-hover:opacity-100 text-[10px] w-4 h-4 rounded bg-indigo-100 dark:bg-slate-700 text-indigo-600 flex items-center justify-center transition">
+                            <i class="fa-solid fa-plus text-[8px]"></i>
+                        </button>
+                    </div>
+                `;
+
+                let tasksHtml = '<div class="space-y-1 my-1 overflow-y-auto max-h-[80px]">';
+                dayTasks.forEach(task => {
+                    const isDone = task.status === 'done';
+                    const isRepetisi = task.type === 'repetisi';
+                    const pillBg = isDone 
+                        ? 'bg-slate-100 text-slate-400 line-through' 
+                        : (isRepetisi ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/70 border border-blue-200' 
+                                      : 'bg-purple-50 text-purple-700 dark:bg-purple-950/70 border border-purple-200');
+
+                    tasksHtml += `
+                        <div onclick="editTask('${task.id}'); event.stopPropagation();" 
+                             class="text-[9px] px-1 py-0.5 rounded flex items-center gap-1 font-semibold truncate ${pillBg}">
+                            <span class="w-1.5 h-1.5 rounded-full ${task.priority === 'High' ? 'bg-rose-500' : 'bg-amber-500'} shrink-0"></span>
+                            <span class="truncate">${task.title}</span>
+                            ${isDone ? '<i class="fa-solid fa-check text-[7px] text-emerald-500 ml-auto"></i>' : ''}
+                        </div>
+                    `;
+                });
+                tasksHtml += '</div>';
+
+                cell.innerHTML = headerHtml + tasksHtml;
+                cell.addEventListener('click', () => openModalWithDate(fullDateKey));
+                calendarGrid.appendChild(cell);
+            }
+
+            const totalRenderedCells = firstDayIndex + daysInMonth;
+            const remainingCells = (totalRenderedCells <= 35) ? (35 - totalRenderedCells) : (42 - totalRenderedCells);
+            for (let nextDay = 1; nextDay <= remainingCells; nextDay++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
+                cell.innerHTML = `<span class="text-xs font-semibold">${nextDay}</span>`;
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        function renderMatrixView(filtered) {
+            const q1 = document.getElementById('quadrantQ1');
+            const q2 = document.getElementById('quadrantQ2');
+            const q3 = document.getElementById('quadrantQ3');
+            const q4 = document.getElementById('quadrantQ4');
+
+            q1.innerHTML = '';
+            q2.innerHTML = '';
+            q3.innerHTML = '';
+            q4.innerHTML = '';
+
+            let c1 = 0, c2 = 0, c3 = 0, c4 = 0;
+
+            filtered.forEach(task => {
+                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
+                const isUrgent = dueStatus.isUrgent;
+                const isImportant = task.priority === 'High' || (task.priority === 'Medium' && task.type === 'adhoc');
+
+                const card = `
+                    <div class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 shadow-xs flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2">
+                            <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
+                                <i class="${task.status === 'done' ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+                            </button>
+                            <span class="${task.status === 'done' ? 'line-through text-slate-400' : 'font-semibold text-slate-800 dark:text-slate-200'}">${task.title}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            ${getPriorityBadge(task.priority)}
+                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1">
+                                <i class="fa-regular fa-pen-to-square text-[11px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                if (isImportant && isUrgent) {
+                    q1.insertAdjacentHTML('beforeend', card);
+                    c1++;
+                } else if (isImportant && !isUrgent) {
+                    q2.insertAdjacentHTML('beforeend', card);
+                    c2++;
+                } else if (!isImportant && isUrgent) {
+                    q3.insertAdjacentHTML('beforeend', card);
+                    c3++;
+                } else {
+                    q4.insertAdjacentHTML('beforeend', card);
+                    c4++;
+                }
+            });
+
+            document.getElementById('badgeQ1Count').textContent = c1;
+            document.getElementById('badgeQ2Count').textContent = c2;
+            document.getElementById('badgeQ3Count').textContent = c3;
+            document.getElementById('badgeQ4Count').textContent = c4;
+        }
+
+        function render() {
+            const monthStr = MONTH_NAMES_ID[activeDate.getMonth()];
+            const yearStr = activeDate.getFullYear();
+            const fullTitle = `${monthStr} ${yearStr}`;
+
+            document.getElementById('currentMonthYearLabel').textContent = fullTitle;
+            document.getElementById('calendarHeaderMonth').textContent = fullTitle;
+            document.getElementById('labelSummaryMonth').textContent = monthStr;
+
+            const filtered = getFilteredTasksForActiveMonth();
+            updateMonthlyProgressMeters();
+
+            if (currentView === 'kanban') renderKanban(filtered);
+            else if (currentView === 'list') renderListView(filtered);
+            else if (currentView === 'calendar') renderCalendarView(filtered);
+            else if (currentView === 'matrix') renderMatrixView(filtered);
+        }
+
+        window.quickToggleDone = function(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            if (task.status !== 'done') {
+                task.status = 'done';
+                if (task.subtasks) task.subtasks.forEach(st => st.done = true);
+                handleRecurringTaskCompletion(task);
+            } else {
+                task.status = 'todo';
+            }
+
+            triggerDebouncedAutoSave();
+        };
+
+        window.updateTaskStatus = function(id, newStatus) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            task.status = newStatus;
+            if (newStatus === 'done' && task.type === 'repetisi') {
+                handleRecurringTaskCompletion(task);
+            }
+            triggerDebouncedAutoSave();
+            showToast('Status diperbarui');
+        };
+
+        window.deleteTask = function(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            triggerDebouncedAutoSave();
+            showToast('Aktivitas dihapus', 'fa-trash text-rose-400');
+        };
+
+        window.downloadSingleICS = function(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) downloadICSFile([task]);
+        };
+
+        function addSubtaskInputRow(title = '', isDone = false) {
+            const container = document.getElementById('subtasksContainer');
+            const rowId = 'st-row-' + Math.random().toString(36).substring(2, 9);
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = 'flex items-center gap-2';
+            div.innerHTML = `
+                <input type="checkbox" class="subtask-checkbox rounded text-indigo-600 focus:ring-indigo-500" ${isDone ? 'checked' : ''}>
+                <input type="text" value="${title}" placeholder="Deskripsi tahapan / milestone..." 
+                    class="subtask-title-input flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none">
+                <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-slate-400 hover:text-rose-500 p-1">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        document.getElementById('btnAddSubtaskRow').addEventListener('click', () => addSubtaskInputRow());
+
+        window.editTask = function(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            document.getElementById('taskId').value = task.id;
+            document.getElementById('modalTitle').textContent = 'Edit Aktivitas';
+
+            const radio = document.querySelector(`input[name="activityType"][value="${task.type}"]`);
+            if (radio) radio.checked = true;
+            toggleFrequencyWrapper(task.type);
+
+            document.getElementById('taskFrequency').value = task.frequency || 'Mingguan';
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskStatus').value = task.status;
+            document.getElementById('taskDueDate').value = task.dueDate;
+            document.getElementById('taskDueTime').value = task.dueTime || '17:00';
+            document.getElementById('taskEstHours').value = task.estHours || 1;
+            document.getElementById('taskActualHours').value = task.actualHours || 0;
+            document.getElementById('taskNote').value = task.note || '';
+
+            const container = document.getElementById('subtasksContainer');
+            container.innerHTML = '';
+            if (task.subtasks && task.subtasks.length > 0) {
+                task.subtasks.forEach(st => addSubtaskInputRow(st.title, st.done));
+            }
+
+            document.getElementById('taskModal').classList.remove('hidden');
+        };
+
+        window.openModalWithDate = function(dateStr) {
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            document.getElementById('subtasksContainer').innerHTML = '';
+            document.getElementById('modalTitle').textContent = 'Tambah Aktivitas Baru';
+            document.getElementById('taskDueDate').value = dateStr;
+            toggleFrequencyWrapper('repetisi');
+            document.getElementById('taskModal').classList.remove('hidden');
+        };
+
+        function toggleFrequencyWrapper(type) {
+            const freq = document.getElementById('frequencyFieldWrapper');
+            if (type === 'repetisi') freq.classList.remove('hidden');
+            else freq.classList.add('hidden');
+        }
+
+        document.querySelectorAll('input[name="activityType"]').forEach(r => {
+            r.addEventListener('change', (e) => toggleFrequencyWrapper(e.target.value));
+        });
+
+        document.getElementById('btnOpenModal').addEventListener('click', () => {
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            document.getElementById('subtasksContainer').innerHTML = '';
+            document.getElementById('modalTitle').textContent = 'Tambah Aktivitas Baru';
+            document.getElementById('taskDueDate').value = new Date().toISOString().split('T')[0];
+            toggleFrequencyWrapper('repetisi');
+            document.getElementById('taskModal').classList.remove('hidden');
+        });
+
+        const closeModal = () => document.getElementById('taskModal').classList.add('hidden');
+        document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+        document.getElementById('btnCancelModal').addEventListener('click', closeModal);
+
+        document.getElementById('taskForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('taskId').value;
+            const type = document.querySelector('input[name="activityType"]:checked').value;
+            const frequency = type === 'repetisi' ? document.getElementById('taskFrequency').value : '';
+            const title = document.getElementById('taskTitle').value.trim();
+            const priority = document.getElementById('taskPriority').value;
+            const status = document.getElementById('taskStatus').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            const dueTime = document.getElementById('taskDueTime').value;
+            const estHours = parseFloat(document.getElementById('taskEstHours').value) || 1;
+            const actualHours = parseFloat(document.getElementById('taskActualHours').value) || 0;
+            const note = document.getElementById('taskNote').value.trim();
+
+            const subtaskRows = document.querySelectorAll('#subtasksContainer > div');
+            const subtasks = [];
+            subtaskRows.forEach(row => {
+                const checked = row.querySelector('.subtask-checkbox').checked;
+                const txt = row.querySelector('.subtask-title-input').value.trim();
+                if (txt) subtasks.push({ id: 'st-' + Math.random(), title: txt, done: checked });
+            });
+
+            if (!title || !dueDate) return;
+
+            if (id) {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    task.type = type;
+                    task.frequency = frequency;
+                    task.title = title;
+                    task.priority = priority;
+                    task.status = status;
+                    task.dueDate = dueDate;
+                    task.dueTime = dueTime;
+                    task.estHours = estHours;
+                    task.actualHours = actualHours;
+                    task.subtasks = subtasks;
+                    task.note = note;
+                    showToast('Perubahan aktivitas disimpan');
+                }
+            } else {
+                const newTask = {
+                    id: Date.now().toString(),
+                    type,
+                    frequency,
+                    streak: 0,
+                    title,
+                    priority,
+                    status,
+                    dueDate,
+                    dueTime,
+                    estHours,
+                    actualHours,
+                    subtasks,
+                    note
+                };
+                tasks.unshift(newTask);
+                showToast('Aktivitas baru berhasil dibuat!');
+            }
+
+            triggerDebouncedAutoSave();
+            closeModal();
+        });
+
+        const views = {
+            kanban: { btn: document.getElementById('viewKanbanBtn'), el: document.getElementById('kanbanView') },
+            list: { btn: document.getElementById('viewListBtn'), el: document.getElementById('listView') },
+            calendar: { btn: document.getElementById('viewCalendarBtn'), el: document.getElementById('calendarView') },
+            matrix: { btn: document.getElementById('viewMatrixBtn'), el: document.getElementById('matrixView') },
+            analytics: { btn: document.getElementById('viewAnalyticsBtn'), el: document.getElementById('analyticsView') },
+        };
+
+        function switchView(target) {
+            currentView = target;
+            Object.keys(views).forEach(v => {
+                const item = views[v];
+                if (v === target) {
+                    item.btn.className = 'view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs whitespace-nowrap font-bold';
+                    item.el.classList.remove('hidden');
+                } else {
+                    item.btn.className = 'view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap';
+                    item.el.classList.add('hidden');
+                }
+            });
+            render();
+        }
+
+        Object.keys(views).forEach(k => {
+            views[k].btn.addEventListener('click', () => switchView(k));
+        });
+
+        document.getElementById('btnPrevGlobalMonth').addEventListener('click', () => {
+            activeDate = new Date(activeDate.getFullYear(), activeDate.getMonth() - 1, 1);
+            render();
+        });
+        document.getElementById('btnNextGlobalMonth').addEventListener('click', () => {
+            activeDate = new Date(activeDate.getFullYear(), activeDate.getMonth() + 1, 1);
+            render();
+        });
+        document.getElementById('btnCurrentMonthReset').addEventListener('click', () => {
+            const now = new Date();
+            activeDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            render();
+        });
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value;
+            render();
+        });
+
+        document.querySelectorAll('.type-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.type-filter-btn').forEach(b => {
+                    b.className = 'type-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900';
+                });
+                btn.className = 'type-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold';
+                currentTypeFilter = btn.getAttribute('data-type-filter');
+                render();
+            });
+        });
+
+        document.querySelectorAll('.priority-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.priority-filter-btn').forEach(b => {
+                    b.classList.remove('bg-slate-200/70', 'dark:bg-slate-800', 'font-semibold');
+                });
+                btn.classList.add('bg-slate-200/70', 'dark:bg-slate-800', 'font-semibold');
+                currentPriorityFilter = btn.getAttribute('data-priority-filter');
+                render();
+            });
+        });
+
+        document.getElementById('btnExportCSV').addEventListener('click', () => {
+            const filtered = getFilteredTasksForActiveMonth();
+            let csv = "ID,Tipe,Frekuensi,Streak,Judul,Prioritas,DueDate,DueTime,Status,EstHours,ActualHours,Note\n";
+            filtered.forEach(t => {
+                csv += `"${t.id}","${t.type}","${t.frequency || ''}",${t.streak || 0},"${t.title.replace(/"/g, '""')}","${t.priority}","${t.dueDate}","${t.dueTime || ''}","${t.status}",${t.estHours || 0},${t.actualHours || 0},"${(t.note || '').replace(/"/g, '""')}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `rekap-kinerja-${activeDate.getFullYear()}-${activeDate.getMonth()+1}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            showToast('File CSV berhasil diunduh!');
+        });
+
+        document.getElementById('btnExportJSON').addEventListener('click', () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `backup_aktivitas_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(dl);
+            dl.click();
+            dl.remove();
+            showToast('Cadangan JSON tersimpan!');
+        });
+
+        document.getElementById('inputImportJSON').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = function(evt) {
+                try {
+                    const parsed = JSON.parse(evt.target.result);
+                    if (Array.isArray(parsed)) {
+                        tasks = parsed;
+                        triggerDebouncedAutoSave();
+                        showToast('Data berhasil dipulihkan!');
+                    }
+                } catch(err) {
+                    showToast('Gagal memproses file JSON', 'fa-triangle-exclamation text-rose-400');
+                }
+            };
+            r.readAsText(file);
+        });
+
+        document.getElementById('btnBulkExportICS').addEventListener('click', () => {
+            const filtered = getFilteredTasksForActiveMonth();
+            downloadICSFile(filtered.length > 0 ? filtered : tasks);
+        });
+
+        document.getElementById('btnOpenExecReport').addEventListener('click', () => {
+            const curMonthName = MONTH_NAMES_ID[activeDate.getMonth()];
+            const curYear = activeDate.getFullYear();
+            const monthPrefix = `${curYear}-${String(activeDate.getMonth()+1).padStart(2, '0')}`;
+
+            const monthTasks = tasks.filter(t => t.dueDate && t.dueDate.startsWith(monthPrefix));
+            const total = monthTasks.length;
+            const done = monthTasks.filter(t => t.status === 'done').length;
+            const rate = total === 0 ? 0 : Math.round((done / total) * 100);
+
+            const repTasks = monthTasks.filter(t => t.type === 'repetisi');
+            const repDone = repTasks.filter(t => t.status === 'done').length;
+
+            const adhocTasks = monthTasks.filter(t => t.type === 'adhoc');
+            const adhocDone = adhocTasks.filter(t => t.status === 'done').length;
+
+            document.getElementById('reportPeriodText').textContent = `Periode: ${curMonthName} ${curYear}`;
+            document.getElementById('reportGeneratedDate').textContent = new Date().toLocaleDateString('id-ID');
+            document.getElementById('reportKPIPercent').textContent = `${rate}%`;
+            document.getElementById('reportKPIRepetisi').textContent = `${repDone}/${repTasks.length}`;
+            document.getElementById('reportKPIAdhoc').textContent = `${adhocDone}/${adhocTasks.length}`;
+
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = '';
+            monthTasks.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 font-medium">${t.title}</td>
+                    <td class="p-2 uppercase font-semibold text-[10px]">${t.type}</td>
+                    <td class="p-2">${t.priority}</td>
+                    <td class="p-2">${t.dueDate}</td>
+                    <td class="p-2 font-bold ${t.status === 'done' ? 'text-emerald-600' : 'text-slate-500'}">${t.status.toUpperCase()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('execReportModal').classList.remove('hidden');
+        });
+        document.getElementById('btnCloseExecReport').addEventListener('click', () => {
+            document.getElementById('execReportModal').classList.add('hidden');
+        });
+
+        document.getElementById('btnOpenCloudModal').addEventListener('click', () => {
+            document.getElementById('cloudModal').classList.remove('hidden');
+        });
+        document.getElementById('btnCloseCloudModal').addEventListener('click', () => {
+            document.getElementById('cloudModal').classList.add('hidden');
+        });
+
+        document.getElementById('btnSaveCloudConfig').addEventListener('click', async () => {
+            const url = document.getElementById('inputWebhookUrl').value.trim();
+            if (!url) {
+                showToast('Masukkan URL Apps Script Web App yang valid', 'fa-circle-exclamation text-amber-400');
+                return;
+            }
+
+            webhookUrl = url;
+            localStorage.setItem('activity_hub_webhook_url', url);
+            document.getElementById('cloudModal').classList.add('hidden');
+            showToast('Menghubungkan ke Google Sheets...', 'fa-spinner fa-spin text-indigo-400');
+
+            await pullDataFromCloudSilently();
+            await pushDataToCloudSilently();
+            showToast('Auto-Sync Aktif! Semua perubahan tersimpan otomatis.');
+        });
+
+        document.getElementById('btnDisconnectCloud').addEventListener('click', () => {
+            webhookUrl = '';
+            localStorage.removeItem('activity_hub_webhook_url');
+            document.getElementById('inputWebhookUrl').value = '';
+            updateCloudIndicator('offline');
+            document.getElementById('cloudModal').classList.add('hidden');
+            showToast('Koneksi Cloud diputus. Beralih ke penyimpanan lokal.');
+        });
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const headerTimerBadge = document.getElementById('headerTimerBadge');
+        const btnTimerToggle = document.getElementById('btnTimerToggle');
+
+        function updateTimerLabel() {
+            const m = Math.floor(timerSeconds / 60);
+            const s = timerSeconds % 60;
+            const str = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            timerDisplay.textContent = str;
+            headerTimerBadge.textContent = str;
+        }
+
+        btnTimerToggle.addEventListener('click', () => {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                btnTimerToggle.textContent = 'Lanjutkan';
+                btnTimerToggle.className = 'px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs';
+            } else {
+                isTimerRunning = true;
+                btnTimerToggle.textContent = 'Jeda';
+                btnTimerToggle.className = 'px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs';
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerLabel();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        showToast('Sesi Pomodoro Selesai! Saatnya istirahat ☕', 'fa-mug-hot text-amber-400');
+                        btnTimerToggle.textContent = 'Mulai Sesi Baru';
+                    }
+                }, 1000);
+            }
+        });
+
+        document.getElementById('btnTimerReset').addEventListener('click', () => {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = 25 * 60;
+            updateTimerLabel();
+            btnTimerToggle.textContent = 'Mulai Sesi';
+            btnTimerToggle.className = 'px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs';
+        });
+
+        document.getElementById('btnOpenPomodoroModal').addEventListener('click', () => {
+            document.getElementById('pomodoroModal').classList.remove('hidden');
+        });
+        document.getElementById('btnClosePomodoroModal').addEventListener('click', () => {
+            document.getElementById('pomodoroModal').classList.add('hidden');
+        });
+
+        // Dark mode setup
+        const html = document.documentElement;
+        document.getElementById('btnToggleDark').addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        }
+
+        // Initialize App on DOM Ready
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeData();
+            render();
+            updateTimerLabel();
+        });
+    </script>
+</body>
+</html>
