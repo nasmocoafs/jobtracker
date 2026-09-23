@@ -63,13 +63,13 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400">Toyota Nasmoco Aftersales Division</p>
             </div>
 
-            <!-- Tab Masuk / Daftar -->
+            <!-- Tab Switcher -->
             <div class="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-4 text-xs font-bold text-center">
                 <button type="button" onclick="switchAuthTab('login')" id="tabBtnLogin" class="py-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs transition">Masuk</button>
                 <button type="button" onclick="switchAuthTab('signup')" id="tabBtnSignup" class="py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition">Daftar Akun</button>
             </div>
 
-            <!-- Form 1: Login (Menggunakan Metode POST Bebas Galat 404) -->
+            <!-- Form Login -->
             <form id="formLogin" onsubmit="handleLoginSubmit(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username</label>
@@ -83,7 +83,7 @@
                 <button type="submit" id="btnLoginSubmit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-500/20 transition">Masuk ke Sistem</button>
             </form>
 
-            <!-- Form 2: Sign Up (Pendaftaran Tim Mandiri) -->
+            <!-- Form Sign Up -->
             <form id="formSignup" onsubmit="handleSignupSubmit(event)" class="space-y-2.5 text-xs hidden">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
@@ -159,19 +159,16 @@
 
             <!-- Action Controls & Profile -->
             <div class="flex items-center gap-2">
-                <!-- Sync Status Indicator -->
                 <button id="btnOpenCloudModal" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-2 border border-slate-200/80 dark:border-slate-700" title="Status Sinkronisasi">
                     <span id="cloudIndicatorDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                     <span id="cloudStatusText" class="text-[11px] font-bold">Sinkronisasi Siap</span>
                 </button>
 
-                <!-- Pomodoro Timer -->
                 <button id="btnOpenPomodoroModal" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 transition">
                     <i class="fa-solid fa-stopwatch text-amber-500"></i>
                     <span id="headerTimerBadge" class="font-bold">25:00</span>
                 </button>
 
-                <!-- Tools Dropdown -->
                 <div class="relative group">
                     <button class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
                         <i class="fa-solid fa-ellipsis-vertical text-slate-500"></i>
@@ -200,13 +197,12 @@
                     </div>
                 </div>
 
-                <!-- Dark Mode -->
                 <button id="btnToggleDark" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition">
                     <i class="fa-regular fa-moon dark:hidden text-xs"></i>
                     <i class="fa-regular fa-sun hidden dark:inline text-amber-400 text-xs"></i>
                 </button>
 
-                <!-- Profile Badge & Logout -->
+                <!-- Profile User Badge & Logout -->
                 <div class="bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 px-2.5 py-1 rounded-xl flex items-center gap-2">
                     <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold text-[10px] flex items-center justify-center" id="userAvatar">U</div>
                     <div class="text-left hidden sm:block">
@@ -218,7 +214,6 @@
                     </button>
                 </div>
 
-                <!-- Add Task -->
                 <button id="btnOpenModal" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition">
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span>Tugas Baru</span>
@@ -316,7 +311,7 @@
                 <div class="flex flex-wrap items-center gap-2 flex-1">
                     <div class="relative w-full sm:w-48">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" id="searchInput" placeholder="Cari aktivitas atau PIC..." 
+                        <input type="text" id="searchInput" placeholder="Cari aktivitas..." 
                             class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100">
                     </div>
 
@@ -331,8 +326,8 @@
                         </select>
                     </div>
 
-                    <!-- Scope Filter: Tim Section vs Tugas Saya -->
-                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                    <!-- Scope Filter: Tim Section vs Tugas Saya (Hanya Muncul untuk Head) -->
+                    <div id="wrapperScopeFilter" class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
                         <button onclick="setScopeFilter('section')" id="btnScopeSection" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold">
                             Tim Section
                         </button>
@@ -341,7 +336,12 @@
                         </button>
                     </div>
 
-                    <!-- Category Type Filter Tabs -->
+                    <!-- Badge Kunci Tugas Pribadi (Muncul untuk Anggota Biasa) -->
+                    <div id="badgePersonalLock" class="hidden items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs rounded-xl border border-indigo-200/80 dark:border-indigo-900">
+                        <i class="fa-solid fa-lock text-[10px]"></i> Tugas Pribadi
+                    </div>
+
+                    <!-- Category Type Tabs -->
                     <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
                         <button data-type-filter="all" class="type-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold">
                             Semua Tipe
@@ -456,7 +456,7 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
                 <div class="flex items-center gap-2">
                     <h2 id="calendarHeaderMonth" class="text-base font-extrabold text-slate-900 dark:text-white">Bulan Tahun</h2>
-                    <span class="text-xs text-slate-400 hidden sm:inline">• Klik kotak tanggal untuk menambah tugas langsung</span>
+                    <span class="text-xs text-slate-400 hidden sm:inline">• Klik kotak tanggal untuk menambah tugas</span>
                 </div>
                 <div class="flex items-center gap-3 text-[11px] font-semibold">
                     <span class="flex items-center gap-1 text-blue-600 dark:text-blue-400"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Repetisi</span>
@@ -479,7 +479,7 @@
                         <h3 class="text-xs font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-rose-500"></span> Q1: Segera Kerjakan (Do First)
                         </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Penting & Mendesak (High Priority, Deadline Dekat)</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Penting & Mendesak</p>
                     </div>
                     <span id="badgeQ1Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-200 dark:bg-rose-900 text-rose-800 dark:text-rose-200">0</span>
                 </div>
@@ -492,7 +492,7 @@
                         <h3 class="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Q2: Jadwalkan (Schedule)
                         </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Penting tapi Tidak Mendesak (Tujuan Strategis & Repetisi)</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Penting, Tidak Mendesak</p>
                     </div>
                     <span id="badgeQ2Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">0</span>
                 </div>
@@ -505,7 +505,7 @@
                         <h3 class="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-amber-500"></span> Q3: Delegasikan (Delegate)
                         </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Mendesak tapi Kurang Penting (Tugas Operasional Ringan)</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Mendesak, Kurang Penting</p>
                     </div>
                     <span id="badgeQ3Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200">0</span>
                 </div>
@@ -518,7 +518,7 @@
                         <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-slate-400"></span> Q4: Eliminasi / Tunda (Drop)
                         </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Tidak Penting & Tidak Mendesak (Prioritas Low)</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Tidak Penting & Tidak Mendesak</p>
                     </div>
                     <span id="badgeQ4Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
                 </div>
@@ -614,14 +614,14 @@
                             <input type="radio" name="activityType" value="repetisi" class="mt-0.5 text-indigo-600 focus:ring-indigo-500" checked>
                             <div>
                                 <span class="text-xs font-bold text-slate-900 dark:text-white block">1. Repetisi (Rutin)</span>
-                                <span class="text-[10px] text-slate-500">Siklus otomatis berulang & streak counter</span>
+                                <span class="text-[10px] text-slate-500">Siklus otomatis berulang & streak</span>
                             </div>
                         </label>
                         <label class="cursor-pointer border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 flex items-start gap-2 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 dark:has-[:checked]:bg-indigo-950/30 transition">
                             <input type="radio" name="activityType" value="adhoc" class="mt-0.5 text-indigo-600 focus:ring-indigo-500">
                             <div>
                                 <span class="text-xs font-bold text-slate-900 dark:text-white block">2. Ad-hoc / Project</span>
-                                <span class="text-[10px] text-slate-500">Inisiatif baru, proyek target & milestone</span>
+                                <span class="text-[10px] text-slate-500">Inisiatif baru & milestone</span>
                             </div>
                         </label>
                     </div>
@@ -890,7 +890,6 @@
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
         ];
 
-        // Webhook URL Google Apps Script yang terpasang aktif
         const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwILTxSMsoiiaUX905-ExaLZ_aSPYIM-R8NyE2HfWMOEvDrH8ZOdqNsoJaDkdfg1D8K/exec';
 
         let tasks = [];
@@ -911,6 +910,16 @@
         let webhookUrl = localStorage.getItem('activity_hub_webhook_url') || DEFAULT_WEBHOOK_URL;
         let autoSaveTimer = null;
         let isSavingToCloud = false;
+
+        // CLEAN SANITIZER: MENCEGAH TANGGAL KOTOR TERTAMPIL PADA PIC / DUE DATE
+        function cleanPIC(picVal) {
+            if (!picVal) return '';
+            let s = String(picVal).trim();
+            if (s.includes('GMT+') || s.includes('Indochina') || s.includes('1899') || /^\d{4}-\d{2}-\d{2}T/.test(s)) {
+                return '';
+            }
+            return s;
+        }
 
         // AUTHENTICATION & SESSION MANAGEMENT
         function checkSession() {
@@ -933,7 +942,12 @@
             document.getElementById('userAvatar').textContent = (currentUser.name || 'U').charAt(0).toUpperCase();
             document.getElementById('headerSectionInfo').textContent = `${currentUser.section} • ${currentUser.role}`;
 
-            const isDeptHead = currentUser.role === 'Aftersales Head' || currentUser.section === 'All Section';
+            const role = (currentUser.role || '').toLowerCase();
+            const userSec = (currentUser.section || '').trim();
+            const isDeptHead = role.includes('aftersales head') || userSec === 'All Section';
+            const isSecHead = role.includes('section head');
+
+            // 1. Visibilitas Dropdown Section (Hanya Aftersales Head)
             const deptFilterWrapper = document.getElementById('wrapperDeptFilter');
             if (isDeptHead) {
                 deptFilterWrapper.classList.remove('hidden');
@@ -941,6 +955,24 @@
             } else {
                 deptFilterWrapper.classList.add('hidden');
                 deptFilterWrapper.classList.remove('flex');
+            }
+
+            // 2. Visibilitas Tombol Scope "Tim Section" vs "Tugas Saya"
+            const scopeFilterWrapper = document.getElementById('wrapperScopeFilter');
+            const badgePersonalLock = document.getElementById('badgePersonalLock');
+
+            if (isDeptHead || isSecHead) {
+                scopeFilterWrapper.classList.remove('hidden');
+                scopeFilterWrapper.classList.add('flex');
+                badgePersonalLock.classList.add('hidden');
+                badgePersonalLock.classList.remove('flex');
+            } else {
+                // Officer / Analyst / Staff: TERKUNCI HANYA BISA LIHAT TUGAS PRIBADI
+                scopeFilterWrapper.classList.add('hidden');
+                scopeFilterWrapper.classList.remove('flex');
+                badgePersonalLock.classList.remove('hidden');
+                badgePersonalLock.classList.add('flex');
+                currentScopeFilter = 'my';
             }
         }
 
@@ -958,7 +990,6 @@
                 : 'py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition';
         }
 
-        // PENGIRIMAN LOGIN MENGGUNAKAN METODE POST (BEBAS DARI 404 REDIRECT)
         async function handleLoginSubmit(e) {
             e.preventDefault();
             const u = document.getElementById('loginUsername').value.trim();
@@ -1001,7 +1032,6 @@
             }
         }
 
-        // PENGIRIMAN SIGN UP MENGGUNAKAN METODE POST (BEBAS DARI 404 REDIRECT)
         async function handleSignupSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('regName').value.trim();
@@ -1146,6 +1176,7 @@
                         else if (p.startsWith('l')) t.priority = 'Low';
 
                         if (t.dueDate) t.dueDate = String(t.dueDate).slice(0, 10);
+                        t.pic = cleanPIC(t.pic);
                         return t;
                     });
 
@@ -1162,7 +1193,7 @@
             }
         }
 
-        // HIERARCHY FILTERING LOGIC
+        // HIERARCHY PRIVACY FILTERING LOGIC
         function getFilteredTasksForActiveMonth() {
             const curYear = activeDate.getFullYear();
             const curMonth = activeDate.getMonth() + 1;
@@ -1183,29 +1214,40 @@
                     (task.note && task.note.toLowerCase().includes(currentSearchQuery.toLowerCase())) ||
                     (task.pic && task.pic.toLowerCase().includes(currentSearchQuery.toLowerCase()));
 
+                // PENEGAKAN HAK AKSES DAN PRIVASI BERTINGKAT
                 let matchesHierarchy = true;
                 if (currentUser) {
-                    const isDeptHead = currentUser.role === 'Aftersales Head' || currentUser.section === 'All Section';
-                    const isSecHead = currentUser.role === 'Section Head';
+                    const role = (currentUser.role || '').toLowerCase();
+                    const userSec = (currentUser.section || '').trim();
+                    const userName = (currentUser.name || '').toLowerCase().trim();
+                    const userUname = (currentUser.username || '').toLowerCase().trim();
+
+                    const isDeptHead = role.includes('aftersales head') || userSec === 'All Section';
+                    const isSecHead = role.includes('section head');
 
                     if (isDeptHead) {
+                        // 1. Dept Head: Bisa memantau semua atau memilih dropdown section
                         if (selectedDept !== 'all' && task.section && task.section !== selectedDept) {
                             matchesHierarchy = false;
                         }
+                        if (currentScopeFilter === 'my') {
+                            const p = String(task.pic || '').toLowerCase();
+                            if (!p.includes(userName) && !p.includes(userUname)) matchesHierarchy = false;
+                        }
                     } else if (isSecHead) {
-                        if (task.section && task.section !== currentUser.section) {
+                        // 2. Section Head: Hanya memantau tugas anggota di bawah Section-nya
+                        if (task.section && task.section !== userSec) {
                             matchesHierarchy = false;
+                        }
+                        if (currentScopeFilter === 'my') {
+                            const p = String(task.pic || '').toLowerCase();
+                            if (!p.includes(userName) && !p.includes(userUname)) matchesHierarchy = false;
                         }
                     } else {
-                        if (task.section && task.section !== currentUser.section) {
-                            matchesHierarchy = false;
-                        }
-                    }
-
-                    if (currentScopeFilter === 'my') {
-                        const pic = String(task.pic || '').toLowerCase();
-                        const me = String(currentUser.name || '').toLowerCase();
-                        if (!pic.includes(me)) {
+                        // 3. Officer, Analyst, Staff: HANYA BISA MELIHAT TUGAS PRIBADI (TIDAK BISA INTIP LAINNYA)
+                        const p = String(task.pic || '').toLowerCase();
+                        const isMyTask = p.includes(userName) || p.includes(userUname);
+                        if (!isMyTask) {
                             matchesHierarchy = false;
                         }
                     }
@@ -1338,9 +1380,10 @@
                     `;
                 }
 
-                const picChip = task.pic ? `
+                const cleanedPIC = cleanPIC(task.pic);
+                const picChip = cleanedPIC ? `
                     <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md flex items-center gap-1">
-                        <i class="fa-solid fa-user text-[9px] text-indigo-500"></i> ${task.pic}
+                        <i class="fa-solid fa-user text-[9px] text-indigo-500"></i> ${cleanedPIC}
                     </span>
                 ` : '';
 
@@ -1461,7 +1504,7 @@
                         ${task.note ? `<div class="text-[10px] text-slate-400 line-clamp-1">${task.note}</div>` : ''}
                     </td>
                     <td class="py-2.5 pr-2">
-                        <span class="font-bold text-slate-700 dark:text-slate-300 block">${task.pic || '-'}</span>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 block">${cleanPIC(task.pic) || '-'}</span>
                         <span class="text-[10px] text-slate-400 block">${task.section || '-'}</span>
                     </td>
                     <td class="py-2.5 pr-2">${getTypeBadge(task.type, task.frequency, task.streak)}</td>
@@ -1623,7 +1666,7 @@
                             </button>
                             <div>
                                 <span class="${isDone ? 'line-through text-slate-400' : 'font-semibold text-slate-800 dark:text-slate-200'} block">${task.title}</span>
-                                <span class="text-[10px] text-slate-400">${task.pic || '-'} • ${task.section || '-'}</span>
+                                <span class="text-[10px] text-slate-400">${cleanPIC(task.pic) || '-'} • ${task.section || '-'}</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5">
@@ -1681,7 +1724,7 @@
                     `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${String(task.priority || 'MED').toUpperCase()}] ${task.title || 'Aktivitas'}`
                 );
                 
-                let description = `Section: ${task.section || '-'}\nPIC: ${task.pic || '-'}\nPrioritas: ${task.priority || 'Medium'}\n`;
+                let description = `Section: ${task.section || '-'}\nPIC: ${cleanPIC(task.pic) || '-'}\nPrioritas: ${task.priority || 'Medium'}\n`;
                 if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
                     description += `Milestones:\n` + task.subtasks.map(s => `- [${s.done ? 'x' : ' '}] ${s.title || ''}`).join('\n') + '\n';
                 }
@@ -1689,7 +1732,7 @@
                 const encodedDesc = encodeURIComponent(description);
 
                 let dateStr = String(task.dueDate || '').slice(0, 10);
-                if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || dateStr.includes('1899')) {
                     dateStr = new Date().toISOString().slice(0, 10);
                 }
 
@@ -1731,14 +1774,15 @@
             ];
 
             tasksToExport.forEach(task => {
-                const dateStr = String(task.dueDate || '').slice(0, 10) || new Date().toISOString().split('T')[0];
+                let dateStr = String(task.dueDate || '').slice(0, 10);
+                if (!dateStr || dateStr.includes('1899')) dateStr = new Date().toISOString().split('T')[0];
                 const timeStr = task.dueTime || '09:00';
                 const start = new Date(`${dateStr}T${timeStr}:00`);
                 const end = new Date(start.getTime() + (task.estHours || 1) * 60 * 60 * 1000);
                 const now = new Date();
 
                 const title = `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${task.priority}] ${task.title}`;
-                let desc = `Section: ${task.section || '-'}\\nPIC: ${task.pic || '-'}\\nPrioritas: ${task.priority}\\nCatatan: ${task.note || '-'}`;
+                let desc = `Section: ${task.section || '-'}\\nPIC: ${cleanPIC(task.pic) || '-'}\\nPrioritas: ${task.priority}\\nCatatan: ${task.note || '-'}`;
 
                 ics.push('BEGIN:VEVENT');
                 ics.push(`UID:${task.id}-${start.getTime()}@aftersales.tracker`);
@@ -1789,7 +1833,7 @@
         }
 
         function getDueDateStatus(dueDateStr, dueTimeStr) {
-            if (!dueDateStr) return { label: 'Tanpa Tanggal', class: 'text-slate-400 bg-slate-100 dark:bg-slate-800' };
+            if (!dueDateStr || dueDateStr.includes('1899')) return { label: 'Tanpa Batas', class: 'text-slate-400 bg-slate-100 dark:bg-slate-800' };
 
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -1958,7 +2002,7 @@
 
             document.getElementById('taskFrequency').value = task.frequency || 'Mingguan';
             document.getElementById('taskTitle').value = task.title;
-            document.getElementById('taskPIC').value = task.pic || '';
+            document.getElementById('taskPIC').value = cleanPIC(task.pic) || '';
             document.getElementById('taskSection').value = task.section || 'GR Business & Retention';
             document.getElementById('taskPriority').value = task.priority;
             document.getElementById('taskStatus').value = task.status;
@@ -1967,6 +2011,12 @@
             document.getElementById('taskEstHours').value = task.estHours || 1;
             document.getElementById('taskActualHours').value = task.actualHours || 0;
             document.getElementById('taskNote').value = task.note || '';
+
+            // Kontrol Readonly saat Edit (untuk staf biasa, tidak bisa lempar ke orang lain)
+            const role = (currentUser?.role || '').toLowerCase();
+            const isHead = role.includes('head');
+            document.getElementById('taskPIC').readOnly = !isHead;
+            document.getElementById('taskSection').disabled = !isHead;
 
             const container = document.getElementById('subtasksContainer');
             container.innerHTML = '';
@@ -1988,9 +2038,14 @@
             toggleFrequencyWrapper('repetisi');
 
             if (currentUser) {
+                const role = (currentUser.role || '').toLowerCase();
+                const isHead = role.includes('head');
                 document.getElementById('taskPIC').value = currentUser.name || '';
+                document.getElementById('taskPIC').readOnly = !isHead;
+
                 if (currentUser.section !== 'All Section') {
                     document.getElementById('taskSection').value = currentUser.section;
+                    document.getElementById('taskSection').disabled = !isHead;
                 }
             }
 
@@ -2018,9 +2073,14 @@
             toggleFrequencyWrapper('repetisi');
 
             if (currentUser) {
+                const role = (currentUser.role || '').toLowerCase();
+                const isHead = role.includes('head');
                 document.getElementById('taskPIC').value = currentUser.name || '';
+                document.getElementById('taskPIC').readOnly = !isHead;
+
                 if (currentUser.section !== 'All Section') {
                     document.getElementById('taskSection').value = currentUser.section;
+                    document.getElementById('taskSection').disabled = !isHead;
                 }
             }
 
@@ -2064,7 +2124,7 @@
                     task.type = type;
                     task.frequency = frequency;
                     task.title = title;
-                    task.pic = pic;
+                    task.pic = cleanPIC(pic);
                     task.section = section;
                     task.priority = priority;
                     task.status = status;
@@ -2083,7 +2143,7 @@
                     frequency,
                     streak: 0,
                     title,
-                    pic: pic || (currentUser ? currentUser.name : ''),
+                    pic: cleanPIC(pic) || (currentUser ? currentUser.name : ''),
                     section: section || (currentUser ? currentUser.section : 'GR Business & Retention'),
                     priority,
                     status,
@@ -2102,6 +2162,7 @@
             closeModal();
         });
 
+        // SCOPE & VIEW TOGGLERS
         function setScopeFilter(scope) {
             currentScopeFilter = scope;
             const btnSec = document.getElementById('btnScopeSection');
@@ -2189,11 +2250,12 @@
             await pullDataFromCloudSilently();
         });
 
+        // EXPORT HANDLERS
         document.getElementById('btnExportCSV').addEventListener('click', () => {
             const filtered = getFilteredTasksForActiveMonth();
             let csv = "ID,Tipe,Judul,PIC,Section,Prioritas,DueDate,DueTime,Status,EstHours,ActualHours,Note\n";
             filtered.forEach(t => {
-                csv += `"${t.id}","${t.type}","${t.title.replace(/"/g, '""')}","${t.pic || ''}","${t.section || ''}","${t.priority}","${t.dueDate}","${t.dueTime || ''}","${t.status}",${t.estHours || 0},${t.actualHours || 0},"${(t.note || '').replace(/"/g, '""')}"\n`;
+                csv += `"${t.id}","${t.type}","${t.title.replace(/"/g, '""')}","${cleanPIC(t.pic)}","${t.section || ''}","${t.priority}","${t.dueDate}","${t.dueTime || ''}","${t.status}",${t.estHours || 0},${t.actualHours || 0},"${(t.note || '').replace(/"/g, '""')}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -2267,7 +2329,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="p-2 font-medium">${t.title}</td>
-                    <td class="p-2 font-semibold">${t.pic || '-'}</td>
+                    <td class="p-2 font-semibold">${cleanPIC(t.pic) || '-'}</td>
                     <td class="p-2">${t.section || '-'}</td>
                     <td class="p-2 uppercase font-semibold text-[10px]">${t.type}</td>
                     <td class="p-2">${t.priority}</td>
