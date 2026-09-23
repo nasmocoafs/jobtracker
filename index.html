@@ -214,6 +214,7 @@
                     </button>
                 </div>
 
+                <!-- Add Task Button -->
                 <button id="btnOpenModal" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition">
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span>Tugas Baru</span>
@@ -315,7 +316,7 @@
                             class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100">
                     </div>
 
-                    <!-- Filter Hirarki Section (Khusus Aftersales Head) -->
+                    <!-- Dropdown Filter Section (Hanya Aftersales Head) -->
                     <div id="wrapperDeptFilter" class="hidden items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
                         <span class="text-[10px] text-slate-500 ml-1">Section:</span>
                         <select id="filterSectionSelect" onchange="render()" class="px-2 py-1 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg border-0 focus:outline-none font-bold text-xs">
@@ -336,7 +337,7 @@
                         </button>
                     </div>
 
-                    <!-- Badge Kunci Tugas Pribadi (Muncul untuk Anggota Biasa) -->
+                    <!-- Badge Kunci Tugas Pribadi (Muncul untuk Officer/Analyst/Staff) -->
                     <div id="badgePersonalLock" class="hidden items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs rounded-xl border border-indigo-200/80 dark:border-indigo-900">
                         <i class="fa-solid fa-lock text-[10px]"></i> Tugas Pribadi
                     </div>
@@ -592,7 +593,7 @@
 
     </main>
 
-    <!-- TASK MODAL -->
+    <!-- TASK MODAL DIALOG -->
     <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
         <div class="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] flex flex-col">
             
@@ -911,7 +912,7 @@
         let autoSaveTimer = null;
         let isSavingToCloud = false;
 
-        // CLEAN SANITIZER: MENCEGAH TANGGAL KOTOR TERTAMPIL PADA PIC / DUE DATE
+        // SANITIZER: BERSIHKAN TANGGAL KOTOR DI KOLOM PIC
         function cleanPIC(picVal) {
             if (!picVal) return '';
             let s = String(picVal).trim();
@@ -919,6 +920,67 @@
                 return '';
             }
             return s;
+        }
+
+        // ===================================================================
+        // RECURRING LOGIC: HITUNG TANGGAL JATUH TEMPO SIKLUS BERIKUTNYA
+        // ===================================================================
+        function calculateNextCycleDate(dateStr, frequency) {
+            let baseDate = new Date();
+            if (dateStr && !String(dateStr).includes('1899')) {
+                const parts = String(dateStr).slice(0, 10).split('-').map(Number);
+                if (parts.length === 3 && !isNaN(parts[0])) {
+                    baseDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                }
+            }
+            const freq = frequency || 'Mingguan';
+            if (freq === 'Harian') {
+                baseDate.setDate(baseDate.getDate() + 1);
+            } else if (freq === 'Hari Kerja') {
+                const day = baseDate.getDay();
+                if (day === 5) baseDate.setDate(baseDate.getDate() + 3); // Jumat -> Senin
+                else if (day === 6) baseDate.setDate(baseDate.getDate() + 2); // Sabtu -> Senin
+                else baseDate.setDate(baseDate.getDate() + 1);
+            } else if (freq === 'Mingguan') {
+                baseDate.setDate(baseDate.getDate() + 7);
+            } else if (freq === 'Bulanan') {
+                baseDate.setMonth(baseDate.getMonth() + 1);
+            } else {
+                baseDate.setDate(baseDate.getDate() + 7);
+            }
+
+            const y = baseDate.getFullYear();
+            const m = String(baseDate.getMonth() + 1).padStart(2, '0');
+            const d = String(baseDate.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // OTOMATIS MEMBUAT TUGAS BARU DI SIKLUS BERIKUTNYA
+        function triggerRecurringCycle(task) {
+            if (task.type !== 'repetisi') return;
+
+            const nextDueDate = calculateNextCycleDate(task.dueDate, task.frequency || 'Mingguan');
+            
+            const nextTask = {
+                id: String(Date.now() + Math.random().toString(36).substr(2, 4)),
+                type: 'repetisi',
+                frequency: task.frequency || 'Mingguan',
+                streak: (task.streak || 0),
+                title: task.title,
+                pic: cleanPIC(task.pic) || (currentUser ? currentUser.name : ''),
+                section: task.section || (currentUser ? currentUser.section : 'GR Business & Retention'),
+                priority: task.priority || 'Medium',
+                status: 'todo', // Kembali belum mulai di siklus baru
+                dueDate: nextDueDate, // Tanggal siklus berikutnya (besok / minggu depan / bulan depan)
+                dueTime: task.dueTime || '17:00',
+                estHours: task.estHours || 1,
+                actualHours: 0,
+                subtasks: (task.subtasks || []).map(st => ({ title: st.title || st.text, done: false })),
+                note: task.note || ''
+            };
+
+            tasks.unshift(nextTask);
+            showToast(`Siklus baru terjadwal (${nextDueDate})! 🔥`);
         }
 
         // AUTHENTICATION & SESSION MANAGEMENT
@@ -947,7 +1009,7 @@
             const isDeptHead = role.includes('aftersales head') || userSec === 'All Section';
             const isSecHead = role.includes('section head');
 
-            // 1. Visibilitas Dropdown Section (Hanya Aftersales Head)
+            // 1. Dropdown Filter Section (Hanya Aftersales Head)
             const deptFilterWrapper = document.getElementById('wrapperDeptFilter');
             if (isDeptHead) {
                 deptFilterWrapper.classList.remove('hidden');
@@ -957,11 +1019,12 @@
                 deptFilterWrapper.classList.remove('flex');
             }
 
-            // 2. Visibilitas Tombol Scope "Tim Section" vs "Tugas Saya"
+            // 2. Kontrol Hak Akses Visibilitas
             const scopeFilterWrapper = document.getElementById('wrapperScopeFilter');
             const badgePersonalLock = document.getElementById('badgePersonalLock');
 
             if (isDeptHead || isSecHead) {
+                // Section Head & Dept Head bisa toggle pantau tim vs pribadi
                 scopeFilterWrapper.classList.remove('hidden');
                 scopeFilterWrapper.classList.add('flex');
                 badgePersonalLock.classList.add('hidden');
@@ -990,6 +1053,7 @@
                 : 'py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition';
         }
 
+        // PENGIRIMAN LOGIN VIA METODE POST (BEBAS DARI 404)
         async function handleLoginSubmit(e) {
             e.preventDefault();
             const u = document.getElementById('loginUsername').value.trim();
@@ -1032,6 +1096,7 @@
             }
         }
 
+        // PENGIRIMAN SIGN UP VIA METODE POST
         async function handleSignupSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('regName').value.trim();
@@ -1185,6 +1250,9 @@
                     } catch (e) {}
                     render();
                     updateCloudIndicator('synced');
+                } else if (tasks.length > 0) {
+                    // Jika Sheet kosong tapi di browser lokal ada tugas, langsung upload ke Sheet
+                    pushDataToCloudSilently();
                 } else {
                     updateCloudIndicator('synced');
                 }
@@ -1929,6 +1997,7 @@
             }, 3000);
         }
 
+        // AKSI CENTANG SELESAI + OTOMASI SIKLUS BERIKUTNYA
         window.quickToggleDone = function(id) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
@@ -1936,7 +2005,10 @@
             if (task.status !== 'done' && task.status !== 'selesai') {
                 task.status = 'done';
                 if (task.subtasks) task.subtasks.forEach(st => st.done = true);
-                if (task.type === 'repetisi') task.streak = (task.streak || 0) + 1;
+                if (task.type === 'repetisi') {
+                    task.streak = (task.streak || 0) + 1;
+                    triggerRecurringCycle(task); // Otomatis jadwalkan siklus berikutnya!
+                }
                 playCompletionChime();
             } else {
                 task.status = 'todo';
@@ -1945,12 +2017,14 @@
             triggerDebouncedAutoSave();
         };
 
+        // AKSI GANTI STATUS DROPDOWN + OTOMASI SIKLUS BERIKUTNYA
         window.updateTaskStatus = function(id, newStatus) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
             task.status = newStatus;
             if ((newStatus === 'done' || newStatus === 'selesai') && task.type === 'repetisi') {
                 task.streak = (task.streak || 0) + 1;
+                triggerRecurringCycle(task); // Otomatis jadwalkan siklus berikutnya!
                 playCompletionChime();
             }
             triggerDebouncedAutoSave();
@@ -2012,7 +2086,7 @@
             document.getElementById('taskActualHours').value = task.actualHours || 0;
             document.getElementById('taskNote').value = task.note || '';
 
-            // Kontrol Readonly saat Edit (untuk staf biasa, tidak bisa lempar ke orang lain)
+            // Kontrol Hak Akses Form
             const role = (currentUser?.role || '').toLowerCase();
             const isHead = role.includes('head');
             document.getElementById('taskPIC').readOnly = !isHead;
@@ -2021,7 +2095,7 @@
             const container = document.getElementById('subtasksContainer');
             container.innerHTML = '';
             if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
-                task.subtasks.forEach(st => addSubtaskInputRow(st.title, st.done));
+                task.subtasks.forEach(st => addSubtaskInputRow(st.title || st.text, st.done));
             }
 
             document.getElementById('taskModal').classList.remove('hidden');
