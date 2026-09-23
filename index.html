@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job & Activity Tracker Enterprise</title>
+    <title>Aftersales Job & Activity Tracker Enterprise</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome 6 Icons -->
@@ -52,10 +52,83 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
 
+    <!-- AUTH OVERLAY: LOGIN & REGISTRASI MANDIRI (SIGN UP) -->
+    <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-md shadow-indigo-500/20 mb-2">
+                    <i class="fa-solid fa-users-viewfinder"></i>
+                </div>
+                <h2 class="text-base font-extrabold text-slate-900 dark:text-white">Aftersales Activity Portal</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Toyota Nasmoco Aftersales Division</p>
+            </div>
+
+            <!-- Auth Switch Tabs -->
+            <div class="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-4 text-xs font-bold text-center">
+                <button type="button" onclick="switchAuthTab('login')" id="tabBtnLogin" class="py-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs transition">Masuk</button>
+                <button type="button" onclick="switchAuthTab('signup')" id="tabBtnSignup" class="py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition">Daftar Akun</button>
+            </div>
+
+            <!-- FORM 1: LOGIN -->
+            <form id="formLogin" onsubmit="handleLoginSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username</label>
+                    <input type="text" id="loginUsername" required placeholder="Username Anda" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                </div>
+                <p id="loginError" class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold hidden text-center"></p>
+                <button type="submit" id="btnLoginSubmit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-500/20 transition">Masuk ke Sistem</button>
+            </form>
+
+            <!-- FORM 2: SIGN UP (PENDAFTARAN TIM BARU) -->
+            <form id="formSignup" onsubmit="handleSignupSubmit(event)" class="space-y-2.5 text-xs hidden">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
+                    <input type="text" id="regName" required placeholder="Nama lengkap Anda" class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username</label>
+                        <input type="text" id="regUsername" required placeholder="Username baru" class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+                        <input type="password" id="regPassword" required placeholder="Kata sandi" class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-900 dark:text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Section</label>
+                    <select id="regSection" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white">
+                        <option value="GR Business & Retention">GR Business & Retention</option>
+                        <option value="BP Business, Retention & Part">BP Business, Retention & Part</option>
+                        <option value="Quality Process & 2nd Channel">Quality Process & 2nd Channel</option>
+                        <option value="All Section">Semua Section (Khusus Dept Head)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role / Jabatan</label>
+                    <select id="regRole" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white">
+                        <option value="Staff">Staff</option>
+                        <option value="Analyst">Analyst</option>
+                        <option value="Officer">Officer</option>
+                        <option value="Section Head">Section Head</option>
+                        <option value="Aftersales Head">Aftersales Head</option>
+                    </select>
+                </div>
+                <p id="signupError" class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold hidden text-center"></p>
+                <button type="submit" id="btnSignupSubmit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md transition">Daftar Sekarang</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- HEADER NAVIGATION -->
     <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
             
-            <!-- Brand & Info -->
+            <!-- Brand & Division Info -->
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
                     <i class="fa-solid fa-list-check text-lg"></i>
@@ -64,11 +137,11 @@
                     <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                         Job & Activity Tracker <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300">Live Sync</span>
                     </h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">1. Repetisi & 2. Project • Auto Google Sheets & Calendar</p>
+                    <p id="headerSectionInfo" class="text-xs text-slate-500 dark:text-slate-400">Toyota Nasmoco Aftersales Division</p>
                 </div>
             </div>
 
-            <!-- Month Navigator (Monthly Progress Archiving) -->
+            <!-- Month Navigator -->
             <div class="flex items-center bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
                 <button id="btnPrevGlobalMonth" class="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition" title="Bulan Sebelumnya">
                     <i class="fa-solid fa-chevron-left text-xs"></i>
@@ -85,7 +158,7 @@
                 </button>
             </div>
 
-            <!-- Action Controls & Cloud Sync Indicator -->
+            <!-- Action Controls & User Profile -->
             <div class="flex items-center gap-2">
                 <!-- Auto-Sync Status Badge -->
                 <button id="btnOpenCloudModal" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-2 border border-slate-200/80 dark:border-slate-700" title="Status Sinkronisasi Google Sheets">
@@ -99,7 +172,7 @@
                     <span id="headerTimerBadge" class="font-bold">25:00</span>
                 </button>
 
-                <!-- Tools & Report Dropdown -->
+                <!-- Menu Dropdown -->
                 <div class="relative group">
                     <button class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
                         <i class="fa-solid fa-ellipsis-vertical text-slate-500"></i>
@@ -134,10 +207,22 @@
                     <i class="fa-regular fa-sun hidden dark:inline text-amber-400 text-xs"></i>
                 </button>
 
-                <!-- Add New Task Button -->
+                <!-- Profile User Badge & Logout -->
+                <div class="bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 px-2.5 py-1 rounded-xl flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold text-[10px] flex items-center justify-center" id="userAvatar">U</div>
+                    <div class="text-left hidden sm:block">
+                        <span id="userNameBadge" class="text-xs font-bold text-slate-800 dark:text-slate-200 block leading-tight">-</span>
+                        <span id="userRoleBadge" class="text-[9px] text-slate-400 font-semibold block uppercase leading-tight">-</span>
+                    </div>
+                    <button onclick="handleLogout()" title="Keluar Akun" class="text-slate-400 hover:text-rose-600 ml-1 text-xs">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </button>
+                </div>
+
+                <!-- Add Task Button -->
                 <button id="btnOpenModal" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition">
                     <i class="fa-solid fa-plus text-xs"></i>
-                    <span>Aktivitas Baru</span>
+                    <span>Tugas Baru</span>
                 </button>
             </div>
         </div>
@@ -166,7 +251,7 @@
                 </div>
             </div>
 
-            <!-- Metric 2: Repetisi (Routines & Streak) -->
+            <!-- Metric 2: Repetisi -->
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
@@ -186,7 +271,7 @@
                 </div>
             </div>
 
-            <!-- Metric 3: Ad-hoc / Project Tracker -->
+            <!-- Metric 3: Ad-hoc / Project -->
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
@@ -229,16 +314,37 @@
 
         </section>
 
-        <!-- Toolbar & View Switchers -->
+        <!-- TOOLBAR: FILTERS & VIEWS -->
         <section id="appToolbar" class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
             <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
                 
                 <!-- Search & Filters -->
                 <div class="flex flex-wrap items-center gap-2 flex-1">
-                    <div class="relative w-full sm:w-56">
+                    <div class="relative w-full sm:w-48">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" id="searchInput" placeholder="Cari aktivitas, catatan..." 
+                        <input type="text" id="searchInput" placeholder="Cari aktivitas atau PIC..." 
                             class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100">
+                    </div>
+
+                    <!-- Filter Hirarki Section (Khusus Aftersales Head) -->
+                    <div id="wrapperDeptFilter" class="hidden items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                        <span class="text-[10px] text-slate-500 ml-1">Section:</span>
+                        <select id="filterSectionSelect" onchange="render()" class="px-2 py-1 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg border-0 focus:outline-none font-bold text-xs">
+                            <option value="all">Semua Section</option>
+                            <option value="GR Business & Retention">GR Business & Retention</option>
+                            <option value="BP Business, Retention & Part">BP Business, Retention & Part</option>
+                            <option value="Quality Process & 2nd Channel">Quality Process & 2nd Channel</option>
+                        </select>
+                    </div>
+
+                    <!-- Scope Filter: Tim Section vs Tugas Saya -->
+                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                        <button onclick="setScopeFilter('section')" id="btnScopeSection" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold">
+                            Tim Section
+                        </button>
+                        <button onclick="setScopeFilter('my')" id="btnScopeMy" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                            Tugas Saya
+                        </button>
                     </div>
 
                     <!-- Category Type Filter Tabs -->
@@ -247,10 +353,10 @@
                             Semua Tipe
                         </button>
                         <button data-type-filter="repetisi" class="type-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                            <i class="fa-solid fa-arrows-rotate text-[10px] mr-1 text-blue-500"></i> 1. Repetisi
+                            <i class="fa-solid fa-arrows-rotate text-[10px] mr-1 text-blue-500"></i> Repetisi
                         </button>
                         <button data-type-filter="adhoc" class="type-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                            <i class="fa-solid fa-diagram-project text-[10px] mr-1 text-purple-500"></i> 2. Ad-hoc
+                            <i class="fa-solid fa-diagram-project text-[10px] mr-1 text-purple-500"></i> Ad-hoc
                         </button>
                     </div>
 
@@ -263,7 +369,7 @@
                     </div>
                 </div>
 
-                <!-- 5 Interactive Views -->
+                <!-- 5 Interactive Views Switcher -->
                 <div id="viewSwitcherContainer" class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold overflow-x-auto">
                     <button id="viewKanbanBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs whitespace-nowrap">
                         <i class="fa-solid fa-table-columns text-indigo-500"></i>
@@ -290,9 +396,8 @@
             </div>
         </section>
 
-        <!-- View 1: Kanban Board -->
+        <!-- VIEW 1: KANBAN BOARD -->
         <section id="kanbanView" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-            <!-- Todo Column -->
             <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
@@ -304,7 +409,6 @@
                 <div id="colTodo" class="space-y-3 flex-1"></div>
             </div>
 
-            <!-- In Progress Column -->
             <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
@@ -316,7 +420,6 @@
                 <div id="colProgress" class="space-y-3 flex-1"></div>
             </div>
 
-            <!-- Done Column -->
             <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
@@ -329,7 +432,7 @@
             </div>
         </section>
 
-        <!-- View 2: Agenda Table -->
+        <!-- VIEW 2: AGENDA LIST TABLE -->
         <section id="listView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-4 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -337,10 +440,11 @@
                         <tr class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2.5">
                             <th class="pb-2.5 pl-2 w-8">Status</th>
                             <th class="pb-2.5">Aktivitas & Subtugas</th>
-                            <th class="pb-2.5">Tipe & Siklus</th>
+                            <th class="pb-2.5">PIC & Section</th>
+                            <th class="pb-2.5">Tipe</th>
                             <th class="pb-2.5">Prioritas</th>
                             <th class="pb-2.5">Batas Waktu</th>
-                            <th class="pb-2.5">Durasi (Est/Aktual)</th>
+                            <th class="pb-2.5">Durasi</th>
                             <th class="pb-2.5">Sinkron HP</th>
                             <th class="pb-2.5 text-right pr-2">Aksi</th>
                         </tr>
@@ -348,12 +452,12 @@
                     <tbody id="listTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/70"></tbody>
                 </table>
                 <div id="listEmptyMessage" class="hidden py-12 text-center text-xs text-slate-400">
-                    Tidak ada aktivitas yang sesuai dengan filter bulan ini.
+                    Tidak ada aktivitas yang sesuai dengan filter saat ini.
                 </div>
             </div>
         </section>
 
-        <!-- View 3: Visual Calendar Grid -->
+        <!-- VIEW 3: VISUAL CALENDAR GRID -->
         <section id="calendarView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-4 sm:p-5">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
                 <div class="flex items-center gap-2">
@@ -373,9 +477,8 @@
             <div id="calendarGrid" class="grid grid-cols-7 border-l border-t border-slate-200/60 dark:border-slate-800"></div>
         </section>
 
-        <!-- View 4: Eisenhower Matrix -->
+        <!-- VIEW 4: EISENHOWER MATRIX -->
         <section id="matrixView" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Q1: Urgent & Important -->
             <div class="bg-rose-50/40 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 rounded-2xl p-4 min-h-[300px]">
                 <div class="flex items-center justify-between pb-2 border-b border-rose-200/60 dark:border-rose-900/60 mb-3">
                     <div>
@@ -389,7 +492,6 @@
                 <div id="quadrantQ1" class="space-y-2"></div>
             </div>
 
-            <!-- Q2: Not Urgent but Important -->
             <div class="bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl p-4 min-h-[300px]">
                 <div class="flex items-center justify-between pb-2 border-b border-indigo-200/60 dark:border-indigo-900/60 mb-3">
                     <div>
@@ -403,7 +505,6 @@
                 <div id="quadrantQ2" class="space-y-2"></div>
             </div>
 
-            <!-- Q3: Urgent but Not Important -->
             <div class="bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 min-h-[300px]">
                 <div class="flex items-center justify-between pb-2 border-b border-amber-200/60 dark:border-amber-900/60 mb-3">
                     <div>
@@ -417,7 +518,6 @@
                 <div id="quadrantQ3" class="space-y-2"></div>
             </div>
 
-            <!-- Q4: Not Urgent & Not Important -->
             <div class="bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 min-h-[300px]">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800 mb-3">
                     <div>
@@ -432,10 +532,9 @@
             </div>
         </section>
 
-        <!-- View 5: Analytics & Workload Breakdown -->
+        <!-- VIEW 5: ANALYTICS & WORKLOAD BREAKDOWN -->
         <section id="analyticsView" class="hidden space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
                     <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-chart-column text-indigo-500"></i> Distribusi Kategori & Status
@@ -447,8 +546,8 @@
                                 <span id="analyticRepetisiText" class="text-slate-500">0 tugas</span>
                             </div>
                             <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
-                                <div id="analyticRepetisiDoneBar" class="bg-blue-600 h-full transition-all duration-500" style="width: 0%" title="Selesai"></div>
-                                <div id="analyticRepetisiPendingBar" class="bg-blue-300 dark:bg-blue-900/60 h-full transition-all duration-500" style="width: 0%" title="Belum Selesai"></div>
+                                <div id="analyticRepetisiDoneBar" class="bg-blue-600 h-full transition-all duration-500" style="width: 0%"></div>
+                                <div id="analyticRepetisiPendingBar" class="bg-blue-300 dark:bg-blue-900/60 h-full transition-all duration-500" style="width: 0%"></div>
                             </div>
                         </div>
 
@@ -458,14 +557,14 @@
                                 <span id="analyticAdhocText" class="text-slate-500">0 tugas</span>
                             </div>
                             <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
-                                <div id="analyticAdhocDoneBar" class="bg-purple-600 h-full transition-all duration-500" style="width: 0%" title="Selesai"></div>
-                                <div id="analyticAdhocPendingBar" class="bg-purple-300 dark:bg-purple-900/60 h-full transition-all duration-500" style="width: 0%" title="Belum Selesai"></div>
+                                <div id="analyticAdhocDoneBar" class="bg-purple-600 h-full transition-all duration-500" style="width: 0%"></div>
+                                <div id="analyticAdhocPendingBar" class="bg-purple-300 dark:bg-purple-900/60 h-full transition-all duration-500" style="width: 0%"></div>
                             </div>
                         </div>
 
                         <div class="pt-2 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-100 dark:border-slate-800">
-                            <span><span class="inline-block w-2.5 h-2.5 bg-blue-600 rounded-sm mr-1"></span> Warna Gelap: Selesai</span>
-                            <span><span class="inline-block w-2.5 h-2.5 bg-blue-300 dark:bg-blue-900 rounded-sm mr-1"></span> Warna Terang: Tertunda/Proses</span>
+                            <span><span class="inline-block w-2.5 h-2.5 bg-blue-600 rounded-sm mr-1"></span> Selesai</span>
+                            <span><span class="inline-block w-2.5 h-2.5 bg-blue-300 dark:bg-blue-900 rounded-sm mr-1"></span> Tertunda / Proses</span>
                         </div>
                     </div>
                 </div>
@@ -494,13 +593,12 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
 
     </main>
 
-    <!-- Task Modal Dialog -->
+    <!-- TASK MODAL DIALOG (TAMBAH / EDIT TUGAS DENGAN PIC & SECTION) -->
     <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
         <div class="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] flex flex-col">
             
@@ -551,6 +649,23 @@
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskTitle">Judul Aktivitas *</label>
                     <input type="text" id="taskTitle" required placeholder="Contoh: Audit Pembukuan / Follow Up Klien Prioritas" 
                         class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white transition">
+                </div>
+
+                <!-- PIC & Section -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskPIC">PIC (Penanggung Jawab)</label>
+                        <input type="text" id="taskPIC" placeholder="Nama PIC" 
+                            class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskSection">Section Terkait</label>
+                        <select id="taskSection" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white">
+                            <option value="GR Business & Retention">GR Business & Retention</option>
+                            <option value="BP Business, Retention & Part">BP Business, Retention & Part</option>
+                            <option value="Quality Process & 2nd Channel">Quality Process & 2nd Channel</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Priority & Status -->
@@ -634,7 +749,7 @@
         </div>
     </div>
 
-    <!-- Cloud Auto-Sync Config Modal -->
+    <!-- CLOUD CONFIG MODAL -->
     <div id="cloudModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
         <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -676,7 +791,7 @@
         </div>
     </div>
 
-    <!-- Pomodoro Timer Modal -->
+    <!-- POMODORO TIMER MODAL -->
     <div id="pomodoroModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 text-center space-y-4">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
@@ -688,7 +803,7 @@
 
             <div class="py-3">
                 <div id="timerDisplay" class="text-5xl font-black text-indigo-600 dark:text-indigo-400 tracking-wider">25:00</div>
-                <p id="timerActiveTaskTitle" class="text-xs text-slate-500 dark:text-slate-400 mt-2 truncate">Sesi Fokus Bekerja</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Sesi Fokus Bekerja</p>
             </div>
 
             <div class="flex items-center justify-center gap-2">
@@ -702,7 +817,7 @@
         </div>
     </div>
 
-    <!-- Executive Report Print Modal -->
+    <!-- EXECUTIVE REPORT PRINT MODAL -->
     <div id="execReportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs hidden overflow-y-auto">
         <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 my-auto">
             <div class="flex items-center justify-between border-b pb-4 dark:border-slate-800 no-print">
@@ -752,6 +867,8 @@
                         <thead class="bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase">
                             <tr>
                                 <th class="p-2">Judul Aktivitas</th>
+                                <th class="p-2">PIC</th>
+                                <th class="p-2">Section</th>
                                 <th class="p-2">Tipe</th>
                                 <th class="p-2">Prioritas</th>
                                 <th class="p-2">Due Date</th>
@@ -765,7 +882,7 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- FLOATING TOAST NOTIFICATION -->
     <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
         <div class="bg-slate-900 dark:bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-xs font-medium">
             <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
@@ -782,66 +899,12 @@
         // Google Apps Script Web App URL aktif
         const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwILTxSMsoiiaUX905-ExaLZ_aSPYIM-R8NyE2HfWMOEvDrH8ZOdqNsoJaDkdfg1D8K/exec';
 
-        // Initial Seed Tasks
-        const INITIAL_SEED_TASKS = [
-            {
-                id: 'task-101',
-                type: 'repetisi',
-                frequency: 'Harian',
-                streak: 4,
-                title: 'Daily Standup & Cek Orderan Baru',
-                priority: 'High',
-                dueDate: new Date().toISOString().split('T')[0],
-                dueTime: '09:00',
-                status: 'inprogress',
-                estHours: 1,
-                actualHours: 0.5,
-                subtasks: [
-                    { id: 'st-1', title: 'Review tiket prioritas', done: true },
-                    { id: 'st-2', title: 'Koordinasi tim operasional', done: false }
-                ],
-                note: 'Rutin setiap pagi jam 09:00'
-            },
-            {
-                id: 'task-102',
-                type: 'repetisi',
-                frequency: 'Mingguan',
-                streak: 2,
-                title: 'Rekap Laporan Performa & KPI Mingguan',
-                priority: 'Medium',
-                dueDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-                dueTime: '16:00',
-                status: 'todo',
-                estHours: 2.5,
-                actualHours: 0,
-                subtasks: [],
-                note: 'Rekap data dari Google Sheets & kirim ke grup'
-            },
-            {
-                id: 'task-103',
-                type: 'adhoc',
-                frequency: '',
-                streak: 0,
-                title: 'Project Implementasi Sistem Baru Q3',
-                priority: 'High',
-                dueDate: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
-                dueTime: '17:00',
-                status: 'inprogress',
-                estHours: 6,
-                actualHours: 2.5,
-                subtasks: [
-                    { id: 'st-3', title: 'Testing alur input', done: true },
-                    { id: 'st-4', title: 'Uji coba sync data', done: true },
-                    { id: 'st-5', title: 'Sosialisasi ke user', done: false }
-                ],
-                note: 'Target live sebelum akhir bulan'
-            }
-        ];
-
         let tasks = [];
+        let currentUser = null;
         let activeDate = new Date();
         let currentTypeFilter = 'all';
         let currentPriorityFilter = 'all';
+        let currentScopeFilter = 'section'; // 'section' atau 'my'
         let currentSearchQuery = '';
         let currentView = 'kanban';
 
@@ -850,14 +913,143 @@
         let timerInterval = null;
         let isTimerRunning = false;
 
-        // Auto-Save Cloud Webhook State
+        // Cloud State
         let webhookUrl = localStorage.getItem('activity_hub_webhook_url') || DEFAULT_WEBHOOK_URL;
         let autoSaveTimer = null;
         let isSavingToCloud = false;
 
-        function updateCloudIndicator(status, message) {
+        // AUTHENTICATION & SESSION MANAGEMENT
+        function checkSession() {
+            const saved = localStorage.getItem('aftersales_user_session');
+            if (saved) {
+                try {
+                    currentUser = JSON.parse(saved);
+                    applyUserView();
+                    return true;
+                } catch(e) {}
+            }
+            document.getElementById('authOverlay').classList.remove('hidden');
+            return false;
+        }
+
+        function applyUserView() {
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('userNameBadge').textContent = currentUser.name || currentUser.username;
+            document.getElementById('userRoleBadge').textContent = `${currentUser.role}`;
+            document.getElementById('userAvatar').textContent = (currentUser.name || 'U').charAt(0).toUpperCase();
+            document.getElementById('headerSectionInfo').textContent = `${currentUser.section} • ${currentUser.role}`;
+
+            // Tampilkan dropdown filter section jika role adalah Aftersales Head
+            const isDeptHead = currentUser.role === 'Aftersales Head' || currentUser.section === 'All Section';
+            const deptFilterWrapper = document.getElementById('wrapperDeptFilter');
+            if (isDeptHead) {
+                deptFilterWrapper.classList.remove('hidden');
+                deptFilterWrapper.classList.add('flex');
+            } else {
+                deptFilterWrapper.classList.add('hidden');
+                deptFilterWrapper.classList.remove('flex');
+            }
+        }
+
+        function switchAuthTab(tab) {
+            const isLogin = tab === 'login';
+            document.getElementById('formLogin').classList.toggle('hidden', !isLogin);
+            document.getElementById('formSignup').classList.toggle('hidden', isLogin);
+            
+            document.getElementById('tabBtnLogin').className = isLogin 
+                ? 'py-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs transition' 
+                : 'py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition';
+                
+            document.getElementById('tabBtnSignup').className = !isLogin 
+                ? 'py-1.5 rounded-lg bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-300 shadow-xs transition' 
+                : 'py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition';
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+            const btn = document.getElementById('btnLoginSubmit');
+            const err = document.getElementById('loginError');
+
+            btn.disabled = true;
+            btn.textContent = "Memverifikasi...";
+            err.classList.add('hidden');
+
+            try {
+                const res = await fetch(`${webhookUrl}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
+                const json = await res.json();
+
+                if (json.status === "success" && json.user) {
+                    currentUser = json.user;
+                    localStorage.setItem('aftersales_user_session', JSON.stringify(currentUser));
+                    applyUserView();
+                    await pullDataFromCloudSilently();
+                    showToast(`Selamat datang, ${currentUser.name}!`);
+                } else {
+                    err.textContent = json.message || "Username atau password salah!";
+                    err.classList.remove('hidden');
+                }
+            } catch (errExp) {
+                err.textContent = "Gagal terhubung ke Google Sheets!";
+                err.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Masuk ke Sistem";
+            }
+        }
+
+        async function handleSignupSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const u = document.getElementById('regUsername').value.trim();
+            const p = document.getElementById('regPassword').value.trim();
+            const section = document.getElementById('regSection').value;
+            const role = document.getElementById('regRole').value;
+            const btn = document.getElementById('btnSignupSubmit');
+            const err = document.getElementById('signupError');
+
+            btn.disabled = true;
+            btn.textContent = "Mendaftarkan...";
+            err.classList.add('hidden');
+
+            try {
+                const query = `action=signup&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}&name=${encodeURIComponent(name)}&section=${encodeURIComponent(section)}&role=${encodeURIComponent(role)}`;
+                const res = await fetch(`${webhookUrl}?${query}`);
+                const json = await res.json();
+
+                if (json.status === "success" && json.user) {
+                    currentUser = json.user;
+                    localStorage.setItem('aftersales_user_session', JSON.stringify(currentUser));
+                    applyUserView();
+                    await pullDataFromCloudSilently();
+                    showToast('Pendaftaran berhasil! Akun langsung aktif.');
+                } else {
+                    err.textContent = json.message || "Gagal mendaftar!";
+                    err.classList.remove('hidden');
+                }
+            } catch (errExp) {
+                err.textContent = "Gagal memproses pendaftaran!";
+                err.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Daftar Sekarang";
+            }
+        }
+
+        function handleLogout() {
+            if (confirm("Keluar dari akun Anda?")) {
+                localStorage.removeItem('aftersales_user_session');
+                currentUser = null;
+                document.getElementById('authOverlay').classList.remove('hidden');
+            }
+        }
+
+        // CLOUD SYNC & AUTO-SAVE
+        function updateCloudIndicator(status) {
             const dot = document.getElementById('cloudIndicatorDot');
             const text = document.getElementById('cloudStatusText');
+            if (!dot || !text) return;
 
             if (status === 'synced') {
                 dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
@@ -867,10 +1059,6 @@
                 dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping';
                 text.textContent = 'Menyimpan...';
                 text.className = 'text-[11px] font-bold text-amber-700 dark:text-amber-400';
-            } else if (status === 'offline') {
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
-                text.textContent = 'Offline / Lokal';
-                text.className = 'text-[11px] font-semibold text-slate-500';
             } else if (status === 'error') {
                 dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
                 text.textContent = 'Gagal Sync';
@@ -878,21 +1066,14 @@
             }
         }
 
-        // Simpan lokal + picu debounced auto-save ke Apps Script Cloud (1.5 detik)
         function triggerDebouncedAutoSave() {
             try {
                 localStorage.setItem('jobtracker_tasks_v2', JSON.stringify(tasks));
-            } catch (e) {
-                console.error("Local storage error:", e);
-            }
+            } catch (e) {}
 
             render();
 
-            if (!webhookUrl) {
-                updateCloudIndicator('offline');
-                return;
-            }
-
+            if (!webhookUrl) return;
             updateCloudIndicator('saving');
             clearTimeout(autoSaveTimer);
 
@@ -901,7 +1082,6 @@
             }, 1500);
         }
 
-        // Kirim data ke Apps Script dengan header text/plain untuk melewati CORS Preflight
         async function pushDataToCloudSilently() {
             if (!webhookUrl || isSavingToCloud) return;
             isSavingToCloud = true;
@@ -913,21 +1093,18 @@
                     body: JSON.stringify({ action: 'push', tasks: tasks }),
                     redirect: 'follow'
                 });
-
                 updateCloudIndicator('synced');
             } catch (err) {
-                console.warn("Auto-save sync warning:", err);
                 updateCloudIndicator('synced');
             } finally {
                 isSavingToCloud = false;
             }
         }
 
-        // Ambil data terbaru dari Google Apps Script saat app dibuka
         async function pullDataFromCloudSilently() {
             if (!webhookUrl) return;
-
             updateCloudIndicator('saving');
+
             try {
                 const fetchUrl = webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
                 const res = await fetch(fetchUrl, { redirect: 'follow' });
@@ -949,7 +1126,6 @@
                         if (!Array.isArray(sub)) sub = [];
                         t.subtasks = sub;
 
-                        // Normalisasi prioritas agar cocok dengan filter
                         if (!t.priority) t.priority = 'Medium';
                         const p = String(t.priority).toLowerCase();
                         if (p.startsWith('h')) t.priority = 'High';
@@ -965,133 +1141,576 @@
                     } catch (e) {}
                     render();
                     updateCloudIndicator('synced');
-                    showToast('Tersambung ke Google Sheets!', 'fa-cloud text-indigo-400');
                 } else {
                     updateCloudIndicator('synced');
-                    if (tasks.length > 0) pushDataToCloudSilently();
                 }
             } catch (err) {
-                console.warn("Cloud pull fallback to local cache:", err);
                 updateCloudIndicator('synced');
             }
         }
 
-        function initializeData() {
-            try {
-                const stored = localStorage.getItem('jobtracker_tasks_v2');
-                if (stored) {
-                    tasks = JSON.parse(stored);
-                } else {
-                    tasks = [...INITIAL_SEED_TASKS];
-                    localStorage.setItem('jobtracker_tasks_v2', JSON.stringify(tasks));
-                }
-            } catch (err) {
-                tasks = [...INITIAL_SEED_TASKS];
-            }
+        // HIERARCHY FILTERING LOGIC
+        function getFilteredTasksForActiveMonth() {
+            const curYear = activeDate.getFullYear();
+            const curMonth = activeDate.getMonth() + 1;
+            const monthPrefix = `${curYear}-${String(curMonth).padStart(2, '0')}`;
+            const selectedDept = document.getElementById('filterSectionSelect')?.value || 'all';
 
-            document.getElementById('inputWebhookUrl').value = webhookUrl;
-            pullDataFromCloudSilently();
+            return tasks.filter(task => {
+                // Filter Bulan
+                const isInMonth = task.dueDate && task.dueDate.startsWith(monthPrefix);
+
+                // Filter Tipe Aktivitas
+                const matchesType = (currentTypeFilter === 'all') || (task.type === currentTypeFilter);
+                
+                // Filter Prioritas
+                const taskPri = String(task.priority || '').toLowerCase();
+                const filterPri = String(currentPriorityFilter || '').toLowerCase();
+                const matchesPriority = (filterPri === 'all') || 
+                  (filterPri.startsWith('med') && taskPri.startsWith('med')) || 
+                  (taskPri === filterPri);
+
+                // Filter Pencarian
+                const matchesSearch = task.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                    (task.note && task.note.toLowerCase().includes(currentSearchQuery.toLowerCase())) ||
+                    (task.pic && task.pic.toLowerCase().includes(currentSearchQuery.toLowerCase()));
+
+                // Filter Hak Akses Hirarki Role
+                let matchesHierarchy = true;
+                if (currentUser) {
+                    const isDeptHead = currentUser.role === 'Aftersales Head' || currentUser.section === 'All Section';
+                    const isSecHead = currentUser.role === 'Section Head';
+
+                    if (isDeptHead) {
+                        // Aftersales Head: bebas melihat semua atau memilih spesifik section
+                        if (selectedDept !== 'all' && task.section && task.section !== selectedDept) {
+                            matchesHierarchy = false;
+                        }
+                    } else if (isSecHead) {
+                        // Section Head: hanya melihat aktivitas di divisinya
+                        if (task.section && task.section !== currentUser.section) {
+                            matchesHierarchy = false;
+                        }
+                    } else {
+                        // Pelaksana (Officer, Analyst, Staff): hanya melihat di section-nya
+                        if (task.section && task.section !== currentUser.section) {
+                            matchesHierarchy = false;
+                        }
+                    }
+
+                    // Scope: "Tugas Saya" vs "Tim Section"
+                    if (currentScopeFilter === 'my') {
+                        const pic = String(task.pic || '').toLowerCase();
+                        const me = String(currentUser.name || '').toLowerCase();
+                        if (!pic.includes(me)) {
+                            matchesHierarchy = false;
+                        }
+                    }
+                }
+
+                return isInMonth && matchesType && matchesPriority && matchesSearch && matchesHierarchy;
+            });
         }
 
-        function calculateNextCycleDate(dateStr, frequency) {
-            const [y, m, d] = dateStr.split('-').map(Number);
-            const date = new Date(y, m - 1, d);
+        // METRICS UPDATE
+        function updateMonthlyProgressMeters() {
+            const filtered = getFilteredTasksForActiveMonth();
+            const total = filtered.length;
+            const done = filtered.filter(t => t.status === 'done' || t.status === 'selesai').length;
+            const totalPercent = total === 0 ? 0 : Math.round((done / total) * 100);
 
-            if (frequency === 'Harian') {
-                date.setDate(date.getDate() + 1);
-            } else if (frequency === 'Hari Kerja') {
-                const dayOfWeek = date.getDay();
-                if (dayOfWeek === 5) {
-                    date.setDate(date.getDate() + 3);
-                } else if (dayOfWeek === 6) {
-                    date.setDate(date.getDate() + 2);
-                } else {
-                    date.setDate(date.getDate() + 1);
-                }
-            } else if (frequency === 'Mingguan') {
-                date.setDate(date.getDate() + 7);
-            } else if (frequency === 'Bulanan') {
-                date.setMonth(date.getMonth() + 1);
+            document.getElementById('statTotalPercent').textContent = `${totalPercent}%`;
+            document.getElementById('labelRingPercent').textContent = `${totalPercent}%`;
+            document.getElementById('statTotalRatio').textContent = `${done} dari ${total} tugas selesai`;
+            document.getElementById('svgTotalRing').setAttribute('stroke-dasharray', `${totalPercent}, 100`);
+
+            const repetisiTasks = filtered.filter(t => t.type === 'repetisi');
+            const repetisiDone = repetisiTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
+            const repetisiPercent = repetisiTasks.length === 0 ? 0 : Math.round((repetisiDone / repetisiTasks.length) * 100);
+            
+            document.getElementById('badgeRepetisiRatio').textContent = `${repetisiDone}/${repetisiTasks.length} Selesai`;
+            document.getElementById('textRepetisiPercent').textContent = `${repetisiPercent}%`;
+            document.getElementById('barRepetisi').style.width = `${repetisiPercent}%`;
+
+            const adhocTasks = filtered.filter(t => t.type === 'adhoc');
+            const adhocDone = adhocTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
+            const adhocPercent = adhocTasks.length === 0 ? 0 : Math.round((adhocDone / adhocTasks.length) * 100);
+
+            document.getElementById('badgeAdhocRatio').textContent = `${adhocDone}/${adhocTasks.length} Selesai`;
+            document.getElementById('textAdhocPercent').textContent = `${adhocPercent}%`;
+            document.getElementById('barAdhoc').style.width = `${adhocPercent}%`;
+
+            let totalEst = 0;
+            let totalActual = 0;
+            let highCount = 0;
+            let medCount = 0;
+            let lowCount = 0;
+
+            filtered.forEach(t => {
+                totalEst += Number(t.estHours) || 0;
+                totalActual += Number(t.actualHours) || 0;
+                const p = String(t.priority).toLowerCase();
+                if (p.startsWith('h')) highCount++;
+                else if (p.startsWith('m')) medCount++;
+                else if (p.startsWith('l')) lowCount++;
+            });
+
+            document.getElementById('totalEstHours').textContent = `${totalEst.toFixed(1)} Jam`;
+            document.getElementById('totalActualHours').textContent = `${totalActual.toFixed(1)} Jam`;
+
+            const highRatio = total > 0 ? (highCount / total) : 0;
+            const workloadBadge = document.getElementById('statWorkloadBalance');
+            if (highRatio > 0.5 && total > 4) {
+                workloadBadge.textContent = 'High Load 🔥';
+                workloadBadge.className = 'text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md';
             } else {
-                date.setDate(date.getDate() + 7);
+                workloadBadge.textContent = 'Seimbang ✨';
+                workloadBadge.className = 'text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md';
             }
 
-            const ny = date.getFullYear();
-            const nm = String(date.getMonth() + 1).padStart(2, '0');
-            const nd = String(date.getDate()).padStart(2, '0');
-            return `${ny}-${nm}-${nd}`;
+            document.getElementById('statCountHigh').textContent = highCount;
+            document.getElementById('statCountMed').textContent = medCount;
+            document.getElementById('statCountLow').textContent = lowCount;
+
+            document.getElementById('statHighPercent').textContent = total > 0 ? `${Math.round((highCount/total)*100)}% dari total` : '0%';
+            document.getElementById('statMedPercent').textContent = total > 0 ? `${Math.round((medCount/total)*100)}% dari total` : '0%';
+            document.getElementById('statLowPercent').textContent = total > 0 ? `${Math.round((lowCount/total)*100)}% dari total` : '0%';
+
+            document.getElementById('analyticRepetisiText').textContent = `${repetisiDone} dari ${repetisiTasks.length} selesai`;
+            document.getElementById('analyticRepetisiDoneBar').style.width = `${repetisiPercent}%`;
+            document.getElementById('analyticRepetisiPendingBar').style.width = `${100 - repetisiPercent}%`;
+
+            document.getElementById('analyticAdhocText').textContent = `${adhocDone} dari ${adhocTasks.length} selesai`;
+            document.getElementById('analyticAdhocDoneBar').style.width = `${adhocPercent}%`;
+            document.getElementById('analyticAdhocPendingBar').style.width = `${100 - adhocPercent}%`;
         }
 
-        function handleRecurringTaskCompletion(task) {
-            if (task.type !== 'repetisi') return;
-            
-            task.streak = (task.streak || 0) + 1;
-            const nextDueDate = calculateNextCycleDate(task.dueDate || new Date().toISOString().split('T')[0], task.frequency);
-            
-            const nextCycleTask = {
-                id: Date.now().toString(),
-                type: 'repetisi',
-                frequency: task.frequency,
-                streak: task.streak,
-                title: task.title,
-                priority: task.priority,
-                dueDate: nextDueDate,
-                dueTime: task.dueTime || '17:00',
-                status: 'todo',
-                estHours: task.estHours || 1,
-                actualHours: 0,
-                subtasks: (task.subtasks || []).map(st => ({ id: 'st-' + Math.random(), title: st.title, done: false })),
-                note: task.note
+        // VIEW RENDERING: KANBAN
+        function renderKanban(filtered) {
+            const colTodo = document.getElementById('colTodo');
+            const colProgress = document.getElementById('colProgress');
+            const colDone = document.getElementById('colDone');
+
+            colTodo.innerHTML = '';
+            colProgress.innerHTML = '';
+            colDone.innerHTML = '';
+
+            const todoTasks = filtered.filter(t => !t.status || t.status === 'todo');
+            const progressTasks = filtered.filter(t => t.status === 'inprogress' || t.status === 'doing' || t.status === 'progress');
+            const doneTasks = filtered.filter(t => t.status === 'done' || t.status === 'selesai');
+
+            document.getElementById('colTodoCount').textContent = todoTasks.length;
+            document.getElementById('colProgressCount').textContent = progressTasks.length;
+            document.getElementById('colDoneCount').textContent = doneTasks.length;
+
+            const emptyCardHtml = (msg) => `
+                <div class="py-10 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium">${msg}</p>
+                </div>
+            `;
+
+            if (todoTasks.length === 0) colTodo.innerHTML = emptyCardHtml('Kosong');
+            if (progressTasks.length === 0) colProgress.innerHTML = emptyCardHtml('Kosong');
+            if (doneTasks.length === 0) colDone.innerHTML = emptyCardHtml('Kosong');
+
+            const makeCard = (task) => {
+                const isDone = task.status === 'done' || task.status === 'selesai';
+                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
+                const gCalUrl = generateGoogleCalendarUrl(task);
+
+                let subtasksPreview = '';
+                if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
+                    const completedSub = task.subtasks.filter(s => s.done).length;
+                    const subPercent = Math.round((completedSub / task.subtasks.length) * 100);
+                    subtasksPreview = `
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg text-[10px] space-y-1">
+                            <div class="flex justify-between font-semibold text-slate-600 dark:text-slate-300">
+                                <span>Milestones (${completedSub}/${task.subtasks.length})</span>
+                                <span>${subPercent}%</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-indigo-500 rounded-full" style="width: ${subPercent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const picChip = task.pic ? `
+                    <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <i class="fa-solid fa-user text-[9px] text-indigo-500"></i> ${task.pic}
+                    </span>
+                ` : '';
+
+                const sectionChip = task.section ? `
+                    <span class="text-[9px] font-extrabold text-indigo-600 dark:text-indigo-400 block truncate">
+                        <i class="fa-solid fa-layer-group text-[8px] mr-0.5"></i> ${task.section}
+                    </span>
+                ` : '';
+
+                return `
+                <div class="task-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col gap-2 relative group">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2 flex-1">
+                            <button onclick="quickToggleDone('${task.id}')" class="mt-0.5 text-base text-slate-300 hover:text-emerald-500 transition">
+                                <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+                            </button>
+                            <div class="flex-1">
+                                ${sectionChip}
+                                <h4 class="text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'} leading-snug">
+                                    ${task.title}
+                                </h4>
+                                ${task.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">${task.note}</p>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition">
+                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1" title="Edit">
+                                <i class="fa-regular fa-pen-to-square text-xs"></i>
+                            </button>
+                            <button onclick="deleteTask('${task.id}')" class="text-slate-400 hover:text-rose-600 p-1" title="Hapus">
+                                <i class="fa-regular fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${subtasksPreview}
+
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        ${getTypeBadge(task.type, task.frequency, task.streak)}
+                        ${getPriorityBadge(task.priority)}
+                        ${picChip}
+                        <span class="text-[10px] text-slate-400 ml-auto flex items-center gap-1">
+                            <i class="fa-regular fa-clock text-[9px]"></i> ${task.actualHours || 0}/${task.estHours || 1}h
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] ${dueStatus.class}">
+                            <i class="fa-regular ${dueStatus.icon} text-[9px]"></i>
+                            ${dueStatus.label}
+                        </span>
+
+                        <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] font-semibold py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300">
+                            <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
+                            <option value="inprogress" ${task.status === 'inprogress' || task.status === 'doing' ? 'selected' : ''}>Progress</option>
+                            <option value="done" ${task.status === 'done' || task.status === 'selesai' ? 'selected' : ''}>Done</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 pt-1">
+                        <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" 
+                           class="flex-1 inline-flex items-center justify-center gap-1 py-1 px-2 text-[10px] font-semibold rounded-lg bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/50 text-slate-700 hover:text-indigo-700 dark:text-slate-300 transition"
+                           title="Sinkron ke Google Calendar">
+                            <i class="fa-brands fa-google text-[10px] text-indigo-500"></i>
+                            <span>Google Cal</span>
+                        </a>
+
+                        <button onclick="downloadSingleICS('${task.id}')" 
+                                class="inline-flex items-center justify-center gap-1 py-1 px-2 text-[10px] font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+                                title="Download .ICS Kalender HP">
+                            <i class="fa-solid fa-mobile-screen-button text-[10px]"></i>
+                            <span>.ICS (HP)</span>
+                        </button>
+                    </div>
+                </div>`;
             };
 
-            tasks.unshift(nextCycleTask);
-            playCompletionChime();
-            showToast(`Siklus baru terbuat! Streak ${task.streak}🔥`);
+            todoTasks.forEach(t => colTodo.insertAdjacentHTML('beforeend', makeCard(t)));
+            progressTasks.forEach(t => colProgress.insertAdjacentHTML('beforeend', makeCard(t)));
+            doneTasks.forEach(t => colDone.insertAdjacentHTML('beforeend', makeCard(t)));
         }
 
+        // VIEW RENDERING: AGENDA
+        function renderListView(filtered) {
+            const listTableBody = document.getElementById('listTableBody');
+            const listEmptyMessage = document.getElementById('listEmptyMessage');
+            listTableBody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                listEmptyMessage.classList.remove('hidden');
+                return;
+            }
+            listEmptyMessage.classList.add('hidden');
+
+            filtered.forEach(task => {
+                const isDone = task.status === 'done' || task.status === 'selesai';
+                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
+                const gCalUrl = generateGoogleCalendarUrl(task);
+
+                let subCount = '';
+                if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
+                    const doneSt = task.subtasks.filter(s => s.done).length;
+                    subCount = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-semibold ml-1">${doneSt}/${task.subtasks.length} Sub</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition text-xs";
+                tr.innerHTML = `
+                    <td class="py-2.5 pl-2">
+                        <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
+                            <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+                        </button>
+                    </td>
+                    <td class="py-2.5 pr-2">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 ${isDone ? 'line-through text-slate-400' : ''}">
+                            ${task.title} ${subCount}
+                        </div>
+                        ${task.note ? `<div class="text-[10px] text-slate-400 line-clamp-1">${task.note}</div>` : ''}
+                    </td>
+                    <td class="py-2.5 pr-2">
+                        <span class="font-bold text-slate-700 dark:text-slate-300 block">${task.pic || '-'}</span>
+                        <span class="text-[10px] text-slate-400 block">${task.section || '-'}</span>
+                    </td>
+                    <td class="py-2.5 pr-2">${getTypeBadge(task.type, task.frequency, task.streak)}</td>
+                    <td class="py-2.5 pr-2">${getPriorityBadge(task.priority)}</td>
+                    <td class="py-2.5 pr-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] ${dueStatus.class}">
+                            <i class="fa-regular ${dueStatus.icon}"></i> ${dueStatus.label}
+                        </span>
+                    </td>
+                    <td class="py-2.5 pr-2 text-[11px] text-slate-500">
+                        ${task.actualHours || 0} / ${task.estHours || 1} Jam
+                    </td>
+                    <td class="py-2.5 pr-2">
+                        <div class="inline-flex items-center gap-1">
+                            <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600" title="Google Cal">
+                                <i class="fa-brands fa-google text-[11px]"></i>
+                            </a>
+                            <button onclick="downloadSingleICS('${task.id}')" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600" title="Download .ICS">
+                                <i class="fa-solid fa-mobile-screen-button text-[11px]"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-2.5 text-right pr-2">
+                        <div class="inline-flex items-center gap-1">
+                            <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border rounded">
+                                <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
+                                <option value="inprogress" ${task.status === 'inprogress' || task.status === 'doing' ? 'selected' : ''}>Progress</option>
+                                <option value="done" ${task.status === 'done' || task.status === 'selesai' ? 'selected' : ''}>Done</option>
+                            </select>
+                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteTask('${task.id}')" class="text-slate-400 hover:text-rose-600 p-1">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                listTableBody.appendChild(tr);
+            });
+        }
+
+        // VIEW RENDERING: CALENDAR
+        function renderCalendarView(filtered) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+
+            const year = activeDate.getFullYear();
+            const month = activeDate.getMonth();
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const today = new Date();
+            const isCurrentRealMonth = today.getFullYear() === year && today.getMonth() === month;
+            const currentRealDate = today.getDate();
+
+            const tasksByDate = {};
+            filtered.forEach(task => {
+                if (task.dueDate) {
+                    if (!tasksByDate[task.dueDate]) tasksByDate[task.dueDate] = [];
+                    tasksByDate[task.dueDate].push(task);
+                }
+            });
+
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = daysInPrevMonth - i;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
+                cell.innerHTML = `<span class="text-xs font-semibold">${dayNum}</span>`;
+                calendarGrid.appendChild(cell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayStr = String(day).padStart(2, '0');
+                const monthStr = String(month + 1).padStart(2, '0');
+                const fullDateKey = `${year}-${monthStr}-${dayStr}`;
+                const isToday = isCurrentRealMonth && day === currentRealDate;
+
+                const dayTasks = tasksByDate[fullDateKey] || [];
+
+                const cell = document.createElement('div');
+                cell.className = `calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 flex flex-col justify-between group relative cursor-pointer ${
+                    isToday ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : ''
+                }`;
+
+                let headerHtml = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold ${
+                            isToday ? 'w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-700 dark:text-slate-300'
+                        }">${day}</span>
+                        <button onclick="openModalWithDate('${fullDateKey}'); event.stopPropagation();" 
+                            class="opacity-0 group-hover:opacity-100 text-[10px] w-4 h-4 rounded bg-indigo-100 dark:bg-slate-700 text-indigo-600 flex items-center justify-center transition">
+                            <i class="fa-solid fa-plus text-[8px]"></i>
+                        </button>
+                    </div>
+                `;
+
+                let tasksHtml = '<div class="space-y-1 my-1 overflow-y-auto max-h-[80px]">';
+                dayTasks.forEach(task => {
+                    const isDone = task.status === 'done' || task.status === 'selesai';
+                    const isRepetisi = task.type === 'repetisi';
+                    const pillBg = isDone 
+                        ? 'bg-slate-100 text-slate-400 line-through' 
+                        : (isRepetisi ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/70 border border-blue-200' 
+                                      : 'bg-purple-50 text-purple-700 dark:bg-purple-950/70 border border-purple-200');
+
+                    tasksHtml += `
+                        <div onclick="editTask('${task.id}'); event.stopPropagation();" 
+                             class="text-[9px] px-1 py-0.5 rounded flex items-center gap-1 font-semibold truncate ${pillBg}">
+                            <span class="w-1.5 h-1.5 rounded-full ${task.priority === 'High' ? 'bg-rose-500' : 'bg-amber-500'} shrink-0"></span>
+                            <span class="truncate">${task.title}</span>
+                            ${isDone ? '<i class="fa-solid fa-check text-[7px] text-emerald-500 ml-auto"></i>' : ''}
+                        </div>
+                    `;
+                });
+                tasksHtml += '</div>';
+
+                cell.innerHTML = headerHtml + tasksHtml;
+                cell.addEventListener('click', () => openModalWithDate(fullDateKey));
+                calendarGrid.appendChild(cell);
+            }
+
+            const totalRenderedCells = firstDayIndex + daysInMonth;
+            const remainingCells = (totalRenderedCells <= 35) ? (35 - totalRenderedCells) : (42 - totalRenderedCells);
+            for (let nextDay = 1; nextDay <= remainingCells; nextDay++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
+                cell.innerHTML = `<span class="text-xs font-semibold">${nextDay}</span>`;
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        // VIEW RENDERING: EISENHOWER
+        function renderMatrixView(filtered) {
+            const q1 = document.getElementById('quadrantQ1');
+            const q2 = document.getElementById('quadrantQ2');
+            const q3 = document.getElementById('quadrantQ3');
+            const q4 = document.getElementById('quadrantQ4');
+
+            q1.innerHTML = '';
+            q2.innerHTML = '';
+            q3.innerHTML = '';
+            q4.innerHTML = '';
+
+            let c1 = 0, c2 = 0, c3 = 0, c4 = 0;
+
+            filtered.forEach(task => {
+                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
+                const isUrgent = dueStatus.isUrgent;
+                const isImportant = task.priority === 'High' || (task.priority === 'Medium' && task.type === 'adhoc');
+
+                const isDone = task.status === 'done' || task.status === 'selesai';
+                const card = `
+                    <div class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 shadow-xs flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2">
+                            <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
+                                <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+                            </button>
+                            <div>
+                                <span class="${isDone ? 'line-through text-slate-400' : 'font-semibold text-slate-800 dark:text-slate-200'} block">${task.title}</span>
+                                <span class="text-[10px] text-slate-400">${task.pic || '-'} • ${task.section || '-'}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            ${getPriorityBadge(task.priority)}
+                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1">
+                                <i class="fa-regular fa-pen-to-square text-[11px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                if (isImportant && isUrgent) {
+                    q1.insertAdjacentHTML('beforeend', card);
+                    c1++;
+                } else if (isImportant && !isUrgent) {
+                    q2.insertAdjacentHTML('beforeend', card);
+                    c2++;
+                } else if (!isImportant && isUrgent) {
+                    q3.insertAdjacentHTML('beforeend', card);
+                    c3++;
+                } else {
+                    q4.insertAdjacentHTML('beforeend', card);
+                    c4++;
+                }
+            });
+
+            document.getElementById('badgeQ1Count').textContent = c1;
+            document.getElementById('badgeQ2Count').textContent = c2;
+            document.getElementById('badgeQ3Count').textContent = c3;
+            document.getElementById('badgeQ4Count').textContent = c4;
+        }
+
+        // RENDER MASTER
+        function render() {
+            const monthStr = MONTH_NAMES_ID[activeDate.getMonth()];
+            const yearStr = activeDate.getFullYear();
+            const fullTitle = `${monthStr} ${yearStr}`;
+
+            document.getElementById('currentMonthYearLabel').textContent = fullTitle;
+            document.getElementById('calendarHeaderMonth').textContent = fullTitle;
+            document.getElementById('labelSummaryMonth').textContent = monthStr;
+
+            const filtered = getFilteredTasksForActiveMonth();
+            updateMonthlyProgressMeters();
+
+            if (currentView === 'kanban') renderKanban(filtered);
+            else if (currentView === 'list') renderListView(filtered);
+            else if (currentView === 'calendar') renderCalendarView(filtered);
+            else if (currentView === 'matrix') renderMatrixView(filtered);
+        }
+
+        // HELPERS & ACTIONS
         function generateGoogleCalendarUrl(task) {
-    try {
-        const title = encodeURIComponent(
-            `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${String(task.priority || 'MED').toUpperCase()}] ${task.title || 'Aktivitas'}`
-        );
-        
-        let description = `Kelompok: ${task.type === 'repetisi' ? 'Repetisi (' + (task.frequency || 'Rutin') + ')' : 'Ad-hoc / Project'}\n`;
-        description += `Prioritas: ${task.priority || 'Medium'}\n`;
-        if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
-            description += `Milestones:\n` + task.subtasks.map(s => `- [${s.done ? 'x' : ' '}] ${s.title || ''}`).join('\n') + '\n';
+            try {
+                const title = encodeURIComponent(
+                    `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${String(task.priority || 'MED').toUpperCase()}] ${task.title || 'Aktivitas'}`
+                );
+                
+                let description = `Section: ${task.section || '-'}\nPIC: ${task.pic || '-'}\nPrioritas: ${task.priority || 'Medium'}\n`;
+                if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
+                    description += `Milestones:\n` + task.subtasks.map(s => `- [${s.done ? 'x' : ' '}] ${s.title || ''}`).join('\n') + '\n';
+                }
+                if (task.note) description += `Catatan: ${task.note}\n`;
+                const encodedDesc = encodeURIComponent(description);
+
+                let dateStr = String(task.dueDate || '').slice(0, 10);
+                if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                    dateStr = new Date().toISOString().slice(0, 10);
+                }
+
+                let timeStr = String(task.dueTime || '17:00').trim().slice(0, 5);
+                if (!/^\d{2}:\d{2}$/.test(timeStr)) timeStr = '17:00';
+
+                const localStart = new Date(`${dateStr}T${timeStr}:00`);
+                const estHours = parseFloat(task.estHours) || 1;
+                const localEnd = (!isNaN(localStart.getTime())) 
+                    ? new Date(localStart.getTime() + estHours * 60 * 60 * 1000)
+                    : new Date();
+
+                const formatGCalTime = (d) => {
+                    const validDate = (!isNaN(d.getTime())) ? d : new Date();
+                    return validDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
+                };
+
+                const dates = `${formatGCalTime(localStart)}/${formatGCalTime(localEnd)}`;
+                return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${encodedDesc}`;
+            } catch (err) {
+                return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(task.title || 'Aktivitas')}`;
+            }
         }
-        if (task.note) description += `Catatan: ${task.note}\n`;
-        const encodedDesc = encodeURIComponent(description);
-
-        // Ambil hanya 10 digit pertama (YYYY-MM-DD) agar aman dari format ISO Google Sheets
-        let dateStr = String(task.dueDate || '').slice(0, 10);
-        if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-            dateStr = new Date().toISOString().slice(0, 10);
-        }
-
-        let timeStr = String(task.dueTime || '17:00').trim().slice(0, 5);
-        if (!/^\d{2}:\d{2}$/.test(timeStr)) {
-            timeStr = '17:00';
-        }
-
-        const localStart = new Date(`${dateStr}T${timeStr}:00`);
-        const estHours = parseFloat(task.estHours) || 1;
-        
-        const localEnd = (!isNaN(localStart.getTime())) 
-            ? new Date(localStart.getTime() + estHours * 60 * 60 * 1000)
-            : new Date();
-
-        const formatGCalTime = (d) => {
-            const validDate = (!isNaN(d.getTime())) ? d : new Date();
-            return validDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
-        };
-
-        const dates = `${formatGCalTime(localStart)}/${formatGCalTime(localEnd)}`;
-        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${encodedDesc}`;
-    } catch (err) {
-        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(task.title || 'Aktivitas')}`;
-    }
-}
 
         function downloadICSFile(tasksToExport) {
             if (!tasksToExport || tasksToExport.length === 0) {
@@ -1104,23 +1723,23 @@
             let ics = [
                 'BEGIN:VCALENDAR',
                 'VERSION:2.0',
-                'PRODID:-//Job & Activity Tracker Enterprise//ID',
+                'PRODID:-//Job Tracker Enterprise//ID',
                 'CALSCALE:GREGORIAN',
                 'METHOD:PUBLISH'
             ];
 
             tasksToExport.forEach(task => {
-                const dateStr = task.dueDate || new Date().toISOString().split('T')[0];
+                const dateStr = String(task.dueDate || '').slice(0, 10) || new Date().toISOString().split('T')[0];
                 const timeStr = task.dueTime || '09:00';
                 const start = new Date(`${dateStr}T${timeStr}:00`);
                 const end = new Date(start.getTime() + (task.estHours || 1) * 60 * 60 * 1000);
                 const now = new Date();
 
                 const title = `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${task.priority}] ${task.title}`;
-                let desc = `Tipe: ${task.type === 'repetisi' ? 'Repetisi' : 'Ad-hoc/Project'}\\nPrioritas: ${task.priority}\\nCatatan: ${task.note || '-'}`;
+                let desc = `Section: ${task.section || '-'}\\nPIC: ${task.pic || '-'}\\nPrioritas: ${task.priority}\\nCatatan: ${task.note || '-'}`;
 
                 ics.push('BEGIN:VEVENT');
-                ics.push(`UID:${task.id}-${start.getTime()}@jobtracker.app`);
+                ics.push(`UID:${task.id}-${start.getTime()}@aftersales.tracker`);
                 ics.push(`DTSTAMP:${formatICSDate(now)}`);
                 ics.push(`DTSTART:${formatICSDate(start)}`);
                 ics.push(`DTEND:${formatICSDate(end)}`);
@@ -1142,7 +1761,7 @@
             const blob = new Blob([ics.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', tasksToExport.length === 1 ? `jadwal-${tasksToExport[0].id}.ics` : `jadwal-semua-aktivitas.ics`);
+            link.setAttribute('download', tasksToExport.length === 1 ? `jadwal-${tasksToExport[0].id}.ics` : `jadwal-aktivitas-aftersales.ics`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1237,12 +1856,12 @@
         function getTypeBadge(type, frequency, streak = 0) {
             if (type === 'repetisi') {
                 return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
-                    <i class="fa-solid fa-arrows-rotate text-[9px]"></i> 1. Repetisi (${frequency || 'Rutin'})
+                    <i class="fa-solid fa-arrows-rotate text-[9px]"></i> Repetisi
                     ${streak > 0 ? `<span class="ml-1 text-[9px] font-bold text-amber-500">${streak}🔥</span>` : ''}
                 </span>`;
             } else {
                 return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-900">
-                    <i class="fa-solid fa-diagram-project text-[9px]"></i> 2. Ad-hoc
+                    <i class="fa-solid fa-diagram-project text-[9px]"></i> Ad-hoc
                 </span>`;
             }
         }
@@ -1264,466 +1883,6 @@
             }, 3000);
         }
 
-        function getFilteredTasksForActiveMonth() {
-            const curYear = activeDate.getFullYear();
-            const curMonth = activeDate.getMonth() + 1;
-            const monthPrefix = `${curYear}-${String(curMonth).padStart(2, '0')}`;
-
-            return tasks.filter(task => {
-                const isInMonth = task.dueDate && task.dueDate.startsWith(monthPrefix);
-                const matchesType = (currentTypeFilter === 'all') || (task.type === currentTypeFilter);
-                
-                const taskPri = String(task.priority || '').toLowerCase();
-                const filterPri = String(currentPriorityFilter || '').toLowerCase();
-                const matchesPriority = (filterPri === 'all') || 
-                  (filterPri.startsWith('med') && taskPri.startsWith('med')) || 
-                  (taskPri === filterPri);
-
-                const matchesSearch = task.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
-                    (task.note && task.note.toLowerCase().includes(currentSearchQuery.toLowerCase()));
-
-                return isInMonth && matchesType && matchesPriority && matchesSearch;
-            });
-        }
-
-        function updateMonthlyProgressMeters() {
-            const curYear = activeDate.getFullYear();
-            const curMonth = activeDate.getMonth() + 1;
-            const monthPrefix = `${curYear}-${String(curMonth).padStart(2, '0')}`;
-
-            const monthTasks = tasks.filter(t => t.dueDate && t.dueDate.startsWith(monthPrefix));
-            const total = monthTasks.length;
-            const done = monthTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
-            const totalPercent = total === 0 ? 0 : Math.round((done / total) * 100);
-
-            document.getElementById('statTotalPercent').textContent = `${totalPercent}%`;
-            document.getElementById('labelRingPercent').textContent = `${totalPercent}%`;
-            document.getElementById('statTotalRatio').textContent = `${done} dari ${total} tugas selesai`;
-            document.getElementById('svgTotalRing').setAttribute('stroke-dasharray', `${totalPercent}, 100`);
-
-            const repetisiTasks = monthTasks.filter(t => t.type === 'repetisi');
-            const repetisiDone = repetisiTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
-            const repetisiPercent = repetisiTasks.length === 0 ? 0 : Math.round((repetisiDone / repetisiTasks.length) * 100);
-            
-            document.getElementById('badgeRepetisiRatio').textContent = `${repetisiDone}/${repetisiTasks.length} Selesai`;
-            document.getElementById('textRepetisiPercent').textContent = `${repetisiPercent}%`;
-            document.getElementById('barRepetisi').style.width = `${repetisiPercent}%`;
-
-            const adhocTasks = monthTasks.filter(t => t.type === 'adhoc');
-            const adhocDone = adhocTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
-            const adhocPercent = adhocTasks.length === 0 ? 0 : Math.round((adhocDone / adhocTasks.length) * 100);
-
-            document.getElementById('badgeAdhocRatio').textContent = `${adhocDone}/${adhocTasks.length} Selesai`;
-            document.getElementById('textAdhocPercent').textContent = `${adhocPercent}%`;
-            document.getElementById('barAdhoc').style.width = `${adhocPercent}%`;
-
-            let totalEst = 0;
-            let totalActual = 0;
-            let highCount = 0;
-            let medCount = 0;
-            let lowCount = 0;
-
-            monthTasks.forEach(t => {
-                totalEst += Number(t.estHours) || 0;
-                totalActual += Number(t.actualHours) || 0;
-                const p = String(t.priority).toLowerCase();
-                if (p.startsWith('h')) highCount++;
-                else if (p.startsWith('m')) medCount++;
-                else if (p.startsWith('l')) lowCount++;
-            });
-
-            document.getElementById('totalEstHours').textContent = `${totalEst.toFixed(1)} Jam`;
-            document.getElementById('totalActualHours').textContent = `${totalActual.toFixed(1)} Jam`;
-
-            const highRatio = total > 0 ? (highCount / total) : 0;
-            const workloadBadge = document.getElementById('statWorkloadBalance');
-            if (highRatio > 0.5 && total > 4) {
-                workloadBadge.textContent = 'High Load 🔥';
-                workloadBadge.className = 'text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md';
-            } else {
-                workloadBadge.textContent = 'Seimbang ✨';
-                workloadBadge.className = 'text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md';
-            }
-
-            document.getElementById('statCountHigh').textContent = highCount;
-            document.getElementById('statCountMed').textContent = medCount;
-            document.getElementById('statCountLow').textContent = lowCount;
-
-            document.getElementById('statHighPercent').textContent = total > 0 ? `${Math.round((highCount/total)*100)}% dari total` : '0%';
-            document.getElementById('statMedPercent').textContent = total > 0 ? `${Math.round((medCount/total)*100)}% dari total` : '0%';
-            document.getElementById('statLowPercent').textContent = total > 0 ? `${Math.round((lowCount/total)*100)}% dari total` : '0%';
-
-            document.getElementById('analyticRepetisiText').textContent = `${repetisiDone} dari ${repetisiTasks.length} selesai`;
-            document.getElementById('analyticRepetisiDoneBar').style.width = `${repetisiPercent}%`;
-            document.getElementById('analyticRepetisiPendingBar').style.width = `${100 - repetisiPercent}%`;
-
-            document.getElementById('analyticAdhocText').textContent = `${adhocDone} dari ${adhocTasks.length} selesai`;
-            document.getElementById('analyticAdhocDoneBar').style.width = `${adhocPercent}%`;
-            document.getElementById('analyticAdhocPendingBar').style.width = `${100 - adhocPercent}%`;
-        }
-
-        // FUNGSI RENDER KANBAN BEBAS CONFLICT VARIABEL
-        function renderKanban(filtered) {
-            const colTodo = document.getElementById('colTodo');
-            const colProgress = document.getElementById('colProgress');
-            const colDone = document.getElementById('colDone');
-
-            colTodo.innerHTML = '';
-            colProgress.innerHTML = '';
-            colDone.innerHTML = '';
-
-            const todoTasks = filtered.filter(t => !t.status || t.status === 'todo');
-            const progressTasks = filtered.filter(t => t.status === 'inprogress' || t.status === 'doing' || t.status === 'progress');
-            const doneTasks = filtered.filter(t => t.status === 'done' || t.status === 'selesai');
-
-            document.getElementById('colTodoCount').textContent = todoTasks.length;
-            document.getElementById('colProgressCount').textContent = progressTasks.length;
-            document.getElementById('colDoneCount').textContent = doneTasks.length;
-
-            const emptyCardHtml = (msg) => `
-                <div class="py-10 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium">${msg}</p>
-                </div>
-            `;
-
-            if (todoTasks.length === 0) colTodo.innerHTML = emptyCardHtml('Kosong');
-            if (progressTasks.length === 0) colProgress.innerHTML = emptyCardHtml('Kosong');
-            if (doneTasks.length === 0) colDone.innerHTML = emptyCardHtml('Kosong');
-
-            const makeCard = (task) => {
-                const isDone = task.status === 'done' || task.status === 'selesai';
-                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
-                const gCalUrl = generateGoogleCalendarUrl(task);
-
-                let subtasksPreview = '';
-                if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
-                    const completedSub = task.subtasks.filter(s => s.done).length;
-                    const subPercent = Math.round((completedSub / task.subtasks.length) * 100);
-                    subtasksPreview = `
-                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg text-[10px] space-y-1">
-                            <div class="flex justify-between font-semibold text-slate-600 dark:text-slate-300">
-                                <span>Milestones (${completedSub}/${task.subtasks.length})</span>
-                                <span>${subPercent}%</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                                <div class="h-full bg-indigo-500 rounded-full" style="width: ${subPercent}%"></div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                return `
-                <div class="task-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col gap-2 relative group">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex items-start gap-2 flex-1">
-                            <button onclick="quickToggleDone('${task.id}')" class="mt-0.5 text-base text-slate-300 hover:text-emerald-500 transition">
-                                <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
-                            </button>
-                            <div class="flex-1">
-                                <h4 class="text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'} leading-snug">
-                                    ${task.title}
-                                </h4>
-                                ${task.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">${task.note}</p>` : ''}
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition">
-                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1" title="Edit">
-                                <i class="fa-regular fa-pen-to-square text-xs"></i>
-                            </button>
-                            <button onclick="deleteTask('${task.id}')" class="text-slate-400 hover:text-rose-600 p-1" title="Hapus">
-                                <i class="fa-regular fa-trash-can text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    ${subtasksPreview}
-
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        ${getTypeBadge(task.type, task.frequency, task.streak)}
-                        ${getPriorityBadge(task.priority)}
-                        <span class="text-[10px] text-slate-400 ml-auto flex items-center gap-1">
-                            <i class="fa-regular fa-clock text-[9px]"></i> ${task.actualHours || 0}/${task.estHours || 1}h
-                        </span>
-                    </div>
-
-                    <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] ${dueStatus.class}">
-                            <i class="fa-regular ${dueStatus.icon} text-[9px]"></i>
-                            ${dueStatus.label}
-                        </span>
-
-                        <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] font-semibold py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300">
-                            <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
-                            <option value="inprogress" ${task.status === 'inprogress' || task.status === 'doing' ? 'selected' : ''}>Progress</option>
-                            <option value="done" ${task.status === 'done' || task.status === 'selesai' ? 'selected' : ''}>Done</option>
-                        </select>
-                    </div>
-
-                    <div class="flex items-center gap-1.5 pt-1">
-                        <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" 
-                           class="flex-1 inline-flex items-center justify-center gap-1 py-1 px-2 text-[10px] font-semibold rounded-lg bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/50 text-slate-700 hover:text-indigo-700 dark:text-slate-300 transition"
-                           title="Sinkron ke Google Calendar">
-                            <i class="fa-brands fa-google text-[10px] text-indigo-500"></i>
-                            <span>Google Cal</span>
-                        </a>
-
-                        <button onclick="downloadSingleICS('${task.id}')" 
-                                class="inline-flex items-center justify-center gap-1 py-1 px-2 text-[10px] font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
-                                title="Download .ICS Kalender HP">
-                            <i class="fa-solid fa-mobile-screen-button text-[10px]"></i>
-                            <span>.ICS (HP)</span>
-                        </button>
-                    </div>
-                </div>`;
-            };
-
-            todoTasks.forEach(t => colTodo.insertAdjacentHTML('beforeend', makeCard(t)));
-            progressTasks.forEach(t => colProgress.insertAdjacentHTML('beforeend', makeCard(t)));
-            doneTasks.forEach(t => colDone.insertAdjacentHTML('beforeend', makeCard(t)));
-        }
-
-        function renderListView(filtered) {
-            const listTableBody = document.getElementById('listTableBody');
-            const listEmptyMessage = document.getElementById('listEmptyMessage');
-            listTableBody.innerHTML = '';
-
-            if (filtered.length === 0) {
-                listEmptyMessage.classList.remove('hidden');
-                return;
-            }
-            listEmptyMessage.classList.add('hidden');
-
-            filtered.forEach(task => {
-                const isDone = task.status === 'done' || task.status === 'selesai';
-                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
-                const gCalUrl = generateGoogleCalendarUrl(task);
-
-                let subCount = '';
-                if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
-                    const doneSt = task.subtasks.filter(s => s.done).length;
-                    subCount = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-semibold ml-1">${doneSt}/${task.subtasks.length} Sub</span>`;
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition text-xs";
-                tr.innerHTML = `
-                    <td class="py-2.5 pl-2">
-                        <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
-                            <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
-                        </button>
-                    </td>
-                    <td class="py-2.5 pr-2">
-                        <div class="font-bold text-slate-800 dark:text-slate-200 ${isDone ? 'line-through text-slate-400' : ''}">
-                            ${task.title} ${subCount}
-                        </div>
-                        ${task.note ? `<div class="text-[10px] text-slate-400 line-clamp-1">${task.note}</div>` : ''}
-                    </td>
-                    <td class="py-2.5 pr-2">${getTypeBadge(task.type, task.frequency, task.streak)}</td>
-                    <td class="py-2.5 pr-2">${getPriorityBadge(task.priority)}</td>
-                    <td class="py-2.5 pr-2">
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] ${dueStatus.class}">
-                            <i class="fa-regular ${dueStatus.icon}"></i> ${dueStatus.label}
-                        </span>
-                    </td>
-                    <td class="py-2.5 pr-2 text-[11px] text-slate-500">
-                        ${task.actualHours || 0} / ${task.estHours || 1} Jam
-                    </td>
-                    <td class="py-2.5 pr-2">
-                        <div class="inline-flex items-center gap-1">
-                            <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600" title="Google Cal">
-                                <i class="fa-brands fa-google text-[11px]"></i>
-                            </a>
-                            <button onclick="downloadSingleICS('${task.id}')" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600" title="Download .ICS">
-                                <i class="fa-solid fa-mobile-screen-button text-[11px]"></i>
-                            </button>
-                        </div>
-                    </td>
-                    <td class="py-2.5 text-right pr-2">
-                        <div class="inline-flex items-center gap-1">
-                            <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border rounded">
-                                <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
-                                <option value="inprogress" ${task.status === 'inprogress' || task.status === 'doing' ? 'selected' : ''}>Progress</option>
-                                <option value="done" ${task.status === 'done' || task.status === 'selesai' ? 'selected' : ''}>Done</option>
-                            </select>
-                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1">
-                                <i class="fa-regular fa-pen-to-square"></i>
-                            </button>
-                            <button onclick="deleteTask('${task.id}')" class="text-slate-400 hover:text-rose-600 p-1">
-                                <i class="fa-regular fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                listTableBody.appendChild(tr);
-            });
-        }
-
-        function renderCalendarView(filtered) {
-            const calendarGrid = document.getElementById('calendarGrid');
-            calendarGrid.innerHTML = '';
-
-            const year = activeDate.getFullYear();
-            const month = activeDate.getMonth();
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-            const today = new Date();
-            const isCurrentRealMonth = today.getFullYear() === year && today.getMonth() === month;
-            const currentRealDate = today.getDate();
-
-            const tasksByDate = {};
-            filtered.forEach(task => {
-                if (task.dueDate) {
-                    if (!tasksByDate[task.dueDate]) tasksByDate[task.dueDate] = [];
-                    tasksByDate[task.dueDate].push(task);
-                }
-            });
-
-            for (let i = firstDayIndex - 1; i >= 0; i--) {
-                const dayNum = daysInPrevMonth - i;
-                const cell = document.createElement('div');
-                cell.className = 'calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
-                cell.innerHTML = `<span class="text-xs font-semibold">${dayNum}</span>`;
-                calendarGrid.appendChild(cell);
-            }
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayStr = String(day).padStart(2, '0');
-                const monthStr = String(month + 1).padStart(2, '0');
-                const fullDateKey = `${year}-${monthStr}-${dayStr}`;
-                const isToday = isCurrentRealMonth && day === currentRealDate;
-
-                const dayTasks = tasksByDate[fullDateKey] || [];
-
-                const cell = document.createElement('div');
-                cell.className = `calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 flex flex-col justify-between group relative cursor-pointer ${
-                    isToday ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : ''
-                }`;
-
-                let headerHtml = `
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold ${
-                            isToday ? 'w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-700 dark:text-slate-300'
-                        }">${day}</span>
-                        <button onclick="openModalWithDate('${fullDateKey}'); event.stopPropagation();" 
-                            class="opacity-0 group-hover:opacity-100 text-[10px] w-4 h-4 rounded bg-indigo-100 dark:bg-slate-700 text-indigo-600 flex items-center justify-center transition">
-                            <i class="fa-solid fa-plus text-[8px]"></i>
-                        </button>
-                    </div>
-                `;
-
-                let tasksHtml = '<div class="space-y-1 my-1 overflow-y-auto max-h-[80px]">';
-                dayTasks.forEach(task => {
-                    const isDone = task.status === 'done' || task.status === 'selesai';
-                    const isRepetisi = task.type === 'repetisi';
-                    const pillBg = isDone 
-                        ? 'bg-slate-100 text-slate-400 line-through' 
-                        : (isRepetisi ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/70 border border-blue-200' 
-                                      : 'bg-purple-50 text-purple-700 dark:bg-purple-950/70 border border-purple-200');
-
-                    tasksHtml += `
-                        <div onclick="editTask('${task.id}'); event.stopPropagation();" 
-                             class="text-[9px] px-1 py-0.5 rounded flex items-center gap-1 font-semibold truncate ${pillBg}">
-                            <span class="w-1.5 h-1.5 rounded-full ${task.priority === 'High' ? 'bg-rose-500' : 'bg-amber-500'} shrink-0"></span>
-                            <span class="truncate">${task.title}</span>
-                            ${isDone ? '<i class="fa-solid fa-check text-[7px] text-emerald-500 ml-auto"></i>' : ''}
-                        </div>
-                    `;
-                });
-                tasksHtml += '</div>';
-
-                cell.innerHTML = headerHtml + tasksHtml;
-                cell.addEventListener('click', () => openModalWithDate(fullDateKey));
-                calendarGrid.appendChild(cell);
-            }
-
-            const totalRenderedCells = firstDayIndex + daysInMonth;
-            const remainingCells = (totalRenderedCells <= 35) ? (35 - totalRenderedCells) : (42 - totalRenderedCells);
-            for (let nextDay = 1; nextDay <= remainingCells; nextDay++) {
-                const cell = document.createElement('div');
-                cell.className = 'calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
-                cell.innerHTML = `<span class="text-xs font-semibold">${nextDay}</span>`;
-                calendarGrid.appendChild(cell);
-            }
-        }
-
-        function renderMatrixView(filtered) {
-            const q1 = document.getElementById('quadrantQ1');
-            const q2 = document.getElementById('quadrantQ2');
-            const q3 = document.getElementById('quadrantQ3');
-            const q4 = document.getElementById('quadrantQ4');
-
-            q1.innerHTML = '';
-            q2.innerHTML = '';
-            q3.innerHTML = '';
-            q4.innerHTML = '';
-
-            let c1 = 0, c2 = 0, c3 = 0, c4 = 0;
-
-            filtered.forEach(task => {
-                const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
-                const isUrgent = dueStatus.isUrgent;
-                const isImportant = task.priority === 'High' || (task.priority === 'Medium' && task.type === 'adhoc');
-
-                const isDone = task.status === 'done' || task.status === 'selesai';
-                const card = `
-                    <div class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 shadow-xs flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-2">
-                            <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
-                                <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
-                            </button>
-                            <span class="${isDone ? 'line-through text-slate-400' : 'font-semibold text-slate-800 dark:text-slate-200'}">${task.title}</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            ${getPriorityBadge(task.priority)}
-                            <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1">
-                                <i class="fa-regular fa-pen-to-square text-[11px]"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-
-                if (isImportant && isUrgent) {
-                    q1.insertAdjacentHTML('beforeend', card);
-                    c1++;
-                } else if (isImportant && !isUrgent) {
-                    q2.insertAdjacentHTML('beforeend', card);
-                    c2++;
-                } else if (!isImportant && isUrgent) {
-                    q3.insertAdjacentHTML('beforeend', card);
-                    c3++;
-                } else {
-                    q4.insertAdjacentHTML('beforeend', card);
-                    c4++;
-                }
-            });
-
-            document.getElementById('badgeQ1Count').textContent = c1;
-            document.getElementById('badgeQ2Count').textContent = c2;
-            document.getElementById('badgeQ3Count').textContent = c3;
-            document.getElementById('badgeQ4Count').textContent = c4;
-        }
-
-        function render() {
-            const monthStr = MONTH_NAMES_ID[activeDate.getMonth()];
-            const yearStr = activeDate.getFullYear();
-            const fullTitle = `${monthStr} ${yearStr}`;
-
-            document.getElementById('currentMonthYearLabel').textContent = fullTitle;
-            document.getElementById('calendarHeaderMonth').textContent = fullTitle;
-            document.getElementById('labelSummaryMonth').textContent = monthStr;
-
-            const filtered = getFilteredTasksForActiveMonth();
-            updateMonthlyProgressMeters();
-
-            if (currentView === 'kanban') renderKanban(filtered);
-            else if (currentView === 'list') renderListView(filtered);
-            else if (currentView === 'calendar') renderCalendarView(filtered);
-            else if (currentView === 'matrix') renderMatrixView(filtered);
-        }
-
         window.quickToggleDone = function(id) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
@@ -1731,7 +1890,8 @@
             if (task.status !== 'done' && task.status !== 'selesai') {
                 task.status = 'done';
                 if (task.subtasks) task.subtasks.forEach(st => st.done = true);
-                handleRecurringTaskCompletion(task);
+                if (task.type === 'repetisi') task.streak = (task.streak || 0) + 1;
+                playCompletionChime();
             } else {
                 task.status = 'todo';
             }
@@ -1744,16 +1904,19 @@
             if (!task) return;
             task.status = newStatus;
             if ((newStatus === 'done' || newStatus === 'selesai') && task.type === 'repetisi') {
-                handleRecurringTaskCompletion(task);
+                task.streak = (task.streak || 0) + 1;
+                playCompletionChime();
             }
             triggerDebouncedAutoSave();
             showToast('Status diperbarui');
         };
 
         window.deleteTask = function(id) {
-            tasks = tasks.filter(t => t.id !== id);
-            triggerDebouncedAutoSave();
-            showToast('Aktivitas dihapus', 'fa-trash text-rose-400');
+            if (confirm('Hapus aktivitas ini?')) {
+                tasks = tasks.filter(t => t.id !== id);
+                triggerDebouncedAutoSave();
+                showToast('Aktivitas dihapus', 'fa-trash text-rose-400');
+            }
         };
 
         window.downloadSingleICS = function(id) {
@@ -1793,6 +1956,8 @@
 
             document.getElementById('taskFrequency').value = task.frequency || 'Mingguan';
             document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskPIC').value = task.pic || '';
+            document.getElementById('taskSection').value = task.section || 'GR Business & Retention';
             document.getElementById('taskPriority').value = task.priority;
             document.getElementById('taskStatus').value = task.status;
             document.getElementById('taskDueDate').value = task.dueDate;
@@ -1819,6 +1984,14 @@
             const r = document.querySelector('input[name="activityType"][value="repetisi"]');
             if (r) r.checked = true;
             toggleFrequencyWrapper('repetisi');
+
+            if (currentUser) {
+                document.getElementById('taskPIC').value = currentUser.name || '';
+                if (currentUser.section !== 'All Section') {
+                    document.getElementById('taskSection').value = currentUser.section;
+                }
+            }
+
             document.getElementById('taskModal').classList.remove('hidden');
         };
 
@@ -1841,6 +2014,14 @@
             const r = document.querySelector('input[name="activityType"][value="repetisi"]');
             if (r) r.checked = true;
             toggleFrequencyWrapper('repetisi');
+
+            if (currentUser) {
+                document.getElementById('taskPIC').value = currentUser.name || '';
+                if (currentUser.section !== 'All Section') {
+                    document.getElementById('taskSection').value = currentUser.section;
+                }
+            }
+
             document.getElementById('taskModal').classList.remove('hidden');
         });
 
@@ -1855,6 +2036,8 @@
             const type = checkedRadio ? checkedRadio.value : 'repetisi';
             const frequency = type === 'repetisi' ? document.getElementById('taskFrequency').value : '';
             const title = document.getElementById('taskTitle').value.trim();
+            const pic = document.getElementById('taskPIC').value.trim();
+            const section = document.getElementById('taskSection').value;
             const priority = document.getElementById('taskPriority').value;
             const status = document.getElementById('taskStatus').value;
             const dueDate = document.getElementById('taskDueDate').value;
@@ -1879,6 +2062,8 @@
                     task.type = type;
                     task.frequency = frequency;
                     task.title = title;
+                    task.pic = pic;
+                    task.section = section;
                     task.priority = priority;
                     task.status = status;
                     task.dueDate = dueDate;
@@ -1896,6 +2081,8 @@
                     frequency,
                     streak: 0,
                     title,
+                    pic: pic || (currentUser ? currentUser.name : ''),
+                    section: section || (currentUser ? currentUser.section : 'GR Business & Retention'),
                     priority,
                     status,
                     dueDate,
@@ -1912,6 +2099,22 @@
             triggerDebouncedAutoSave();
             closeModal();
         });
+
+        // VIEW & SCOPE SWITCHERS
+        function setScopeFilter(scope) {
+            currentScopeFilter = scope;
+            const btnSec = document.getElementById('btnScopeSection');
+            const btnMy = document.getElementById('btnScopeMy');
+
+            if (scope === 'section') {
+                btnSec.className = 'px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold';
+                btnMy.className = 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900';
+            } else {
+                btnMy.className = 'px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold';
+                btnSec.className = 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900';
+            }
+            render();
+        }
 
         const views = {
             kanban: { btn: document.getElementById('viewKanbanBtn'), el: document.getElementById('kanbanView') },
@@ -1985,16 +2188,17 @@
             await pullDataFromCloudSilently();
         });
 
+        // EXPORT HANDLERS
         document.getElementById('btnExportCSV').addEventListener('click', () => {
             const filtered = getFilteredTasksForActiveMonth();
-            let csv = "ID,Tipe,Frekuensi,Streak,Judul,Prioritas,DueDate,DueTime,Status,EstHours,ActualHours,Note\n";
+            let csv = "ID,Tipe,Judul,PIC,Section,Prioritas,DueDate,DueTime,Status,EstHours,ActualHours,Note\n";
             filtered.forEach(t => {
-                csv += `"${t.id}","${t.type}","${t.frequency || ''}",${t.streak || 0},"${t.title.replace(/"/g, '""')}","${t.priority}","${t.dueDate}","${t.dueTime || ''}","${t.status}",${t.estHours || 0},${t.actualHours || 0},"${(t.note || '').replace(/"/g, '""')}"\n`;
+                csv += `"${t.id}","${t.type}","${t.title.replace(/"/g, '""')}","${t.pic || ''}","${t.section || ''}","${t.priority}","${t.dueDate}","${t.dueTime || ''}","${t.status}",${t.estHours || 0},${t.actualHours || 0},"${(t.note || '').replace(/"/g, '""')}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', `rekap-job-tracker-${activeDate.getFullYear()}-${activeDate.getMonth()+1}.csv`);
+            link.setAttribute('download', `rekap-aftersales-${activeDate.getFullYear()}-${activeDate.getMonth()+1}.csv`);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -2005,7 +2209,7 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", `backup_jobtracker_${new Date().toISOString().split('T')[0]}.json`);
+            dl.setAttribute("download", `backup_aftersales_${new Date().toISOString().split('T')[0]}.json`);
             document.body.appendChild(dl);
             dl.click();
             dl.remove();
@@ -2039,17 +2243,16 @@
         document.getElementById('btnOpenExecReport').addEventListener('click', () => {
             const curMonthName = MONTH_NAMES_ID[activeDate.getMonth()];
             const curYear = activeDate.getFullYear();
-            const monthPrefix = `${curYear}-${String(activeDate.getMonth()+1).padStart(2, '0')}`;
 
-            const monthTasks = tasks.filter(t => t.dueDate && t.dueDate.startsWith(monthPrefix));
-            const total = monthTasks.length;
-            const done = monthTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
+            const filtered = getFilteredTasksForActiveMonth();
+            const total = filtered.length;
+            const done = filtered.filter(t => t.status === 'done' || t.status === 'selesai').length;
             const rate = total === 0 ? 0 : Math.round((done / total) * 100);
 
-            const repTasks = monthTasks.filter(t => t.type === 'repetisi');
+            const repTasks = filtered.filter(t => t.type === 'repetisi');
             const repDone = repTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
 
-            const adhocTasks = monthTasks.filter(t => t.type === 'adhoc');
+            const adhocTasks = filtered.filter(t => t.type === 'adhoc');
             const adhocDone = adhocTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
 
             document.getElementById('reportPeriodText').textContent = `Periode: ${curMonthName} ${curYear}`;
@@ -2060,10 +2263,12 @@
 
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
-            monthTasks.forEach(t => {
+            filtered.forEach(t => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="p-2 font-medium">${t.title}</td>
+                    <td class="p-2 font-semibold">${t.pic || '-'}</td>
+                    <td class="p-2">${t.section || '-'}</td>
                     <td class="p-2 uppercase font-semibold text-[10px]">${t.type}</td>
                     <td class="p-2">${t.priority}</td>
                     <td class="p-2">${t.dueDate}</td>
@@ -2074,6 +2279,7 @@
 
             document.getElementById('execReportModal').classList.remove('hidden');
         });
+
         document.getElementById('btnCloseExecReport').addEventListener('click', () => {
             document.getElementById('execReportModal').classList.add('hidden');
         });
@@ -2107,6 +2313,7 @@
             pullDataFromCloudSilently();
         });
 
+        // POMODORO TIMER
         const timerDisplay = document.getElementById('timerDisplay');
         const headerTimerBadge = document.getElementById('headerTimerBadge');
         const btnTimerToggle = document.getElementById('btnTimerToggle');
@@ -2160,7 +2367,7 @@
             document.getElementById('pomodoroModal').classList.add('hidden');
         });
 
-        // Theme Toggle
+        // THEME TOGGLE
         const html = document.documentElement;
         document.getElementById('btnToggleDark').addEventListener('click', () => {
             if (html.classList.contains('dark')) {
@@ -2175,9 +2382,18 @@
             html.classList.add('dark');
         }
 
-        // Start Application
+        // INITIALIZE APP
         window.addEventListener('DOMContentLoaded', () => {
-            initializeData();
+            try {
+                const stored = localStorage.getItem('jobtracker_tasks_v2');
+                if (stored) tasks = JSON.parse(stored);
+            } catch (e) {}
+
+            document.getElementById('inputWebhookUrl').value = webhookUrl;
+            
+            if (checkSession()) {
+                pullDataFromCloudSilently();
+            }
             render();
             updateTimerLabel();
         });
