@@ -1050,27 +1050,48 @@
         }
 
         function generateGoogleCalendarUrl(task) {
-            const title = encodeURIComponent(
-                `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${task.priority.toUpperCase()}] ${task.title}`
-            );
-            
-            let description = `Kelompok: ${task.type === 'repetisi' ? 'Repetisi (' + (task.frequency || 'Rutin') + ')' : 'Ad-hoc / Project'}\n`;
-            description += `Prioritas: ${task.priority}\n`;
-            if (task.subtasks && task.subtasks.length > 0) {
-                description += `Milestones:\n` + task.subtasks.map(s => `- [${s.done ? 'x' : ' '}] ${s.title}`).join('\n') + '\n';
-            }
-            if (task.note) description += `Catatan: ${task.note}\n`;
-            const encodedDesc = encodeURIComponent(description);
-
-            const dateStr = task.dueDate || new Date().toISOString().split('T')[0];
-            const timeStr = task.dueTime || '09:00';
-            const localStart = new Date(`${dateStr}T${timeStr}:00`);
-            const localEnd = new Date(localStart.getTime() + (task.estHours || 1) * 60 * 60 * 1000);
-
-            const formatGCalTime = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
-            const dates = `${formatGCalTime(localStart)}/${formatGCalTime(localEnd)}`;
-            return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${encodedDesc}`;
+    try {
+        const title = encodeURIComponent(
+            `[${task.type === 'repetisi' ? 'REPETISI' : 'PROJECT'}] [${String(task.priority || 'MED').toUpperCase()}] ${task.title || 'Aktivitas'}`
+        );
+        
+        let description = `Kelompok: ${task.type === 'repetisi' ? 'Repetisi (' + (task.frequency || 'Rutin') + ')' : 'Ad-hoc / Project'}\n`;
+        description += `Prioritas: ${task.priority || 'Medium'}\n`;
+        if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
+            description += `Milestones:\n` + task.subtasks.map(s => `- [${s.done ? 'x' : ' '}] ${s.title || ''}`).join('\n') + '\n';
         }
+        if (task.note) description += `Catatan: ${task.note}\n`;
+        const encodedDesc = encodeURIComponent(description);
+
+        // Ambil hanya 10 digit pertama (YYYY-MM-DD) agar aman dari format ISO Google Sheets
+        let dateStr = String(task.dueDate || '').slice(0, 10);
+        if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            dateStr = new Date().toISOString().slice(0, 10);
+        }
+
+        let timeStr = String(task.dueTime || '17:00').trim().slice(0, 5);
+        if (!/^\d{2}:\d{2}$/.test(timeStr)) {
+            timeStr = '17:00';
+        }
+
+        const localStart = new Date(`${dateStr}T${timeStr}:00`);
+        const estHours = parseFloat(task.estHours) || 1;
+        
+        const localEnd = (!isNaN(localStart.getTime())) 
+            ? new Date(localStart.getTime() + estHours * 60 * 60 * 1000)
+            : new Date();
+
+        const formatGCalTime = (d) => {
+            const validDate = (!isNaN(d.getTime())) ? d : new Date();
+            return validDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
+        };
+
+        const dates = `${formatGCalTime(localStart)}/${formatGCalTime(localEnd)}`;
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${encodedDesc}`;
+    } catch (err) {
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(task.title || 'Aktivitas')}`;
+    }
+}
 
         function downloadICSFile(tasksToExport) {
             if (!tasksToExport || tasksToExport.length === 0) {
