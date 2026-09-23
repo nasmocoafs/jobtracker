@@ -779,10 +779,10 @@
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
         ];
 
-        // Google Apps Script Web App URL yang langsung aktif
+        // Google Apps Script Web App URL aktif
         const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwILTxSMsoiiaUX905-ExaLZ_aSPYIM-R8NyE2HfWMOEvDrH8ZOdqNsoJaDkdfg1D8K/exec';
 
-        // Initial Seed Tasks jika data baru pertama kali dibuka
+        // Initial Seed Tasks
         const INITIAL_SEED_TASKS = [
             {
                 id: 'task-101',
@@ -917,7 +917,7 @@
                 updateCloudIndicator('synced');
             } catch (err) {
                 console.warn("Auto-save sync warning:", err);
-                updateCloudIndicator('synced'); // Apps Script redirection safe fallback
+                updateCloudIndicator('synced');
             } finally {
                 isSavingToCloud = false;
             }
@@ -956,6 +956,7 @@
                         else if (p.startsWith('m')) t.priority = 'Medium';
                         else if (p.startsWith('l')) t.priority = 'Low';
 
+                        if (t.dueDate) t.dueDate = String(t.dueDate).slice(0, 10);
                         return t;
                     });
 
@@ -966,7 +967,6 @@
                     updateCloudIndicator('synced');
                     showToast('Tersambung ke Google Sheets!', 'fa-cloud text-indigo-400');
                 } else {
-                    // Jika database di sheet masih kosong, kirim seed awal
                     updateCloudIndicator('synced');
                     if (tasks.length > 0) pushDataToCloudSilently();
                 }
@@ -1107,7 +1107,6 @@
                 ics.push(`DESCRIPTION:${desc}`);
                 ics.push('STATUS:CONFIRMED');
                 
-                // Alarm 30 menit sebelum due date di kalender HP
                 ics.push('BEGIN:VALARM');
                 ics.push('TRIGGER:-PT30M');
                 ics.push('ACTION:DISPLAY');
@@ -1130,15 +1129,14 @@
             showToast(`File .ICS kalender HP berhasil diunduh!`);
         }
 
-        // Web Audio Synthesizer untuk Bel Sukses (No external audio files)
         function playCompletionChime() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
                 gain.gain.setValueAtTime(0.15, ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
                 osc.connect(gain);
@@ -1199,19 +1197,19 @@
         }
 
         function getPriorityBadge(priority) {
-            switch (priority) {
-                case 'High':
-                    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> High
-                    </span>`;
-                case 'Medium':
-                    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Med
-                    </span>`;
-                default:
-                    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Low
-                    </span>`;
+            const p = String(priority).toLowerCase();
+            if (p.startsWith('h')) {
+                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> High
+                </span>`;
+            } else if (p.startsWith('m')) {
+                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Med
+                </span>`;
+            } else {
+                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Low
+                </span>`;
             }
         }
 
@@ -1274,7 +1272,7 @@
 
             const monthTasks = tasks.filter(t => t.dueDate && t.dueDate.startsWith(monthPrefix));
             const total = monthTasks.length;
-            const done = monthTasks.filter(t => t.status === 'done').length;
+            const done = monthTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
             const totalPercent = total === 0 ? 0 : Math.round((done / total) * 100);
 
             document.getElementById('statTotalPercent').textContent = `${totalPercent}%`;
@@ -1283,7 +1281,7 @@
             document.getElementById('svgTotalRing').setAttribute('stroke-dasharray', `${totalPercent}, 100`);
 
             const repetisiTasks = monthTasks.filter(t => t.type === 'repetisi');
-            const repetisiDone = repetisiTasks.filter(t => t.status === 'done').length;
+            const repetisiDone = repetisiTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
             const repetisiPercent = repetisiTasks.length === 0 ? 0 : Math.round((repetisiDone / repetisiTasks.length) * 100);
             
             document.getElementById('badgeRepetisiRatio').textContent = `${repetisiDone}/${repetisiTasks.length} Selesai`;
@@ -1291,7 +1289,7 @@
             document.getElementById('barRepetisi').style.width = `${repetisiPercent}%`;
 
             const adhocTasks = monthTasks.filter(t => t.type === 'adhoc');
-            const adhocDone = adhocTasks.filter(t => t.status === 'done').length;
+            const adhocDone = adhocTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
             const adhocPercent = adhocTasks.length === 0 ? 0 : Math.round((adhocDone / adhocTasks.length) * 100);
 
             document.getElementById('badgeAdhocRatio').textContent = `${adhocDone}/${adhocTasks.length} Selesai`;
@@ -1307,9 +1305,10 @@
             monthTasks.forEach(t => {
                 totalEst += Number(t.estHours) || 0;
                 totalActual += Number(t.actualHours) || 0;
-                if (t.priority === 'High') highCount++;
-                else if (t.priority === 'Medium') medCount++;
-                else if (t.priority === 'Low') lowCount++;
+                const p = String(t.priority).toLowerCase();
+                if (p.startsWith('h')) highCount++;
+                else if (p.startsWith('m')) medCount++;
+                else if (p.startsWith('l')) lowCount++;
             });
 
             document.getElementById('totalEstHours').textContent = `${totalEst.toFixed(1)} Jam`;
@@ -1342,6 +1341,7 @@
             document.getElementById('analyticAdhocPendingBar').style.width = `${100 - adhocPercent}%`;
         }
 
+        // FUNGSI RENDER KANBAN BEBAS CONFLICT VARIABEL
         function renderKanban(filtered) {
             const colTodo = document.getElementById('colTodo');
             const colProgress = document.getElementById('colProgress');
@@ -1375,7 +1375,7 @@
                 const gCalUrl = generateGoogleCalendarUrl(task);
 
                 let subtasksPreview = '';
-                if (task.subtasks && task.subtasks.length > 0) {
+                if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
                     const completedSub = task.subtasks.filter(s => s.done).length;
                     const subPercent = Math.round((completedSub / task.subtasks.length) * 100);
                     subtasksPreview = `
@@ -1479,7 +1479,7 @@
                 const gCalUrl = generateGoogleCalendarUrl(task);
 
                 let subCount = '';
-                if (task.subtasks && task.subtasks.length > 0) {
+                if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
                     const doneSt = task.subtasks.filter(s => s.done).length;
                     subCount = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-semibold ml-1">${doneSt}/${task.subtasks.length} Sub</span>`;
                 }
@@ -1782,7 +1782,7 @@
 
             const container = document.getElementById('subtasksContainer');
             container.innerHTML = '';
-            if (task.subtasks && task.subtasks.length > 0) {
+            if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
                 task.subtasks.forEach(st => addSubtaskInputRow(st.title, st.done));
             }
 
@@ -1795,6 +1795,8 @@
             document.getElementById('subtasksContainer').innerHTML = '';
             document.getElementById('modalTitle').textContent = 'Tambah Aktivitas Baru';
             document.getElementById('taskDueDate').value = dateStr;
+            const r = document.querySelector('input[name="activityType"][value="repetisi"]');
+            if (r) r.checked = true;
             toggleFrequencyWrapper('repetisi');
             document.getElementById('taskModal').classList.remove('hidden');
         };
@@ -1815,6 +1817,8 @@
             document.getElementById('subtasksContainer').innerHTML = '';
             document.getElementById('modalTitle').textContent = 'Tambah Aktivitas Baru';
             document.getElementById('taskDueDate').value = new Date().toISOString().split('T')[0];
+            const r = document.querySelector('input[name="activityType"][value="repetisi"]');
+            if (r) r.checked = true;
             toggleFrequencyWrapper('repetisi');
             document.getElementById('taskModal').classList.remove('hidden');
         });
@@ -1826,7 +1830,8 @@
         document.getElementById('taskForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = document.getElementById('taskId').value;
-            const type = document.querySelector('input[name="activityType"]:checked').value;
+            const checkedRadio = document.querySelector('input[name="activityType"]:checked');
+            const type = checkedRadio ? checkedRadio.value : 'repetisi';
             const frequency = type === 'repetisi' ? document.getElementById('taskFrequency').value : '';
             const title = document.getElementById('taskTitle').value.trim();
             const priority = document.getElementById('taskPriority').value;
