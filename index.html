@@ -52,7 +52,7 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
 
-    <!-- AUTH OVERLAY: LOGIN & REGISTRASI MANDIRI (SIGN UP) -->
+    <!-- AUTH OVERLAY: LOGIN & SIGN UP -->
     <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
             <div class="text-center mb-4">
@@ -63,13 +63,13 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400">Toyota Nasmoco Aftersales Division</p>
             </div>
 
-            <!-- Auth Switch Tabs -->
+            <!-- Tab Masuk / Daftar -->
             <div class="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-4 text-xs font-bold text-center">
                 <button type="button" onclick="switchAuthTab('login')" id="tabBtnLogin" class="py-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs transition">Masuk</button>
                 <button type="button" onclick="switchAuthTab('signup')" id="tabBtnSignup" class="py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition">Daftar Akun</button>
             </div>
 
-            <!-- FORM 1: LOGIN -->
+            <!-- Form 1: Login (Menggunakan Metode POST Bebas Galat 404) -->
             <form id="formLogin" onsubmit="handleLoginSubmit(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username</label>
@@ -83,7 +83,7 @@
                 <button type="submit" id="btnLoginSubmit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-500/20 transition">Masuk ke Sistem</button>
             </form>
 
-            <!-- FORM 2: SIGN UP (PENDAFTARAN TIM BARU) -->
+            <!-- Form 2: Sign Up (Pendaftaran Tim Mandiri) -->
             <form id="formSignup" onsubmit="handleSignupSubmit(event)" class="space-y-2.5 text-xs hidden">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
@@ -128,7 +128,6 @@
     <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
             
-            <!-- Brand & Division Info -->
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
                     <i class="fa-solid fa-list-check text-lg"></i>
@@ -158,21 +157,21 @@
                 </button>
             </div>
 
-            <!-- Action Controls & User Profile -->
+            <!-- Action Controls & Profile -->
             <div class="flex items-center gap-2">
-                <!-- Auto-Sync Status Badge -->
-                <button id="btnOpenCloudModal" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-2 border border-slate-200/80 dark:border-slate-700" title="Status Sinkronisasi Google Sheets">
+                <!-- Sync Status Indicator -->
+                <button id="btnOpenCloudModal" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-2 border border-slate-200/80 dark:border-slate-700" title="Status Sinkronisasi">
                     <span id="cloudIndicatorDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                     <span id="cloudStatusText" class="text-[11px] font-bold">Sinkronisasi Siap</span>
                 </button>
 
-                <!-- Pomodoro Timer Badge -->
+                <!-- Pomodoro Timer -->
                 <button id="btnOpenPomodoroModal" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 transition">
                     <i class="fa-solid fa-stopwatch text-amber-500"></i>
                     <span id="headerTimerBadge" class="font-bold">25:00</span>
                 </button>
 
-                <!-- Menu Dropdown -->
+                <!-- Tools Dropdown -->
                 <div class="relative group">
                     <button class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
                         <i class="fa-solid fa-ellipsis-vertical text-slate-500"></i>
@@ -201,13 +200,13 @@
                     </div>
                 </div>
 
-                <!-- Dark Mode Toggle -->
+                <!-- Dark Mode -->
                 <button id="btnToggleDark" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition">
                     <i class="fa-regular fa-moon dark:hidden text-xs"></i>
                     <i class="fa-regular fa-sun hidden dark:inline text-amber-400 text-xs"></i>
                 </button>
 
-                <!-- Profile User Badge & Logout -->
+                <!-- Profile Badge & Logout -->
                 <div class="bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 px-2.5 py-1 rounded-xl flex items-center gap-2">
                     <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold text-[10px] flex items-center justify-center" id="userAvatar">U</div>
                     <div class="text-left hidden sm:block">
@@ -219,7 +218,7 @@
                     </button>
                 </div>
 
-                <!-- Add Task Button -->
+                <!-- Add Task -->
                 <button id="btnOpenModal" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition">
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span>Tugas Baru</span>
@@ -233,7 +232,6 @@
         <!-- Top Progress & Metric Cards -->
         <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
             
-            <!-- Metric 1: Monthly Overall Progress Ring -->
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
                 <div>
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pencapaian <span id="labelSummaryMonth">Bulan Ini</span></span>
@@ -251,7 +249,6 @@
                 </div>
             </div>
 
-            <!-- Metric 2: Repetisi -->
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
@@ -271,7 +268,6 @@
                 </div>
             </div>
 
-            <!-- Metric 3: Ad-hoc / Project -->
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
@@ -291,7 +287,6 @@
                 </div>
             </div>
 
-            <!-- Metric 4: Workload & Time Tracking -->
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
@@ -318,7 +313,6 @@
         <section id="appToolbar" class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
             <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
                 
-                <!-- Search & Filters -->
                 <div class="flex flex-wrap items-center gap-2 flex-1">
                     <div class="relative w-full sm:w-48">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -369,7 +363,7 @@
                     </div>
                 </div>
 
-                <!-- 5 Interactive Views Switcher -->
+                <!-- 5 Views Switcher -->
                 <div id="viewSwitcherContainer" class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold overflow-x-auto">
                     <button id="viewKanbanBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs whitespace-nowrap">
                         <i class="fa-solid fa-table-columns text-indigo-500"></i>
@@ -532,7 +526,7 @@
             </div>
         </section>
 
-        <!-- VIEW 5: ANALYTICS & WORKLOAD BREAKDOWN -->
+        <!-- VIEW 5: ANALYTICS -->
         <section id="analyticsView" class="hidden space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
@@ -598,7 +592,7 @@
 
     </main>
 
-    <!-- TASK MODAL DIALOG (TAMBAH / EDIT TUGAS DENGAN PIC & SECTION) -->
+    <!-- TASK MODAL -->
     <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
         <div class="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] flex flex-col">
             
@@ -702,7 +696,7 @@
                     </div>
                 </div>
 
-                <!-- Time Estimation (Hours) -->
+                <!-- Time Estimation -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskEstHours">Estimasi Waktu (Jam)</label>
@@ -716,7 +710,7 @@
                     </div>
                 </div>
 
-                <!-- Sub-tasks / Milestones Checklist Builder -->
+                <!-- Sub-tasks Checklist Builder -->
                 <div class="border border-slate-200 dark:border-slate-700 rounded-xl p-3 bg-slate-50/50 dark:bg-slate-800/40">
                     <div class="flex items-center justify-between mb-2">
                         <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -729,7 +723,7 @@
                     <div id="subtasksContainer" class="space-y-1.5"></div>
                 </div>
 
-                <!-- Notes / Description -->
+                <!-- Notes -->
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskNote">Catatan / Detail Aktivitas</label>
                     <textarea id="taskNote" rows="2" placeholder="Detail petunjuk, link Google Drive, atau catatan tambahan..." 
@@ -769,8 +763,8 @@
                 URL Google Apps Script telah terpasang secara bawaan.
                 <ul class="list-disc list-inside mt-1 space-y-0.5 text-[11px] text-slate-600 dark:text-slate-400">
                     <li>Otomatis mengambil data saat dibuka (Silent Auto-Pull)</li>
-                    <li>Otomatis menyimpan setiap kali ada tugas ditambah / diubah (Auto-Save 1.5s)</li>
-                    <li>Tersinkronisasi otomatis antara Laptop dan HP</li>
+                    <li>Otomatis menyimpan setiap ada perubahan tugas (Auto-Save 1.5s)</li>
+                    <li>Tersinkronisasi otomatis antar laptop dan ponsel tim</li>
                 </ul>
             </div>
 
@@ -882,7 +876,7 @@
         </div>
     </div>
 
-    <!-- FLOATING TOAST NOTIFICATION -->
+    <!-- TOAST NOTIFICATION -->
     <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
         <div class="bg-slate-900 dark:bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-xs font-medium">
             <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
@@ -896,7 +890,7 @@
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
         ];
 
-        // Google Apps Script Web App URL aktif
+        // Webhook URL Google Apps Script yang terpasang aktif
         const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwILTxSMsoiiaUX905-ExaLZ_aSPYIM-R8NyE2HfWMOEvDrH8ZOdqNsoJaDkdfg1D8K/exec';
 
         let tasks = [];
@@ -904,11 +898,11 @@
         let activeDate = new Date();
         let currentTypeFilter = 'all';
         let currentPriorityFilter = 'all';
-        let currentScopeFilter = 'section'; // 'section' atau 'my'
+        let currentScopeFilter = 'section';
         let currentSearchQuery = '';
         let currentView = 'kanban';
 
-        // Pomodoro State
+        // Timer State
         let timerSeconds = 25 * 60;
         let timerInterval = null;
         let isTimerRunning = false;
@@ -939,7 +933,6 @@
             document.getElementById('userAvatar').textContent = (currentUser.name || 'U').charAt(0).toUpperCase();
             document.getElementById('headerSectionInfo').textContent = `${currentUser.section} • ${currentUser.role}`;
 
-            // Tampilkan dropdown filter section jika role adalah Aftersales Head
             const isDeptHead = currentUser.role === 'Aftersales Head' || currentUser.section === 'All Section';
             const deptFilterWrapper = document.getElementById('wrapperDeptFilter');
             if (isDeptHead) {
@@ -965,6 +958,7 @@
                 : 'py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition';
         }
 
+        // PENGIRIMAN LOGIN MENGGUNAKAN METODE POST (BEBAS DARI 404 REDIRECT)
         async function handleLoginSubmit(e) {
             e.preventDefault();
             const u = document.getElementById('loginUsername').value.trim();
@@ -977,7 +971,15 @@
             err.classList.add('hidden');
 
             try {
-                const res = await fetch(`${webhookUrl}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
+                const res = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        username: u,
+                        password: p
+                    })
+                });
                 const json = await res.json();
 
                 if (json.status === "success" && json.user) {
@@ -999,6 +1001,7 @@
             }
         }
 
+        // PENGIRIMAN SIGN UP MENGGUNAKAN METODE POST (BEBAS DARI 404 REDIRECT)
         async function handleSignupSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('regName').value.trim();
@@ -1014,8 +1017,18 @@
             err.classList.add('hidden');
 
             try {
-                const query = `action=signup&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}&name=${encodeURIComponent(name)}&section=${encodeURIComponent(section)}&role=${encodeURIComponent(role)}`;
-                const res = await fetch(`${webhookUrl}?${query}`);
+                const res = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'signup',
+                        name: name,
+                        username: u,
+                        password: p,
+                        section: section,
+                        role: role
+                    })
+                });
                 const json = await res.json();
 
                 if (json.status === "success" && json.user) {
@@ -1157,48 +1170,38 @@
             const selectedDept = document.getElementById('filterSectionSelect')?.value || 'all';
 
             return tasks.filter(task => {
-                // Filter Bulan
                 const isInMonth = task.dueDate && task.dueDate.startsWith(monthPrefix);
-
-                // Filter Tipe Aktivitas
                 const matchesType = (currentTypeFilter === 'all') || (task.type === currentTypeFilter);
                 
-                // Filter Prioritas
                 const taskPri = String(task.priority || '').toLowerCase();
                 const filterPri = String(currentPriorityFilter || '').toLowerCase();
                 const matchesPriority = (filterPri === 'all') || 
                   (filterPri.startsWith('med') && taskPri.startsWith('med')) || 
                   (taskPri === filterPri);
 
-                // Filter Pencarian
                 const matchesSearch = task.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
                     (task.note && task.note.toLowerCase().includes(currentSearchQuery.toLowerCase())) ||
                     (task.pic && task.pic.toLowerCase().includes(currentSearchQuery.toLowerCase()));
 
-                // Filter Hak Akses Hirarki Role
                 let matchesHierarchy = true;
                 if (currentUser) {
                     const isDeptHead = currentUser.role === 'Aftersales Head' || currentUser.section === 'All Section';
                     const isSecHead = currentUser.role === 'Section Head';
 
                     if (isDeptHead) {
-                        // Aftersales Head: bebas melihat semua atau memilih spesifik section
                         if (selectedDept !== 'all' && task.section && task.section !== selectedDept) {
                             matchesHierarchy = false;
                         }
                     } else if (isSecHead) {
-                        // Section Head: hanya melihat aktivitas di divisinya
                         if (task.section && task.section !== currentUser.section) {
                             matchesHierarchy = false;
                         }
                     } else {
-                        // Pelaksana (Officer, Analyst, Staff): hanya melihat di section-nya
                         if (task.section && task.section !== currentUser.section) {
                             matchesHierarchy = false;
                         }
                     }
 
-                    // Scope: "Tugas Saya" vs "Tim Section"
                     if (currentScopeFilter === 'my') {
                         const pic = String(task.pic || '').toLowerCase();
                         const me = String(currentUser.name || '').toLowerCase();
@@ -1285,7 +1288,7 @@
             document.getElementById('analyticAdhocPendingBar').style.width = `${100 - adhocPercent}%`;
         }
 
-        // VIEW RENDERING: KANBAN
+        // VIEW: KANBAN
         function renderKanban(filtered) {
             const colTodo = document.getElementById('colTodo');
             const colProgress = document.getElementById('colProgress');
@@ -1420,7 +1423,7 @@
             doneTasks.forEach(t => colDone.insertAdjacentHTML('beforeend', makeCard(t)));
         }
 
-        // VIEW RENDERING: AGENDA
+        // VIEW: AGENDA
         function renderListView(filtered) {
             const listTableBody = document.getElementById('listTableBody');
             const listEmptyMessage = document.getElementById('listEmptyMessage');
@@ -1501,7 +1504,7 @@
             });
         }
 
-        // VIEW RENDERING: CALENDAR
+        // VIEW: CALENDAR
         function renderCalendarView(filtered) {
             const calendarGrid = document.getElementById('calendarGrid');
             calendarGrid.innerHTML = '';
@@ -1592,7 +1595,7 @@
             }
         }
 
-        // VIEW RENDERING: EISENHOWER
+        // VIEW: EISENHOWER
         function renderMatrixView(filtered) {
             const q1 = document.getElementById('quadrantQ1');
             const q2 = document.getElementById('quadrantQ2');
@@ -1672,7 +1675,6 @@
             else if (currentView === 'matrix') renderMatrixView(filtered);
         }
 
-        // HELPERS & ACTIONS
         function generateGoogleCalendarUrl(task) {
             try {
                 const title = encodeURIComponent(
@@ -2100,7 +2102,6 @@
             closeModal();
         });
 
-        // VIEW & SCOPE SWITCHERS
         function setScopeFilter(scope) {
             currentScopeFilter = scope;
             const btnSec = document.getElementById('btnScopeSection');
@@ -2188,7 +2189,6 @@
             await pullDataFromCloudSilently();
         });
 
-        // EXPORT HANDLERS
         document.getElementById('btnExportCSV').addEventListener('click', () => {
             const filtered = getFilteredTasksForActiveMonth();
             let csv = "ID,Tipe,Judul,PIC,Section,Prioritas,DueDate,DueTime,Status,EstHours,ActualHours,Note\n";
