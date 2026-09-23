@@ -942,22 +942,23 @@
 
                 if (cloudTasks && cloudTasks.length > 0) {
                     tasks = cloudTasks.map(t => {
-    let sub = t.subtasks;
-    if (typeof sub === 'string') {
-        try { sub = JSON.parse(sub); } catch(e) { sub = []; }
-    }
-    if (!Array.isArray(sub)) sub = [];
-    t.subtasks = sub;
+                        let sub = t.subtasks;
+                        if (typeof sub === 'string') {
+                            try { sub = JSON.parse(sub); } catch(e) { sub = []; }
+                        }
+                        if (!Array.isArray(sub)) sub = [];
+                        t.subtasks = sub;
 
-    // Normalisasi prioritas agar cocok dengan filter
-    if (!t.priority) t.priority = 'Medium';
-    const p = String(t.priority).toLowerCase();
-    if (p.startsWith('h')) t.priority = 'High';
-    else if (p.startsWith('m')) t.priority = 'Medium';
-    else if (p.startsWith('l')) t.priority = 'Low';
+                        // Normalisasi prioritas agar cocok dengan filter
+                        if (!t.priority) t.priority = 'Medium';
+                        const p = String(t.priority).toLowerCase();
+                        if (p.startsWith('h')) t.priority = 'High';
+                        else if (p.startsWith('m')) t.priority = 'Medium';
+                        else if (p.startsWith('l')) t.priority = 'Low';
 
-    return t;
-});
+                        return t;
+                    });
+
                     try {
                         localStorage.setItem('jobtracker_tasks_v2', JSON.stringify(tasks));
                     } catch (e) {}
@@ -1252,11 +1253,13 @@
             return tasks.filter(task => {
                 const isInMonth = task.dueDate && task.dueDate.startsWith(monthPrefix);
                 const matchesType = (currentTypeFilter === 'all') || (task.type === currentTypeFilter);
+                
                 const taskPri = String(task.priority || '').toLowerCase();
                 const filterPri = String(currentPriorityFilter || '').toLowerCase();
                 const matchesPriority = (filterPri === 'all') || 
                   (filterPri.startsWith('med') && taskPri.startsWith('med')) || 
                   (taskPri === filterPri);
+
                 const matchesSearch = task.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
                     (task.note && task.note.toLowerCase().includes(currentSearchQuery.toLowerCase()));
 
@@ -1348,12 +1351,9 @@
             colProgress.innerHTML = '';
             colDone.innerHTML = '';
 
-            const todoTasks = filtered.filter(t => t.status === 'todo');
-            // GANTI DENGAN INI:
             const todoTasks = filtered.filter(t => !t.status || t.status === 'todo');
             const progressTasks = filtered.filter(t => t.status === 'inprogress' || t.status === 'doing' || t.status === 'progress');
             const doneTasks = filtered.filter(t => t.status === 'done' || t.status === 'selesai');
-            const doneTasks = filtered.filter(t => t.status === 'done');
 
             document.getElementById('colTodoCount').textContent = todoTasks.length;
             document.getElementById('colProgressCount').textContent = progressTasks.length;
@@ -1370,7 +1370,7 @@
             if (doneTasks.length === 0) colDone.innerHTML = emptyCardHtml('Kosong');
 
             const makeCard = (task) => {
-                const isDone = task.status === 'done';
+                const isDone = task.status === 'done' || task.status === 'selesai';
                 const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
                 const gCalUrl = generateGoogleCalendarUrl(task);
 
@@ -1434,8 +1434,8 @@
 
                         <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] font-semibold py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300">
                             <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
-                            <option value="inprogress" ${task.status === 'inprogress' ? 'selected' : ''}>Progress</option>
-                            <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
+                            <option value="inprogress" ${task.status === 'inprogress' || task.status === 'doing' ? 'selected' : ''}>Progress</option>
+                            <option value="done" ${task.status === 'done' || task.status === 'selesai' ? 'selected' : ''}>Done</option>
                         </select>
                     </div>
 
@@ -1474,7 +1474,7 @@
             listEmptyMessage.classList.add('hidden');
 
             filtered.forEach(task => {
-                const isDone = task.status === 'done';
+                const isDone = task.status === 'done' || task.status === 'selesai';
                 const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
                 const gCalUrl = generateGoogleCalendarUrl(task);
 
@@ -1522,8 +1522,8 @@
                         <div class="inline-flex items-center gap-1">
                             <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border rounded">
                                 <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
-                                <option value="inprogress" ${task.status === 'inprogress' ? 'selected' : ''}>Progress</option>
-                                <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
+                                <option value="inprogress" ${task.status === 'inprogress' || task.status === 'doing' ? 'selected' : ''}>Progress</option>
+                                <option value="done" ${task.status === 'done' || task.status === 'selesai' ? 'selected' : ''}>Done</option>
                             </select>
                             <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1">
                                 <i class="fa-regular fa-pen-to-square"></i>
@@ -1595,7 +1595,7 @@
 
                 let tasksHtml = '<div class="space-y-1 my-1 overflow-y-auto max-h-[80px]">';
                 dayTasks.forEach(task => {
-                    const isDone = task.status === 'done';
+                    const isDone = task.status === 'done' || task.status === 'selesai';
                     const isRepetisi = task.type === 'repetisi';
                     const pillBg = isDone 
                         ? 'bg-slate-100 text-slate-400 line-through' 
@@ -1646,13 +1646,14 @@
                 const isUrgent = dueStatus.isUrgent;
                 const isImportant = task.priority === 'High' || (task.priority === 'Medium' && task.type === 'adhoc');
 
+                const isDone = task.status === 'done' || task.status === 'selesai';
                 const card = `
                     <div class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 shadow-xs flex items-center justify-between text-xs">
                         <div class="flex items-center gap-2">
                             <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
-                                <i class="${task.status === 'done' ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+                                <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
                             </button>
-                            <span class="${task.status === 'done' ? 'line-through text-slate-400' : 'font-semibold text-slate-800 dark:text-slate-200'}">${task.title}</span>
+                            <span class="${isDone ? 'line-through text-slate-400' : 'font-semibold text-slate-800 dark:text-slate-200'}">${task.title}</span>
                         </div>
                         <div class="flex items-center gap-1.5">
                             ${getPriorityBadge(task.priority)}
@@ -1706,7 +1707,7 @@
             const task = tasks.find(t => t.id === id);
             if (!task) return;
 
-            if (task.status !== 'done') {
+            if (task.status !== 'done' && task.status !== 'selesai') {
                 task.status = 'done';
                 if (task.subtasks) task.subtasks.forEach(st => st.done = true);
                 handleRecurringTaskCompletion(task);
@@ -1721,7 +1722,7 @@
             const task = tasks.find(t => t.id === id);
             if (!task) return;
             task.status = newStatus;
-            if (newStatus === 'done' && task.type === 'repetisi') {
+            if ((newStatus === 'done' || newStatus === 'selesai') && task.type === 'repetisi') {
                 handleRecurringTaskCompletion(task);
             }
             triggerDebouncedAutoSave();
@@ -2016,14 +2017,14 @@
 
             const monthTasks = tasks.filter(t => t.dueDate && t.dueDate.startsWith(monthPrefix));
             const total = monthTasks.length;
-            const done = monthTasks.filter(t => t.status === 'done').length;
+            const done = monthTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
             const rate = total === 0 ? 0 : Math.round((done / total) * 100);
 
             const repTasks = monthTasks.filter(t => t.type === 'repetisi');
-            const repDone = repTasks.filter(t => t.status === 'done').length;
+            const repDone = repTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
 
             const adhocTasks = monthTasks.filter(t => t.type === 'adhoc');
-            const adhocDone = adhocTasks.filter(t => t.status === 'done').length;
+            const adhocDone = adhocTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
 
             document.getElementById('reportPeriodText').textContent = `Periode: ${curMonthName} ${curYear}`;
             document.getElementById('reportGeneratedDate').textContent = new Date().toLocaleDateString('id-ID');
@@ -2040,7 +2041,7 @@
                     <td class="p-2 uppercase font-semibold text-[10px]">${t.type}</td>
                     <td class="p-2">${t.priority}</td>
                     <td class="p-2">${t.dueDate}</td>
-                    <td class="p-2 font-bold ${t.status === 'done' ? 'text-emerald-600' : 'text-slate-500'}">${t.status.toUpperCase()}</td>
+                    <td class="p-2 font-bold ${(t.status === 'done' || t.status === 'selesai') ? 'text-emerald-600' : 'text-slate-500'}">${t.status.toUpperCase()}</td>
                 `;
                 tbody.appendChild(tr);
             });
