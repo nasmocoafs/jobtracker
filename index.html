@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aftersales Job & Activity Tracker Enterprise</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,10 +34,12 @@
         }
     </script>
     <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         /* Drag and Drop Card Visuals */
         .task-card { 
@@ -67,23 +69,26 @@
             border-top: 2.5px solid #6366f1 !important;
         }
 
-        .calendar-cell { min-height: 115px; transition: background-color 0.15s ease; }
+        .calendar-cell { min-height: 85px; transition: background-color 0.15s ease; }
+        @media (min-width: 640px) {
+            .calendar-cell { min-height: 115px; }
+        }
         .calendar-cell:hover { background-color: rgba(99, 102, 241, 0.04); }
         .dark .calendar-cell:hover { background-color: rgba(99, 102, 241, 0.08); }
         @media print {
             body { background: white !important; color: black !important; }
-            header, nav, #appToolbar, #viewSwitcherContainer, .no-print { display: none !important; }
+            header, nav, #appToolbar, #viewSwitcherContainer, #mobileBottomNav, #mobileFab, .no-print { display: none !important; }
             #execReportModal { display: block !important; position: static !important; width: 100% !important; }
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200 pb-20 md:pb-6">
 
     <!-- AUTH OVERLAY: LOGIN & SIGN UP -->
     <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
             <div class="text-center mb-4">
-                <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-md shadow-indigo-500/20 mb-2">
+                <div class="w-11 h-11 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-500/20 mb-2">
                     <i class="fa-solid fa-users-viewfinder"></i>
                 </div>
                 <h2 class="text-base font-extrabold text-slate-900 dark:text-white">Aftersales Activity Portal</h2>
@@ -151,99 +156,94 @@
         </div>
     </div>
 
-    <!-- HEADER NAVIGATION -->
+    <!-- HEADER NAVIGATION (1 BARIS BERSIH DI MOBILE & DESKTOP) -->
     <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between gap-2">
             
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
-                    <i class="fa-solid fa-list-check text-lg"></i>
+            <!-- Brand & Info -->
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                    <i class="fa-solid fa-list-check text-sm sm:text-lg"></i>
                 </div>
-                <div>
-                    <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                        Job & Activity Tracker <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300">Live Sync</span>
+                <div class="min-w-0">
+                    <h1 class="text-xs sm:text-base font-bold tracking-tight text-slate-900 dark:text-white truncate flex items-center gap-1.5">
+                        <span class="truncate">Job Tracker</span>
+                        <span id="cloudIndicatorDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                     </h1>
-                    <p id="headerSectionInfo" class="text-xs text-slate-500 dark:text-slate-400">Toyota Nasmoco Aftersales Division</p>
+                    <p id="headerSectionInfo" class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Toyota Nasmoco Aftersales</p>
                 </div>
             </div>
 
-            <!-- Month Navigator -->
-            <div class="flex items-center bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-                <button id="btnPrevGlobalMonth" class="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition" title="Bulan Sebelumnya">
-                    <i class="fa-solid fa-chevron-left text-xs"></i>
+            <!-- Month Navigator (Kompak di Tengah) -->
+            <div class="flex items-center bg-slate-100 dark:bg-slate-800/90 p-0.5 sm:p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs shrink-0">
+                <button id="btnPrevGlobalMonth" class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition" title="Bulan Sebelumnya">
+                    <i class="fa-solid fa-chevron-left text-[10px]"></i>
                 </button>
-                <div class="px-2.5 flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-100">
-                    <i class="fa-regular fa-calendar-check text-indigo-500 text-xs"></i>
-                    <span id="currentMonthYearLabel" class="min-w-[120px] text-center tracking-wide">Bulan Ini</span>
+                <div class="px-1.5 sm:px-2 text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 text-center min-w-[85px] sm:min-w-[110px]">
+                    <span id="currentMonthYearLabel">Bulan Ini</span>
                 </div>
-                <button id="btnNextGlobalMonth" class="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition" title="Bulan Berikutnya">
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                </button>
-                <button id="btnCurrentMonthReset" class="ml-1 text-[11px] font-semibold px-2 py-1 bg-white dark:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-300 shadow-xs hover:bg-indigo-50 transition">
-                    Bulan Ini
+                <button id="btnNextGlobalMonth" class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition" title="Bulan Berikutnya">
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
                 </button>
             </div>
 
-            <!-- Action Controls & Profile -->
-            <div class="flex items-center gap-2">
-                <button id="btnOpenCloudModal" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-2 border border-slate-200/80 dark:border-slate-700" title="Status Sinkronisasi">
-                    <span id="cloudIndicatorDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <!-- Action Controls & Profile Menu -->
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <!-- Desktop Buttons -->
+                <button id="btnOpenCloudModal" class="hidden lg:flex px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 items-center gap-1.5 border border-slate-200/80 dark:border-slate-700" title="Status Sinkronisasi">
                     <span id="cloudStatusText" class="text-[11px] font-bold">Sinkronisasi Siap</span>
                 </button>
 
-                <button id="btnOpenPomodoroModal" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 transition">
+                <button id="btnOpenPomodoroModal" class="hidden sm:flex px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 items-center gap-1.5">
                     <i class="fa-solid fa-stopwatch text-amber-500"></i>
-                    <span id="headerTimerBadge" class="font-bold">25:00</span>
+                    <span id="headerTimerBadge" class="font-bold text-[11px]">25:00</span>
                 </button>
 
-                <!-- Tools Dropdown -->
+                <!-- Tools Dropdown (Kompak) -->
                 <div class="relative group">
-                    <button class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-ellipsis-vertical text-slate-500"></i>
-                        <span class="hidden sm:inline">Menu</span>
+                    <button class="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-ellipsis-vertical text-slate-500 text-xs"></i>
+                        <span class="hidden md:inline">Menu</span>
                     </button>
-                    <div class="absolute right-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2 hidden group-hover:block z-40">
-                        <button id="btnTriggerManualPull" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold">
-                            <i class="fa-solid fa-arrows-rotate"></i> Tarik Ulang dari Sheet
+                    <div class="absolute right-0 mt-1 w-52 sm:w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-2 hidden group-hover:block z-40 text-xs">
+                        <button id="btnTriggerManualPull" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold">
+                            <i class="fa-solid fa-arrows-rotate"></i> Tarik Ulang Sheet
                         </button>
-                        <button id="btnOpenExecReport" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-800 dark:text-slate-200 font-medium">
-                            <i class="fa-solid fa-print text-indigo-500"></i> Ringkasan Eksekutif (PDF)
+                        <button id="btnOpenExecReport" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-800 dark:text-slate-200 font-medium">
+                            <i class="fa-solid fa-print text-indigo-500"></i> Laporan (PDF)
                         </button>
-                        <button id="btnExportCSV" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                            <i class="fa-solid fa-file-csv text-emerald-500"></i> Download CSV / Excel
+                        <button id="btnExportCSV" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <i class="fa-solid fa-file-csv text-emerald-500"></i> Unduh Excel/CSV
                         </button>
-                        <button id="btnBulkExportICS" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                            <i class="fa-solid fa-calendar-arrow-down text-purple-500"></i> Download Semua .ICS (HP)
+                        <button id="btnBulkExportICS" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <i class="fa-solid fa-calendar-arrow-down text-purple-500"></i> Kalender HP (.ICS)
                         </button>
-                        <button id="btnExportJSON" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                            <i class="fa-solid fa-download text-blue-500"></i> Backup File (.JSON)
+                        <button onclick="document.getElementById('cloudModal').classList.remove('hidden')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <i class="fa-solid fa-cloud text-blue-500"></i> Status Cloud
                         </button>
-                        <label class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300 cursor-pointer">
-                            <i class="fa-solid fa-upload text-blue-500"></i> Restore File (.JSON)
-                            <input type="file" id="inputImportJSON" accept=".json" class="hidden">
-                        </label>
                     </div>
                 </div>
 
+                <!-- Dark Mode -->
                 <button id="btnToggleDark" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition">
                     <i class="fa-regular fa-moon dark:hidden text-xs"></i>
                     <i class="fa-regular fa-sun hidden dark:inline text-amber-400 text-xs"></i>
                 </button>
 
-                <!-- Profile User Badge & Logout -->
-                <div class="bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 px-2.5 py-1 rounded-xl flex items-center gap-2">
+                <!-- Profile Badge & Logout -->
+                <div class="bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 px-2 py-1 rounded-xl flex items-center gap-1.5">
                     <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold text-[10px] flex items-center justify-center" id="userAvatar">U</div>
-                    <div class="text-left hidden sm:block">
+                    <div class="text-left hidden lg:block">
                         <span id="userNameBadge" class="text-xs font-bold text-slate-800 dark:text-slate-200 block leading-tight">-</span>
                         <span id="userRoleBadge" class="text-[9px] text-slate-400 font-semibold block uppercase leading-tight">-</span>
                     </div>
-                    <button onclick="handleLogout()" title="Keluar Akun" class="text-slate-400 hover:text-rose-600 ml-1 text-xs">
+                    <button onclick="handleLogout()" title="Keluar Akun" class="text-slate-400 hover:text-rose-600 p-0.5 text-xs">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     </button>
                 </div>
 
-                <!-- Add Task Button -->
-                <button id="btnOpenModal" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition">
+                <!-- Desktop Add Task Button -->
+                <button id="btnOpenModal" class="hidden md:inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl shadow-xs transition">
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span>Tugas Baru</span>
                 </button>
@@ -251,163 +251,181 @@
         </div>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-5 space-y-3 sm:space-y-4">
 
-        <!-- Top Progress & Metric Cards -->
-        <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
-                <div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pencapaian <span id="labelSummaryMonth">Bulan Ini</span></span>
-                    <h3 id="statTotalPercent" class="text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">0%</h3>
-                    <p id="statTotalRatio" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">0 dari 0 selesai</p>
-                </div>
-                <div class="relative w-14 h-14 flex items-center justify-center">
-                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                        <path class="text-slate-100 dark:text-slate-800" stroke-width="3.6" stroke="currentColor" fill="none"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        <path id="svgTotalRing" class="text-indigo-600 dark:text-indigo-400 transition-all duration-700 ease-out" stroke-dasharray="0, 100" stroke-width="3.6" stroke-linecap="round" stroke="currentColor" fill="none"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    </svg>
-                    <span id="labelRingPercent" class="absolute text-[11px] font-bold text-indigo-700 dark:text-indigo-300">0%</span>
-                </div>
+        <!-- COLLAPSIBLE KPI METRIC SUMMARY (HEMAT RUANG DI HP) -->
+        <section class="space-y-2">
+            <div class="flex items-center justify-between text-xs px-1">
+                <span class="font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-chart-pie text-indigo-500"></i> Ringkasan Kinerja Bulan Ini
+                </span>
+                <button onclick="toggleKPISummary()" id="btnToggleKPI" class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+                    <span id="textToggleKPI">Sembunyikan</span>
+                    <i id="iconToggleKPI" class="fa-solid fa-chevron-up text-[9px]"></i>
+                </button>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">1. Repetisi (Rutin)</span>
+            <!-- Metric Cards (Grid 2x2 di HP, 4 Kolom di Laptop) -->
+            <div id="wrapperKPICards" class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 transition-all duration-300">
+                
+                <!-- Metric 1: Monthly Overall Progress Ring -->
+                <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
+                    <div>
+                        <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pencapaian</span>
+                        <h3 id="statTotalPercent" class="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">0%</h3>
+                        <p id="statTotalRatio" class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">0/0 selesai</p>
                     </div>
-                    <span id="badgeRepetisiRatio" class="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/70 px-2 py-0.5 rounded-md">0/0</span>
+                    <div class="relative w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center shrink-0">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-slate-100 dark:text-slate-800" stroke-width="3.6" stroke="currentColor" fill="none"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path id="svgTotalRing" class="text-indigo-600 dark:text-indigo-400 transition-all duration-700 ease-out" stroke-dasharray="0, 100" stroke-width="3.6" stroke-linecap="round" stroke="currentColor" fill="none"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <span id="labelRingPercent" class="absolute text-[10px] sm:text-[11px] font-bold text-indigo-700 dark:text-indigo-300">0%</span>
+                    </div>
                 </div>
-                <div class="mt-3">
-                    <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
-                        <span>Konsistensi Rutinitas</span>
-                        <span id="textRepetisiPercent" class="font-bold text-slate-800 dark:text-slate-200">0%</span>
-                    </div>
-                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div id="barRepetisi" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">2. Ad-hoc / Project</span>
+                <!-- Metric 2: Repetisi -->
+                <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> 1. Repetisi
+                        </span>
+                        <span id="badgeRepetisiRatio" class="text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/70 px-1.5 py-0.5 rounded-md">0/0</span>
                     </div>
-                    <span id="badgeAdhocRatio" class="text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 px-2 py-0.5 rounded-md">0/0</span>
+                    <div class="mt-2 sm:mt-3">
+                        <div class="flex justify-between text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
+                            <span>Konsistensi</span>
+                            <span id="textRepetisiPercent" class="font-bold text-slate-800 dark:text-slate-200">0%</span>
+                        </div>
+                        <div class="w-full h-1.5 sm:h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div id="barRepetisi" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-3">
-                    <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
-                        <span>Eksekusi Milestone</span>
-                        <span id="textAdhocPercent" class="font-bold text-slate-800 dark:text-slate-200">0%</span>
-                    </div>
-                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div id="barAdhoc" class="h-full bg-purple-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Beban Waktu</span>
+                <!-- Metric 3: Ad-hoc / Project -->
+                <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-purple-500"></span> 2. Ad-hoc
+                        </span>
+                        <span id="badgeAdhocRatio" class="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 px-1.5 py-0.5 rounded-md">0/0</span>
                     </div>
-                    <span id="statWorkloadBalance" class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md">Seimbang</span>
+                    <div class="mt-2 sm:mt-3">
+                        <div class="flex justify-between text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
+                            <span>Milestone</span>
+                            <span id="textAdhocPercent" class="font-bold text-slate-800 dark:text-slate-200">0%</span>
+                        </div>
+                        <div class="w-full h-1.5 sm:h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div id="barAdhoc" class="h-full bg-purple-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-2 text-xs space-y-1">
-                    <div class="flex justify-between text-slate-500 dark:text-slate-400">
-                        <span>Estimasi Total:</span>
-                        <span id="totalEstHours" class="font-bold text-slate-800 dark:text-slate-200">0 Jam</span>
+
+                <!-- Metric 4: Workload -->
+                <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                            <i class="fa-regular fa-clock text-amber-500"></i> Beban Waktu
+                        </span>
+                        <span id="statWorkloadBalance" class="text-[9px] sm:text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-md">Seimbang</span>
                     </div>
-                    <div class="flex justify-between text-slate-500 dark:text-slate-400">
-                        <span>Realisasi Terpakai:</span>
-                        <span id="totalActualHours" class="font-bold text-indigo-600 dark:text-indigo-400">0 Jam</span>
+                    <div class="mt-1 text-[10px] sm:text-xs flex items-center justify-between pt-1">
+                        <div>
+                            <span class="text-slate-400 block text-[9px]">Est:</span>
+                            <span id="totalEstHours" class="font-bold text-slate-800 dark:text-slate-200">0h</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-slate-400 block text-[9px]">Aktual:</span>
+                            <span id="totalActualHours" class="font-bold text-indigo-600 dark:text-indigo-400">0h</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- TOOLBAR: FILTERS & VIEWS -->
-        <section id="appToolbar" class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
-            <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-2 flex-1">
-                    <div class="relative w-full sm:w-48">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" id="searchInput" placeholder="Cari aktivitas..." 
-                            class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100">
-                    </div>
-
-                    <!-- Dropdown Filter Section (Hanya Aftersales Head) -->
-                    <div id="wrapperDeptFilter" class="hidden items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
-                        <span class="text-[10px] text-slate-500 ml-1">Section:</span>
-                        <select id="filterSectionSelect" onchange="render()" class="px-2 py-1 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg border-0 focus:outline-none font-bold text-xs">
-                            <option value="all">Semua Section</option>
-                            <option value="GR Business & Retention">GR Business & Retention</option>
-                            <option value="BP Business, Retention & Part">BP Business, Retention & Part</option>
-                            <option value="Quality Process & 2nd Channel">Quality Process & 2nd Channel</option>
-                        </select>
-                    </div>
-
-                    <!-- Scope Filter: Tim Section vs Tugas Saya -->
-                    <div id="wrapperScopeFilter" class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
-                        <button onclick="setScopeFilter('section')" id="btnScopeSection" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold">
-                            Tim Section
-                        </button>
-                        <button onclick="setScopeFilter('my')" id="btnScopeMy" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                            Tugas Saya
-                        </button>
-                    </div>
-
-                    <!-- Badge Kunci Tugas Pribadi -->
-                    <div id="badgePersonalLock" class="hidden items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs rounded-xl border border-indigo-200/80 dark:border-indigo-900">
-                        <i class="fa-solid fa-lock text-[10px]"></i> Tugas Pribadi
-                    </div>
-
-                    <!-- Category Type Tabs -->
-                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
-                        <button data-type-filter="all" class="type-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold">
-                            Semua Tipe
-                        </button>
-                        <button data-type-filter="repetisi" class="type-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                            <i class="fa-solid fa-arrows-rotate text-[10px] mr-1 text-blue-500"></i> Repetisi
-                        </button>
-                        <button data-type-filter="adhoc" class="type-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                            <i class="fa-solid fa-diagram-project text-[10px] mr-1 text-purple-500"></i> Ad-hoc
-                        </button>
-                    </div>
-
-                    <!-- Priority Filters -->
-                    <div class="flex items-center gap-1 text-xs">
-                        <button data-priority-filter="all" class="priority-filter-btn px-2 py-1 rounded-lg bg-slate-200/70 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-[11px]">Semua</button>
-                        <button data-priority-filter="High" class="priority-filter-btn px-2 py-1 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-[11px]">High</button>
-                        <button data-priority-filter="Medium" class="priority-filter-btn px-2 py-1 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-[11px]">Med</button>
-                        <button data-priority-filter="Low" class="priority-filter-btn px-2 py-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-[11px]">Low</button>
-                    </div>
+        <!-- TOOLBAR: FILTER RAMPING & SCROLLABLE TAGS -->
+        <section id="appToolbar" class="bg-white dark:bg-slate-900 p-2.5 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2 sm:space-y-3">
+            
+            <!-- Row 1: Search & Hierarchy Filter -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" placeholder="Cari aktivitas atau PIC..." 
+                        class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100">
                 </div>
 
-                <!-- 5 Views Switcher -->
-                <div id="viewSwitcherContainer" class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold overflow-x-auto">
-                    <button id="viewKanbanBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs whitespace-nowrap">
+                <!-- Dropdown Filter Section (Aftersales Head Only) -->
+                <div id="wrapperDeptFilter" class="hidden items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                    <span class="text-[10px] text-slate-500 ml-1">Section:</span>
+                    <select id="filterSectionSelect" onchange="render()" class="px-2 py-1 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg border-0 focus:outline-none font-bold text-xs">
+                        <option value="all">Semua Section</option>
+                        <option value="GR Business & Retention">GR Business</option>
+                        <option value="BP Business, Retention & Part">BP Business</option>
+                        <option value="Quality Process & 2nd Channel">Quality Process</option>
+                    </select>
+                </div>
+
+                <!-- Scope Filter (Head Only) -->
+                <div id="wrapperScopeFilter" class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                    <button onclick="setScopeFilter('section')" id="btnScopeSection" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold text-xs">
+                        Tim Section
+                    </button>
+                    <button onclick="setScopeFilter('my')" id="btnScopeMy" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 text-xs">
+                        Tugas Saya
+                    </button>
+                </div>
+
+                <!-- Personal Lock Badge (Staff Only) -->
+                <div id="badgePersonalLock" class="hidden items-center justify-center gap-1 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs rounded-xl border border-indigo-200/80 dark:border-indigo-900">
+                    <i class="fa-solid fa-lock text-[10px]"></i> Tugas Pribadi
+                </div>
+            </div>
+
+            <!-- Row 2: Filter Geser Horizontal & Desktop View Switcher -->
+            <div class="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                <!-- Type Filter Tabs -->
+                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1 rounded-xl text-xs font-semibold shrink-0">
+                    <button data-type-filter="all" class="type-filter-btn px-2 sm:px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold text-[11px] sm:text-xs">
+                        Semua
+                    </button>
+                    <button data-type-filter="repetisi" class="type-filter-btn px-2 sm:px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 text-[11px] sm:text-xs">
+                        Repetisi
+                    </button>
+                    <button data-type-filter="adhoc" class="type-filter-btn px-2 sm:px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 text-[11px] sm:text-xs">
+                        Ad-hoc
+                    </button>
+                </div>
+
+                <!-- Priority Filters -->
+                <div class="flex items-center gap-1 text-xs shrink-0">
+                    <button data-priority-filter="all" class="priority-filter-btn px-2 py-1 rounded-lg bg-slate-200/70 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-[10px] sm:text-[11px]">Semua</button>
+                    <button data-priority-filter="High" class="priority-filter-btn px-2 py-1 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 text-[10px] sm:text-[11px]">High</button>
+                    <button data-priority-filter="Medium" class="priority-filter-btn px-2 py-1 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 text-[10px] sm:text-[11px]">Med</button>
+                    <button data-priority-filter="Low" class="priority-filter-btn px-2 py-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 text-[10px] sm:text-[11px]">Low</button>
+                </div>
+
+                <!-- Desktop 5 Views Switcher (Disembunyikan di Ponsel, Pindah ke Bottom Nav) -->
+                <div id="viewSwitcherContainer" class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1 rounded-xl text-xs font-semibold shrink-0 ml-auto">
+                    <button id="viewKanbanBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold text-xs">
                         <i class="fa-solid fa-table-columns text-indigo-500"></i>
                         <span>Board</span>
                     </button>
-                    <button id="viewListBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap">
+                    <button id="viewListBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 text-xs">
                         <i class="fa-solid fa-list-check"></i>
                         <span>Agenda</span>
                     </button>
-                    <button id="viewCalendarBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap">
+                    <button id="viewCalendarBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 text-xs">
                         <i class="fa-regular fa-calendar-days text-indigo-500"></i>
                         <span>Kalender</span>
                     </button>
-                    <button id="viewMatrixBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap">
+                    <button id="viewMatrixBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 text-xs">
                         <i class="fa-solid fa-braille text-purple-500"></i>
                         <span>Eisenhower</span>
                     </button>
-                    <button id="viewAnalyticsBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap">
+                    <button id="viewAnalyticsBtn" class="view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 text-xs">
                         <i class="fa-solid fa-chart-pie text-emerald-500"></i>
                         <span>Analitik</span>
                     </button>
@@ -415,59 +433,83 @@
             </div>
         </section>
 
-        <!-- VIEW 1: KANBAN BOARD WITH DRAG AND DROP -->
-        <section id="kanbanView" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-            <div id="colTodoWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
-                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
-                <div class="flex items-center justify-between mb-3 pointer-events-none">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                        <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Belum Mulai</h2>
-                    </div>
-                    <span id="colTodoCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
-                </div>
-                <div id="colTodo" class="space-y-3 flex-1"></div>
+        <!-- VIEW 1: KANBAN BOARD WITH MOBILE COLUMN TABS -->
+        <section id="kanbanView" class="space-y-2.5">
+            <!-- Mobile Segmented Column Tabs (Hanya Muncul di Layar HP) -->
+            <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-200/70 dark:bg-slate-800 rounded-2xl md:hidden text-xs font-bold text-center">
+                <button onclick="setMobileKanbanTab('todo')" id="tabMobileColTodo" class="py-1.5 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center justify-center gap-1">
+                    <span>To-Do</span>
+                    <span id="badgeMobileTodoCount" class="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-600 text-[10px] flex items-center justify-center font-bold">0</span>
+                </button>
+                <button onclick="setMobileKanbanTab('inprogress')" id="tabMobileColProgress" class="py-1.5 rounded-xl text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1">
+                    <span>Progress</span>
+                    <span id="badgeMobileProgressCount" class="w-4 h-4 rounded-full bg-amber-100 text-amber-800 text-[10px] flex items-center justify-center font-bold">0</span>
+                </button>
+                <button onclick="setMobileKanbanTab('done')" id="tabMobileColDone" class="py-1.5 rounded-xl text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1">
+                    <span>Selesai</span>
+                    <span id="badgeMobileDoneCount" class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 text-[10px] flex items-center justify-center font-bold">0</span>
+                </button>
             </div>
 
-            <div id="colProgressWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
-                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'inprogress')">
-                <div class="flex items-center justify-between mb-3 pointer-events-none">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                        <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Sedang Dikerjakan</h2>
+            <!-- Kanban Columns Container -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-start">
+                
+                <!-- Kolom 1: Belum Mulai -->
+                <div id="colTodoWrapper" class="kanban-dropzone bg-slate-100/90 dark:bg-slate-900/60 rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 min-h-[350px] sm:min-h-[460px] flex flex-col transition-colors"
+                     ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
+                    <div class="flex items-center justify-between mb-2.5 pointer-events-none">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                            <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Belum Mulai</h2>
+                        </div>
+                        <span id="colTodoCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
                     </div>
-                    <span id="colProgressCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">0</span>
+                    <div id="colTodo" class="space-y-2.5 flex-1"></div>
                 </div>
-                <div id="colProgress" class="space-y-3 flex-1"></div>
-            </div>
 
-            <div id="colDoneWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
-                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'done')">
-                <div class="flex items-center justify-between mb-3 pointer-events-none">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Selesai</h2>
+                <!-- Kolom 2: Sedang Dikerjakan -->
+                <div id="colProgressWrapper" class="kanban-dropzone bg-slate-100/90 dark:bg-slate-900/60 rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 min-h-[350px] sm:min-h-[460px] flex flex-col transition-colors"
+                     ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'inprogress')">
+                    <div class="flex items-center justify-between mb-2.5 pointer-events-none">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                            <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Sedang Dikerjakan</h2>
+                        </div>
+                        <span id="colProgressCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">0</span>
                     </div>
-                    <span id="colDoneCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">0</span>
+                    <div id="colProgress" class="space-y-2.5 flex-1"></div>
                 </div>
-                <div id="colDone" class="space-y-3 flex-1"></div>
+
+                <!-- Kolom 3: Selesai -->
+                <div id="colDoneWrapper" class="kanban-dropzone bg-slate-100/90 dark:bg-slate-900/60 rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 min-h-[350px] sm:min-h-[460px] flex flex-col transition-colors"
+                     ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'done')">
+                    <div class="flex items-center justify-between mb-2.5 pointer-events-none">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Selesai</h2>
+                        </div>
+                        <span id="colDoneCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">0</span>
+                    </div>
+                    <div id="colDone" class="space-y-2.5 flex-1"></div>
+                </div>
+
             </div>
         </section>
 
-        <!-- VIEW 2: AGENDA LIST TABLE WITH DRAG-AND-DROP REORDER & PRIORITY CHANGER -->
-        <section id="listView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-4 overflow-hidden">
+        <!-- VIEW 2: AGENDA LIST TABLE -->
+        <section id="listView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3 sm:p-4 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm border-collapse min-w-[650px] sm:min-w-full">
                     <thead>
                         <tr class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2.5">
-                            <th class="pb-2.5 pl-2 w-12">Urutan</th>
+                            <th class="pb-2.5 pl-2 w-10">Urut</th>
                             <th class="pb-2.5">Aktivitas & Subtugas</th>
                             <th class="pb-2.5">PIC & Section</th>
                             <th class="pb-2.5">Tipe</th>
                             <th class="pb-2.5">Prioritas</th>
                             <th class="pb-2.5">Batas Waktu</th>
                             <th class="pb-2.5">Durasi</th>
-                            <th class="pb-2.5">Sinkron HP</th>
+                            <th class="pb-2.5">Sync</th>
                             <th class="pb-2.5 text-right pr-2">Aksi</th>
                         </tr>
                     </thead>
@@ -480,73 +522,61 @@
         </section>
 
         <!-- VIEW 3: VISUAL CALENDAR GRID -->
-        <section id="calendarView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-4 sm:p-5">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
-                <div class="flex items-center gap-2">
-                    <h2 id="calendarHeaderMonth" class="text-base font-extrabold text-slate-900 dark:text-white">Bulan Tahun</h2>
-                    <span class="text-xs text-slate-400 hidden sm:inline">• Klik kotak tanggal untuk menambah tugas</span>
-                </div>
-                <div class="flex items-center gap-3 text-[11px] font-semibold">
+        <section id="calendarView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3 sm:p-5">
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                <h2 id="calendarHeaderMonth" class="text-xs sm:text-base font-extrabold text-slate-900 dark:text-white">Bulan Tahun</h2>
+                <div class="flex items-center gap-2 text-[10px] font-semibold">
                     <span class="flex items-center gap-1 text-blue-600 dark:text-blue-400"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Repetisi</span>
                     <span class="flex items-center gap-1 text-purple-600 dark:text-purple-400"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Project</span>
-                    <span class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><i class="fa-solid fa-check text-[9px]"></i> Selesai</span>
                 </div>
             </div>
 
-            <div class="grid grid-cols-7 text-center font-bold text-xs text-slate-400 py-2 border-b border-slate-100 dark:border-slate-800">
+            <div class="grid grid-cols-7 text-center font-bold text-[10px] sm:text-xs text-slate-400 py-1.5 border-b border-slate-100 dark:border-slate-800">
                 <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div>
             </div>
             <div id="calendarGrid" class="grid grid-cols-7 border-l border-t border-slate-200/60 dark:border-slate-800"></div>
         </section>
 
         <!-- VIEW 4: EISENHOWER MATRIX -->
-        <section id="matrixView" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-rose-50/40 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 rounded-2xl p-4 min-h-[300px]">
-                <div class="flex items-center justify-between pb-2 border-b border-rose-200/60 dark:border-rose-900/60 mb-3">
+        <section id="matrixView" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div class="bg-rose-50/40 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 rounded-2xl p-3.5 min-h-[220px]">
+                <div class="flex items-center justify-between pb-2 border-b border-rose-200/60 dark:border-rose-900/60 mb-2.5">
                     <div>
-                        <h3 class="text-xs font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-rose-500"></span> Q1: Segera Kerjakan (Do First)
-                        </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Penting & Mendesak</p>
+                        <h3 class="text-xs font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider">Q1: Segera Kerjakan</h3>
+                        <p class="text-[10px] text-slate-500">Penting & Mendesak</p>
                     </div>
                     <span id="badgeQ1Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-200 dark:bg-rose-900 text-rose-800 dark:text-rose-200">0</span>
                 </div>
                 <div id="quadrantQ1" class="space-y-2"></div>
             </div>
 
-            <div class="bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl p-4 min-h-[300px]">
-                <div class="flex items-center justify-between pb-2 border-b border-indigo-200/60 dark:border-indigo-900/60 mb-3">
+            <div class="bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl p-3.5 min-h-[220px]">
+                <div class="flex items-center justify-between pb-2 border-b border-indigo-200/60 dark:border-indigo-900/60 mb-2.5">
                     <div>
-                        <h3 class="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Q2: Jadwalkan (Schedule)
-                        </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Penting, Tidak Mendesak</p>
+                        <h3 class="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider">Q2: Jadwalkan</h3>
+                        <p class="text-[10px] text-slate-500">Penting, Tidak Mendesak</p>
                     </div>
                     <span id="badgeQ2Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">0</span>
                 </div>
                 <div id="quadrantQ2" class="space-y-2"></div>
             </div>
 
-            <div class="bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 min-h-[300px]">
-                <div class="flex items-center justify-between pb-2 border-b border-amber-200/60 dark:border-amber-900/60 mb-3">
+            <div class="bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-3.5 min-h-[220px]">
+                <div class="flex items-center justify-between pb-2 border-b border-amber-200/60 dark:border-amber-900/60 mb-2.5">
                     <div>
-                        <h3 class="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Q3: Delegasikan (Delegate)
-                        </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Mendesak, Kurang Penting</p>
+                        <h3 class="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">Q3: Delegasikan</h3>
+                        <p class="text-[10px] text-slate-500">Mendesak, Ringan</p>
                     </div>
                     <span id="badgeQ3Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200">0</span>
                 </div>
                 <div id="quadrantQ3" class="space-y-2"></div>
             </div>
 
-            <div class="bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 min-h-[300px]">
-                <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800 mb-3">
+            <div class="bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 min-h-[220px]">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800 mb-2.5">
                     <div>
-                        <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-slate-400"></span> Q4: Eliminasi / Tunda (Drop)
-                        </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Tidak Penting & Tidak Mendesak</p>
+                        <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Q4: Eliminasi / Tunda</h3>
+                        <p class="text-[10px] text-slate-500">Tidak Penting & Tidak Mendesak</p>
                     </div>
                     <span id="badgeQ4Count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
                 </div>
@@ -555,63 +585,56 @@
         </section>
 
         <!-- VIEW 5: ANALYTICS -->
-        <section id="analyticsView" class="hidden space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-column text-indigo-500"></i> Distribusi Kategori & Status
+        <section id="analyticsView" class="hidden space-y-3 sm:space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-column text-indigo-500"></i> Distribusi Kategori
                     </h3>
-                    <div class="space-y-4 text-xs">
+                    <div class="space-y-3 text-xs">
                         <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="font-semibold text-slate-700 dark:text-slate-300">1. Repetisi (Rutin)</span>
+                            <div class="flex justify-between mb-1 text-[11px]">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">1. Repetisi</span>
                                 <span id="analyticRepetisiText" class="text-slate-500">0 tugas</span>
                             </div>
-                            <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                            <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
                                 <div id="analyticRepetisiDoneBar" class="bg-blue-600 h-full transition-all duration-500" style="width: 0%"></div>
                                 <div id="analyticRepetisiPendingBar" class="bg-blue-300 dark:bg-blue-900/60 h-full transition-all duration-500" style="width: 0%"></div>
                             </div>
                         </div>
 
                         <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="font-semibold text-slate-700 dark:text-slate-300">2. Ad-hoc / Project</span>
+                            <div class="flex justify-between mb-1 text-[11px]">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">2. Ad-hoc</span>
                                 <span id="analyticAdhocText" class="text-slate-500">0 tugas</span>
                             </div>
-                            <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                            <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
                                 <div id="analyticAdhocDoneBar" class="bg-purple-600 h-full transition-all duration-500" style="width: 0%"></div>
                                 <div id="analyticAdhocPendingBar" class="bg-purple-300 dark:bg-purple-900/60 h-full transition-all duration-500" style="width: 0%"></div>
                             </div>
                         </div>
-
-                        <div class="pt-2 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-100 dark:border-slate-800">
-                            <span><span class="inline-block w-2.5 h-2.5 bg-blue-600 rounded-sm mr-1"></span> Selesai</span>
-                            <span><span class="inline-block w-2.5 h-2.5 bg-blue-300 dark:bg-blue-900 rounded-sm mr-1"></span> Tertunda / Proses</span>
-                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
                     <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-fire-flame-curved text-rose-500"></i> Beban Prioritas Bulan Ini
+                        <i class="fa-solid fa-fire-flame-curved text-rose-500"></i> Beban Prioritas
                     </h3>
-                    <p class="text-xs text-slate-500 mb-4">Deteksi kepadatan High Priority untuk menjaga produktivitas optimal.</p>
-                    
-                    <div class="grid grid-cols-3 gap-3 text-center">
-                        <div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900">
-                            <span class="text-xs font-bold text-rose-700 dark:text-rose-300">High Priority</span>
-                            <h4 id="statCountHigh" class="text-2xl font-extrabold text-rose-900 dark:text-rose-200 mt-1">0</h4>
-                            <span id="statHighPercent" class="text-[10px] text-rose-600 dark:text-rose-400">0% dari total</span>
+                    <div class="grid grid-cols-3 gap-2 text-center mt-3">
+                        <div class="p-2 sm:p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900">
+                            <span class="text-[10px] sm:text-xs font-bold text-rose-700 dark:text-rose-300">High</span>
+                            <h4 id="statCountHigh" class="text-lg sm:text-2xl font-extrabold text-rose-900 dark:text-rose-200 mt-0.5">0</h4>
+                            <span id="statHighPercent" class="text-[9px] text-rose-600 dark:text-rose-400">0%</span>
                         </div>
-                        <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900">
-                            <span class="text-xs font-bold text-amber-700 dark:text-amber-300">Medium</span>
-                            <h4 id="statCountMed" class="text-2xl font-extrabold text-amber-900 dark:text-amber-200 mt-1">0</h4>
-                            <span id="statMedPercent" class="text-[10px] text-amber-600 dark:text-amber-400">0% dari total</span>
+                        <div class="p-2 sm:p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900">
+                            <span class="text-[10px] sm:text-xs font-bold text-amber-700 dark:text-amber-300">Medium</span>
+                            <h4 id="statCountMed" class="text-lg sm:text-2xl font-extrabold text-amber-900 dark:text-amber-200 mt-0.5">0</h4>
+                            <span id="statMedPercent" class="text-[9px] text-amber-600 dark:text-amber-400">0%</span>
                         </div>
-                        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900">
-                            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">Low</span>
-                            <h4 id="statCountLow" class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-200 mt-1">0</h4>
-                            <span id="statLowPercent" class="text-[10px] text-emerald-600 dark:text-emerald-400">0% dari total</span>
+                        <div class="p-2 sm:p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900">
+                            <span class="text-[10px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-300">Low</span>
+                            <h4 id="statCountLow" class="text-lg sm:text-2xl font-extrabold text-emerald-900 dark:text-emerald-200 mt-0.5">0</h4>
+                            <span id="statLowPercent" class="text-[9px] text-emerald-600 dark:text-emerald-400">0%</span>
                         </div>
                     </div>
                 </div>
@@ -620,41 +643,73 @@
 
     </main>
 
-    <!-- TASK MODAL DIALOG -->
-    <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] flex flex-col">
-            <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+    <!-- MOBILE FLOATING ACTION BUTTON (FAB) -->
+    <div id="mobileFab" class="md:hidden fixed bottom-18 right-4 z-40">
+        <button onclick="document.getElementById('btnOpenModal').click()" 
+                class="w-13 h-13 rounded-2xl bg-indigo-600 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-indigo-500/35 text-xl transition">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR (SEPERTI APLIKASI NATIVE) -->
+    <nav id="mobileBottomNav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 flex items-center justify-around text-center">
+        <button onclick="switchView('kanban')" id="mobNavKanban" class="flex flex-col items-center gap-0.5 text-indigo-600 dark:text-indigo-400 flex-1">
+            <i class="fa-solid fa-table-columns text-base"></i>
+            <span class="text-[10px] font-bold">Board</span>
+        </button>
+        <button onclick="switchView('list')" id="mobNavList" class="flex flex-col items-center gap-0.5 text-slate-400 flex-1">
+            <i class="fa-solid fa-list-check text-base"></i>
+            <span class="text-[10px] font-medium">Agenda</span>
+        </button>
+        <button onclick="switchView('calendar')" id="mobNavCalendar" class="flex flex-col items-center gap-0.5 text-slate-400 flex-1">
+            <i class="fa-regular fa-calendar-days text-base"></i>
+            <span class="text-[10px] font-medium">Kalender</span>
+        </button>
+        <button onclick="switchView('matrix')" id="mobNavMatrix" class="flex flex-col items-center gap-0.5 text-slate-400 flex-1">
+            <i class="fa-solid fa-braille text-base"></i>
+            <span class="text-[10px] font-medium">Matrix</span>
+        </button>
+        <button onclick="switchView('analytics')" id="mobNavAnalytics" class="flex flex-col items-center gap-0.5 text-slate-400 flex-1">
+            <i class="fa-solid fa-chart-pie text-base"></i>
+            <span class="text-[10px] font-medium">Analitik</span>
+        </button>
+    </nav>
+
+    <!-- TASK MODAL DIALOG (BOTTOM SHEET STYLE ON MOBILE) -->
+    <div id="taskModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] flex flex-col">
+            <div class="px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <h3 id="modalTitle" class="text-sm font-bold text-slate-800 dark:text-white">Tambah Aktivitas Baru</h3>
                 <button id="btnCloseModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-7 h-7 rounded-lg flex items-center justify-center">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
             
-            <form id="taskForm" class="p-5 space-y-3.5 overflow-y-auto flex-1">
+            <form id="taskForm" class="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1 text-xs">
                 <input type="hidden" id="taskId">
 
                 <!-- 1. Category Selection -->
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">1. Kelompok Aktivitas *</label>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <label class="cursor-pointer border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 flex items-start gap-2 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 dark:has-[:checked]:bg-indigo-950/30 transition">
-                            <input type="radio" name="activityType" value="repetisi" class="mt-0.5 text-indigo-600 focus:ring-indigo-500" checked>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">1. Kelompok Aktivitas *</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer border border-slate-200 dark:border-slate-700 rounded-xl p-2 flex items-start gap-2 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 dark:has-[:checked]:bg-indigo-950/30 transition">
+                            <input type="radio" name="activityType" value="repetisi" class="mt-0.5 text-indigo-600" checked>
                             <div>
-                                <span class="text-xs font-bold text-slate-900 dark:text-white block">1. Repetisi (Rutin)</span>
-                                <span class="text-[10px] text-slate-500">Siklus otomatis berulang & streak</span>
+                                <span class="text-xs font-bold text-slate-900 dark:text-white block">1. Repetisi</span>
+                                <span class="text-[9px] text-slate-500">Siklus otomatis</span>
                             </div>
                         </label>
-                        <label class="cursor-pointer border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 flex items-start gap-2 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 dark:has-[:checked]:bg-indigo-950/30 transition">
-                            <input type="radio" name="activityType" value="adhoc" class="mt-0.5 text-indigo-600 focus:ring-indigo-500">
+                        <label class="cursor-pointer border border-slate-200 dark:border-slate-700 rounded-xl p-2 flex items-start gap-2 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 dark:has-[:checked]:bg-indigo-950/30 transition">
+                            <input type="radio" name="activityType" value="adhoc" class="mt-0.5 text-indigo-600">
                             <div>
-                                <span class="text-xs font-bold text-slate-900 dark:text-white block">2. Ad-hoc / Project</span>
-                                <span class="text-[10px] text-slate-500">Inisiatif baru & milestone</span>
+                                <span class="text-xs font-bold text-slate-900 dark:text-white block">2. Ad-hoc</span>
+                                <span class="text-[9px] text-slate-500">Proyek target</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <!-- Frequency selector for Repetisi -->
+                <!-- Frequency selector -->
                 <div id="frequencyFieldWrapper">
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="taskFrequency">Frekuensi Pengulangan Siklus</label>
                     <select id="taskFrequency" class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
@@ -668,40 +723,40 @@
                 <!-- Title -->
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskTitle">Judul Aktivitas *</label>
-                    <input type="text" id="taskTitle" required placeholder="Contoh: Audit Pembukuan / Follow Up Klien Prioritas" 
-                        class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white transition">
+                    <input type="text" id="taskTitle" required placeholder="Contoh: Audit Pembukuan / Follow Up Klien" 
+                        class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
                 </div>
 
                 <!-- PIC & Section -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskPIC">PIC (Penanggung Jawab)</label>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskPIC">PIC</label>
                         <input type="text" id="taskPIC" placeholder="Nama PIC" 
-                            class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white">
+                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskSection">Section Terkait</label>
-                        <select id="taskSection" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white">
-                            <option value="GR Business & Retention">GR Business & Retention</option>
-                            <option value="BP Business, Retention & Part">BP Business, Retention & Part</option>
-                            <option value="Quality Process & 2nd Channel">Quality Process & 2nd Channel</option>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskSection">Section</label>
+                        <select id="taskSection" class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white">
+                            <option value="GR Business & Retention">GR Business</option>
+                            <option value="BP Business, Retention & Part">BP Business</option>
+                            <option value="Quality Process & 2nd Channel">Quality Process</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- Priority & Status -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskPriority">Tag Prioritas *</label>
-                        <select id="taskPriority" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white font-medium">
-                            <option value="High" class="text-rose-600 font-bold">🔴 High (Mendesak)</option>
-                            <option value="Medium" class="text-amber-600 font-bold" selected>🟡 Medium (Terjadwal)</option>
-                            <option value="Low" class="text-emerald-600 font-bold">🟢 Low (Fleksibel)</option>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskPriority">Prioritas *</label>
+                        <select id="taskPriority" class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none font-medium text-slate-900 dark:text-white">
+                            <option value="High" class="text-rose-600 font-bold">🔴 High</option>
+                            <option value="Medium" class="text-amber-600 font-bold" selected>🟡 Medium</option>
+                            <option value="Low" class="text-emerald-600 font-bold">🟢 Low</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskStatus">Status</label>
-                        <select id="taskStatus" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                        <select id="taskStatus" class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-900 dark:text-white">
                             <option value="todo">Belum Mulai</option>
                             <option value="inprogress">Sedang Berjalan</option>
                             <option value="done">Selesai</option>
@@ -710,41 +765,41 @@
                 </div>
 
                 <!-- Due Date & Time -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskDueDate">Batas Waktu (Due Date) *</label>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskDueDate">Jatuh Tempo *</label>
                         <input type="date" id="taskDueDate" required
-                            class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-900 dark:text-white">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskDueTime">Jam Tenggat</label>
                         <input type="time" id="taskDueTime" value="17:00"
-                            class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-900 dark:text-white">
                     </div>
                 </div>
 
-                <!-- Time Estimation -->
-                <div class="grid grid-cols-2 gap-3">
+                <!-- Estimation & Actual -->
+                <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskEstHours">Estimasi Waktu (Jam)</label>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskEstHours">Estimasi (Jam)</label>
                         <input type="number" id="taskEstHours" step="0.5" min="0" value="1"
-                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskActualHours">Waktu Terpakai (Jam)</label>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskActualHours">Aktual (Jam)</label>
                         <input type="number" id="taskActualHours" step="0.25" min="0" value="0"
-                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                            class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white">
                     </div>
                 </div>
 
                 <!-- Sub-tasks Checklist Builder -->
-                <div class="border border-slate-200 dark:border-slate-700 rounded-xl p-3 bg-slate-50/50 dark:bg-slate-800/40">
-                    <div class="flex items-center justify-between mb-2">
+                <div class="border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 bg-slate-50/50 dark:bg-slate-800/40">
+                    <div class="flex items-center justify-between mb-1.5">
                         <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-list-ol text-indigo-500"></i> Milestone / Sub-tugas
+                            <i class="fa-solid fa-list-ol text-indigo-500"></i> Milestone
                         </label>
-                        <button type="button" id="btnAddSubtaskRow" class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
-                            + Tambah Item
+                        <button type="button" id="btnAddSubtaskRow" class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+                            + Tambah
                         </button>
                     </div>
                     <div id="subtasksContainer" class="space-y-1.5"></div>
@@ -752,148 +807,122 @@
 
                 <!-- Notes -->
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskNote">Catatan / Detail Aktivitas</label>
-                    <textarea id="taskNote" rows="2" placeholder="Detail petunjuk, link Google Drive, atau catatan tambahan..." 
-                        class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white resize-none"></textarea>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1" for="taskNote">Catatan</label>
+                    <textarea id="taskNote" rows="2" placeholder="Catatan tambahan..." 
+                        class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-900 dark:text-white resize-none"></textarea>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
-                    <button type="button" id="btnCancelModal" class="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">
+                    <button type="button" id="btnCancelModal" class="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">
                         Batal
                     </button>
-                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition">
-                        Simpan Aktivitas
+                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs">
+                        Simpan
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- CLOUD CONFIG MODAL -->
+    <!-- MODAL CLOUD CONFIG -->
     <div id="cloudModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-cloud text-indigo-500 text-lg"></i>
-                    <h3 class="text-sm font-bold text-slate-800 dark:text-white">Koneksi Google Sheets Apps Script</h3>
-                </div>
-                <button id="btnCloseCloudModal" class="text-slate-400 hover:text-slate-600 w-7 h-7 rounded-lg flex items-center justify-center">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-white">Koneksi Google Sheets</h3>
+                <button id="btnCloseCloudModal" class="text-slate-400 hover:text-slate-600 w-7 h-7 flex items-center justify-center">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
-
-            <div class="p-3 bg-emerald-50/70 dark:bg-emerald-950/40 rounded-xl border border-emerald-100 dark:border-emerald-900/60 text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed">
-                <p class="font-bold flex items-center gap-1.5 mb-1 text-emerald-700 dark:text-emerald-300">
-                    <i class="fa-solid fa-bolt"></i> Real-Time Auto-Save Aktif
-                </p>
-                URL Google Apps Script telah terpasang secara bawaan.
-                <ul class="list-disc list-inside mt-1 space-y-0.5 text-[11px] text-slate-600 dark:text-slate-400">
-                    <li>Otomatis mengambil data saat dibuka (Silent Auto-Pull)</li>
-                    <li>Otomatis menyimpan setiap ada perubahan tugas (Auto-Save 1.5s)</li>
-                    <li>Tersinkronisasi otomatis antar laptop dan ponsel tim</li>
-                </ul>
+            <div class="p-3 bg-emerald-50/70 dark:bg-emerald-950/40 rounded-xl border border-emerald-100 dark:border-emerald-900/60 text-xs text-emerald-900 dark:text-emerald-200">
+                <p class="font-bold mb-1">Status: Real-Time Auto-Save Aktif</p>
+                Semua perubahan tugas tersinkronisasi otomatis dalam 1.5 detik ke Google Sheets.
             </div>
-
-            <div class="space-y-1.5">
+            <div class="space-y-1">
                 <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase">Google Apps Script Web App URL</label>
                 <input type="url" id="inputWebhookUrl"
-                    class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                    class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-900 dark:text-white">
             </div>
-
             <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <button id="btnDisconnectCloud" class="px-3 py-2 text-xs font-semibold rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
-                    Reset ke Default
-                </button>
-                <button id="btnSaveCloudConfig" class="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-1.5 shadow-xs transition">
-                    <i class="fa-solid fa-arrows-rotate"></i> Sinkronkan Sekarang
-                </button>
+                <button id="btnDisconnectCloud" class="px-3 py-1.5 text-xs font-semibold rounded-xl text-rose-600 hover:bg-rose-50">Reset</button>
+                <button id="btnSaveCloudConfig" class="px-4 py-1.5 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white">Sinkronkan</button>
             </div>
         </div>
     </div>
 
-    <!-- POMODORO TIMER MODAL -->
+    <!-- MODAL POMODORO TIMER -->
     <div id="pomodoroModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 text-center space-y-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-xs rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 text-center space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pomodoro Focus Timer</span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pomodoro Timer</span>
                 <button id="btnClosePomodoroModal" class="text-slate-400 hover:text-slate-600">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
-
-            <div class="py-3">
-                <div id="timerDisplay" class="text-5xl font-black text-indigo-600 dark:text-indigo-400 tracking-wider">25:00</div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Sesi Fokus Bekerja</p>
+            <div class="py-2">
+                <div id="timerDisplay" class="text-4xl font-black text-indigo-600 dark:text-indigo-400 tracking-wider">25:00</div>
+                <p class="text-xs text-slate-500 mt-1">Sesi Fokus Bekerja</p>
             </div>
-
             <div class="flex items-center justify-center gap-2">
-                <button id="btnTimerToggle" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition">
-                    Mulai Sesi
-                </button>
-                <button id="btnTimerReset" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition">
-                    Reset
-                </button>
+                <button id="btnTimerToggle" class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">Mulai</button>
+                <button id="btnTimerReset" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">Reset</button>
             </div>
         </div>
     </div>
 
-    <!-- EXECUTIVE REPORT PRINT MODAL -->
-    <div id="execReportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs hidden overflow-y-auto">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 my-auto">
-            <div class="flex items-center justify-between border-b pb-4 dark:border-slate-800 no-print">
+    <!-- MODAL EXECUTIVE REPORT PRINT -->
+    <div id="execReportModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs hidden overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 space-y-4 my-auto">
+            <div class="flex items-center justify-between border-b pb-3 dark:border-slate-800 no-print">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <i class="fa-solid fa-award text-indigo-600"></i> Laporan Kinerja Eksekutif
+                </h3>
                 <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-award text-indigo-600 text-xl"></i>
-                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Laporan Kinerja & Ringkasan Eksekutif</h3>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="window.print()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs">
-                        <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+                    <button onclick="window.print()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-print"></i> Cetak PDF
                     </button>
-                    <button id="btnCloseExecReport" class="text-slate-400 hover:text-slate-600 p-1.5">
+                    <button id="btnCloseExecReport" class="text-slate-400 hover:text-slate-600 p-1">
                         <i class="fa-solid fa-xmark text-base"></i>
                     </button>
                 </div>
             </div>
 
-            <div id="printableReportContent" class="space-y-5 text-slate-800 dark:text-slate-200">
-                <div class="flex justify-between items-start border-b pb-3 border-slate-200 dark:border-slate-800">
+            <div id="printableReportContent" class="space-y-4 text-slate-800 dark:text-slate-200 text-xs">
+                <div class="flex justify-between items-start border-b pb-2 border-slate-200 dark:border-slate-800">
                     <div>
-                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Laporan Eksekusi Target & Aktivitas</h2>
-                        <p class="text-xs text-slate-500" id="reportPeriodText">Periode: -</p>
+                        <h2 class="text-base font-extrabold text-slate-900 dark:text-white">Laporan Eksekusi Target & Aktivitas</h2>
+                        <p class="text-[11px] text-slate-500" id="reportPeriodText">Periode: -</p>
                     </div>
-                    <div class="text-right text-xs text-slate-400">
+                    <div class="text-right text-[10px] text-slate-400">
                         <span>Dibuat: <span id="reportGeneratedDate">-</span></span>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Tingkat Penyelesaian</span>
-                        <div id="reportKPIPercent" class="text-2xl font-black text-indigo-600 mt-1">0%</div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">Penyelesaian</span>
+                        <div id="reportKPIPercent" class="text-lg font-black text-indigo-600 mt-0.5">0%</div>
                     </div>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Rasio Repetisi</span>
-                        <div id="reportKPIRepetisi" class="text-2xl font-black text-blue-600 mt-1">0/0</div>
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">Repetisi</span>
+                        <div id="reportKPIRepetisi" class="text-lg font-black text-blue-600 mt-0.5">0/0</div>
                     </div>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Rasio Target Project</span>
-                        <div id="reportKPIAdhoc" class="text-2xl font-black text-purple-600 mt-1">0/0</div>
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">Project</span>
+                        <div id="reportKPIAdhoc" class="text-lg font-black text-purple-600 mt-0.5">0/0</div>
                     </div>
                 </div>
 
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider mb-2 text-slate-700 dark:text-slate-300">Daftar Aktivitas Bulan Terpilih</h4>
-                    <table class="w-full text-xs text-left border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                        <thead class="bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-[11px] text-left border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                        <thead class="bg-slate-100 dark:bg-slate-800 text-[9px] font-bold text-slate-600 dark:text-slate-300 uppercase">
                             <tr>
-                                <th class="p-2">Judul Aktivitas</th>
-                                <th class="p-2">PIC</th>
-                                <th class="p-2">Section</th>
-                                <th class="p-2">Tipe</th>
-                                <th class="p-2">Prioritas</th>
-                                <th class="p-2">Due Date</th>
-                                <th class="p-2">Status</th>
+                                <th class="p-1.5">Judul</th>
+                                <th class="p-1.5">PIC</th>
+                                <th class="p-1.5">Tipe</th>
+                                <th class="p-1.5">Prioritas</th>
+                                <th class="p-1.5">Due Date</th>
+                                <th class="p-1.5">Status</th>
                             </tr>
                         </thead>
                         <tbody id="reportTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
@@ -903,9 +932,9 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div class="bg-slate-900 dark:bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-xs font-medium">
+    <!-- FLOATING TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-18 md:bottom-5 right-4 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 dark:bg-slate-800 text-white px-3.5 py-2 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2 text-xs font-medium">
             <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
             <span id="toastMessage">Pembaruan berhasil</span>
         </div>
@@ -927,6 +956,8 @@
         let currentScopeFilter = 'section';
         let currentSearchQuery = '';
         let currentView = 'kanban';
+        let currentMobileKanbanTab = 'todo'; // 'todo', 'inprogress', 'done'
+        let isKPISummaryExpanded = true;
 
         // Timer State
         let timerSeconds = 25 * 60;
@@ -938,7 +969,25 @@
         let autoSaveTimer = null;
         let isSavingToCloud = false;
 
-        // SANITIZER: BERSIHKAN TANGGAL KOTOR DI KOLOM PIC & JAM
+        // TOGGLE COLLAPSIBLE KPI CARDS
+        function toggleKPISummary() {
+            isKPISummaryExpanded = !isKPISummaryExpanded;
+            const wrapper = document.getElementById('wrapperKPICards');
+            const txt = document.getElementById('textToggleKPI');
+            const icon = document.getElementById('iconToggleKPI');
+
+            if (isKPISummaryExpanded) {
+                wrapper.classList.remove('hidden');
+                txt.textContent = 'Sembunyikan';
+                icon.className = 'fa-solid fa-chevron-up text-[9px]';
+            } else {
+                wrapper.classList.add('hidden');
+                txt.textContent = 'Tampilkan';
+                icon.className = 'fa-solid fa-chevron-down text-[9px]';
+            }
+        }
+
+        // SANITIZERS
         function cleanPIC(picVal) {
             if (!picVal) return '';
             let s = String(picVal).trim();
@@ -960,9 +1009,7 @@
             return '17:00';
         }
 
-        // ===================================================================
-        // RECURRING LOGIC: HITUNG TANGGAL JATUH TEMPO SIKLUS BERIKUTNYA
-        // ===================================================================
+        // RECURRING ENGINE
         function calculateNextCycleDate(dateStr, frequency) {
             let baseDate = new Date();
             if (dateStr && !String(dateStr).includes('1899')) {
@@ -976,8 +1023,8 @@
                 baseDate.setDate(baseDate.getDate() + 1);
             } else if (freq === 'Hari Kerja') {
                 const day = baseDate.getDay();
-                if (day === 5) baseDate.setDate(baseDate.getDate() + 3); // Jumat -> Senin
-                else if (day === 6) baseDate.setDate(baseDate.getDate() + 2); // Sabtu -> Senin
+                if (day === 5) baseDate.setDate(baseDate.getDate() + 3);
+                else if (day === 6) baseDate.setDate(baseDate.getDate() + 2);
                 else baseDate.setDate(baseDate.getDate() + 1);
             } else if (freq === 'Mingguan') {
                 baseDate.setDate(baseDate.getDate() + 7);
@@ -993,7 +1040,6 @@
             return `${y}-${m}-${d}`;
         }
 
-        // OTOMATIS MEMBUAT TUGAS BARU DI SIKLUS BERIKUTNYA
         function triggerRecurringCycle(task) {
             if (task.type !== 'repetisi') return;
 
@@ -1021,7 +1067,7 @@
             showToast(`Siklus baru terjadwal (${nextDueDate})! 🔥`);
         }
 
-        // AUTHENTICATION & SESSION MANAGEMENT
+        // AUTHENTICATION & SESSION
         function checkSession() {
             const saved = localStorage.getItem('aftersales_user_session');
             if (saved) {
@@ -1102,11 +1148,7 @@
                 const res = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'login',
-                        username: u,
-                        password: p
-                    })
+                    body: JSON.stringify({ action: 'login', username: u, password: p })
                 });
                 const json = await res.json();
 
@@ -1147,14 +1189,7 @@
                 const res = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'signup',
-                        name: name,
-                        username: u,
-                        password: p,
-                        section: section,
-                        role: role
-                    })
+                    body: JSON.stringify({ action: 'signup', name, username: u, password: p, section, role })
                 });
                 const json = await res.json();
 
@@ -1163,7 +1198,7 @@
                     localStorage.setItem('aftersales_user_session', JSON.stringify(currentUser));
                     applyUserView();
                     await pullDataFromCloudSilently();
-                    showToast('Pendaftaran berhasil! Akun langsung aktif.');
+                    showToast('Pendaftaran berhasil!');
                 } else {
                     err.textContent = json.message || "Gagal mendaftar!";
                     err.classList.remove('hidden');
@@ -1189,20 +1224,26 @@
         function updateCloudIndicator(status) {
             const dot = document.getElementById('cloudIndicatorDot');
             const text = document.getElementById('cloudStatusText');
-            if (!dot || !text) return;
-
-            if (status === 'synced') {
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
-                text.textContent = 'Tersinkron';
-                text.className = 'text-[11px] font-bold text-emerald-700 dark:text-emerald-400';
-            } else if (status === 'saving') {
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping';
-                text.textContent = 'Menyimpan...';
-                text.className = 'text-[11px] font-bold text-amber-700 dark:text-amber-400';
-            } else if (status === 'error') {
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-                text.textContent = 'Gagal Sync';
-                text.className = 'text-[11px] font-bold text-rose-700 dark:text-rose-400';
+            if (dot) {
+                if (status === 'synced') {
+                    dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0';
+                } else if (status === 'saving') {
+                    dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0';
+                } else if (status === 'error') {
+                    dot.className = 'w-2 h-2 rounded-full bg-rose-500 shrink-0';
+                }
+            }
+            if (text) {
+                if (status === 'synced') {
+                    text.textContent = 'Tersinkron';
+                    text.className = 'text-[11px] font-bold text-emerald-700 dark:text-emerald-400';
+                } else if (status === 'saving') {
+                    text.textContent = 'Menyimpan...';
+                    text.className = 'text-[11px] font-bold text-amber-700 dark:text-amber-400';
+                } else if (status === 'error') {
+                    text.textContent = 'Gagal Sync';
+                    text.className = 'text-[11px] font-bold text-rose-700 dark:text-rose-400';
+                }
             }
         }
 
@@ -1363,14 +1404,14 @@
 
             document.getElementById('statTotalPercent').textContent = `${totalPercent}%`;
             document.getElementById('labelRingPercent').textContent = `${totalPercent}%`;
-            document.getElementById('statTotalRatio').textContent = `${done} dari ${total} tugas selesai`;
+            document.getElementById('statTotalRatio').textContent = `${done}/${total} selesai`;
             document.getElementById('svgTotalRing').setAttribute('stroke-dasharray', `${totalPercent}, 100`);
 
             const repetisiTasks = filtered.filter(t => t.type === 'repetisi');
             const repetisiDone = repetisiTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
             const repetisiPercent = repetisiTasks.length === 0 ? 0 : Math.round((repetisiDone / repetisiTasks.length) * 100);
             
-            document.getElementById('badgeRepetisiRatio').textContent = `${repetisiDone}/${repetisiTasks.length} Selesai`;
+            document.getElementById('badgeRepetisiRatio').textContent = `${repetisiDone}/${repetisiTasks.length}`;
             document.getElementById('textRepetisiPercent').textContent = `${repetisiPercent}%`;
             document.getElementById('barRepetisi').style.width = `${repetisiPercent}%`;
 
@@ -1378,7 +1419,7 @@
             const adhocDone = adhocTasks.filter(t => t.status === 'done' || t.status === 'selesai').length;
             const adhocPercent = adhocTasks.length === 0 ? 0 : Math.round((adhocDone / adhocTasks.length) * 100);
 
-            document.getElementById('badgeAdhocRatio').textContent = `${adhocDone}/${adhocTasks.length} Selesai`;
+            document.getElementById('badgeAdhocRatio').textContent = `${adhocDone}/${adhocTasks.length}`;
             document.getElementById('textAdhocPercent').textContent = `${adhocPercent}%`;
             document.getElementById('barAdhoc').style.width = `${adhocPercent}%`;
 
@@ -1397,39 +1438,70 @@
                 else if (p.startsWith('l')) lowCount++;
             });
 
-            document.getElementById('totalEstHours').textContent = `${totalEst.toFixed(1)} Jam`;
-            document.getElementById('totalActualHours').textContent = `${totalActual.toFixed(1)} Jam`;
+            document.getElementById('totalEstHours').textContent = `${totalEst.toFixed(1)}h`;
+            document.getElementById('totalActualHours').textContent = `${totalActual.toFixed(1)}h`;
 
             const highRatio = total > 0 ? (highCount / total) : 0;
             const workloadBadge = document.getElementById('statWorkloadBalance');
             if (highRatio > 0.5 && total > 4) {
                 workloadBadge.textContent = 'High Load 🔥';
-                workloadBadge.className = 'text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md';
+                workloadBadge.className = 'text-[9px] sm:text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded-md';
             } else {
                 workloadBadge.textContent = 'Seimbang ✨';
-                workloadBadge.className = 'text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md';
+                workloadBadge.className = 'text-[9px] sm:text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-md';
             }
 
             document.getElementById('statCountHigh').textContent = highCount;
             document.getElementById('statCountMed').textContent = medCount;
             document.getElementById('statCountLow').textContent = lowCount;
 
-            document.getElementById('statHighPercent').textContent = total > 0 ? `${Math.round((highCount/total)*100)}% dari total` : '0%';
-            document.getElementById('statMedPercent').textContent = total > 0 ? `${Math.round((medCount/total)*100)}% dari total` : '0%';
-            document.getElementById('statLowPercent').textContent = total > 0 ? `${Math.round((lowCount/total)*100)}% dari total` : '0%';
+            document.getElementById('statHighPercent').textContent = total > 0 ? `${Math.round((highCount/total)*100)}%` : '0%';
+            document.getElementById('statMedPercent').textContent = total > 0 ? `${Math.round((medCount/total)*100)}%` : '0%';
+            document.getElementById('statLowPercent').textContent = total > 0 ? `${Math.round((lowCount/total)*100)}%` : '0%';
 
-            document.getElementById('analyticRepetisiText').textContent = `${repetisiDone} dari ${repetisiTasks.length} selesai`;
+            document.getElementById('analyticRepetisiText').textContent = `${repetisiDone}/${repetisiTasks.length} selesai`;
             document.getElementById('analyticRepetisiDoneBar').style.width = `${repetisiPercent}%`;
             document.getElementById('analyticRepetisiPendingBar').style.width = `${100 - repetisiPercent}%`;
 
-            document.getElementById('analyticAdhocText').textContent = `${adhocDone} dari ${adhocTasks.length} selesai`;
+            document.getElementById('analyticAdhocText').textContent = `${adhocDone}/${adhocTasks.length} selesai`;
             document.getElementById('analyticAdhocDoneBar').style.width = `${adhocPercent}%`;
             document.getElementById('analyticAdhocPendingBar').style.width = `${100 - adhocPercent}%`;
         }
 
-        // ===================================================================
-        // DRAG AND DROP HANDLERS UNTUK BOARD KANBAN
-        // ===================================================================
+        // MOBILE KANBAN COLUMN TAB SWITCHER
+        function setMobileKanbanTab(tab) {
+            currentMobileKanbanTab = tab;
+            const wTodo = document.getElementById('colTodoWrapper');
+            const wProgress = document.getElementById('colProgressWrapper');
+            const wDone = document.getElementById('colDoneWrapper');
+
+            const tTodo = document.getElementById('tabMobileColTodo');
+            const tProgress = document.getElementById('tabMobileColProgress');
+            const tDone = document.getElementById('tabMobileColDone');
+
+            [tTodo, tProgress, tDone].forEach(b => {
+                b.className = 'py-1.5 rounded-xl text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1';
+            });
+
+            if (tab === 'todo') {
+                wTodo.classList.remove('hidden');
+                wProgress.classList.add('hidden', 'md:flex');
+                wDone.classList.add('hidden', 'md:flex');
+                tTodo.className = 'py-1.5 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex items-center justify-center gap-1';
+            } else if (tab === 'inprogress') {
+                wTodo.classList.add('hidden', 'md:flex');
+                wProgress.classList.remove('hidden');
+                wDone.classList.add('hidden', 'md:flex');
+                tProgress.className = 'py-1.5 rounded-xl bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-xs flex items-center justify-center gap-1';
+            } else {
+                wTodo.classList.add('hidden', 'md:flex');
+                wProgress.classList.add('hidden', 'md:flex');
+                wDone.classList.remove('hidden');
+                tDone.className = 'py-1.5 rounded-xl bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-xs flex items-center justify-center gap-1';
+            }
+        }
+
+        // DRAG AND DROP HANDLERS (KANBAN)
         let draggedTaskId = null;
 
         function handleDragStart(e, taskId) {
@@ -1516,15 +1588,13 @@
                 playCompletionChime();
                 showToast('Tugas dipindahkan ke Selesai! 🎉');
             } else {
-                showToast('Status aktivitas diperbarui');
+                showToast('Status diperbarui');
             }
 
             triggerDebouncedAutoSave();
         }
 
-        // ===================================================================
-        // DRAG AND DROP HANDLERS UNTUK TABEL AGENDA
-        // ===================================================================
+        // DRAG AND DROP HANDLERS (AGENDA)
         let draggedAgendaTaskId = null;
 
         function handleAgendaDragStart(e, taskId) {
@@ -1572,7 +1642,6 @@
             triggerDebouncedAutoSave();
         }
 
-        // QUICK PRIORITY CHANGER DIRECTLY IN AGENDA
         window.updateTaskPriority = function(id, newPriority) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
@@ -1599,8 +1668,12 @@
             document.getElementById('colProgressCount').textContent = progressTasks.length;
             document.getElementById('colDoneCount').textContent = doneTasks.length;
 
+            document.getElementById('badgeMobileTodoCount').textContent = todoTasks.length;
+            document.getElementById('badgeMobileProgressCount').textContent = progressTasks.length;
+            document.getElementById('badgeMobileDoneCount').textContent = doneTasks.length;
+
             const emptyCardHtml = (msg) => `
-                <div class="py-10 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl pointer-events-none">
+                <div class="py-8 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl pointer-events-none">
                     <p class="text-xs text-slate-400 font-medium">${msg}</p>
                 </div>
             `;
@@ -1619,7 +1692,7 @@
                     const completedSub = task.subtasks.filter(s => s.done).length;
                     const subPercent = Math.round((completedSub / task.subtasks.length) * 100);
                     subtasksPreview = `
-                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg text-[10px] space-y-1">
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl text-[10px] space-y-1">
                             <div class="flex justify-between font-semibold text-slate-600 dark:text-slate-300">
                                 <span>Milestones (${completedSub}/${task.subtasks.length})</span>
                                 <span>${subPercent}%</span>
@@ -1633,8 +1706,8 @@
 
                 const cleanedPIC = cleanPIC(task.pic);
                 const picChip = cleanedPIC ? `
-                    <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md flex items-center gap-1">
-                        <i class="fa-solid fa-user text-[9px] text-indigo-500"></i> ${cleanedPIC}
+                    <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">
+                        <i class="fa-solid fa-user text-[8px] text-indigo-500"></i> ${cleanedPIC}
                     </span>
                 ` : '';
 
@@ -1645,27 +1718,27 @@
                 ` : '';
 
                 return `
-                <div class="task-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col gap-2 relative group"
+                <div class="task-card bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col gap-2 relative group"
                      draggable="true" 
                      ondragstart="handleDragStart(event, '${task.id}')"
                      ondragend="handleDragEnd(event)"
                      ondragover="handleCardDragOver(event)"
                      ondrop="handleCardDrop(event, '${task.id}', '${colStatus}')">
                     <div class="flex items-start justify-between gap-2">
-                        <div class="flex items-start gap-2 flex-1">
-                            <button onclick="quickToggleDone('${task.id}')" class="mt-0.5 text-base text-slate-300 hover:text-emerald-500 transition">
+                        <div class="flex items-start gap-2 flex-1 min-w-0">
+                            <button onclick="quickToggleDone('${task.id}')" class="mt-0.5 text-base text-slate-300 hover:text-emerald-500 transition shrink-0 p-0.5">
                                 <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
                             </button>
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-0">
                                 ${sectionChip}
-                                <h4 class="text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'} leading-snug">
+                                <h4 class="text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'} leading-snug break-words">
                                     ${task.title}
                                 </h4>
                                 ${task.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">${task.note}</p>` : ''}
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition">
+                        <div class="flex items-center gap-1 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition shrink-0">
                             <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1" title="Edit">
                                 <i class="fa-regular fa-pen-to-square text-xs"></i>
                             </button>
@@ -1677,11 +1750,11 @@
 
                     ${subtasksPreview}
 
-                    <div class="flex flex-wrap items-center gap-1.5">
+                    <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
                         ${getTypeBadge(task.type, task.frequency, task.streak)}
                         ${getPriorityBadge(task.priority)}
                         ${picChip}
-                        <span class="text-[10px] text-slate-400 ml-auto flex items-center gap-1">
+                        <span class="text-[10px] text-slate-400 ml-auto flex items-center gap-1 shrink-0">
                             <i class="fa-regular fa-clock text-[9px]"></i> ${task.actualHours || 0}/${task.estHours || 1}h
                         </span>
                     </div>
@@ -1692,17 +1765,17 @@
                             ${dueStatus.label}
                         </span>
 
-                        <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] font-semibold py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-300">
+                        <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] font-semibold py-1 px-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300">
                             <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
                             <option value="inprogress" ${task.status === 'inprogress' || task.status === 'doing' ? 'selected' : ''}>Progress</option>
                             <option value="done" ${task.status === 'done' || task.status === 'selesai' ? 'selected' : ''}>Done</option>
                         </select>
                     </div>
 
-                    <div class="flex items-center gap-1.5 pt-1">
+                    <div class="flex items-center gap-1.5 pt-0.5">
                         <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" 
                            class="flex-1 inline-flex items-center justify-center gap-1 py-1 px-2 text-[10px] font-semibold rounded-lg bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/50 text-slate-700 hover:text-indigo-700 dark:text-slate-300 transition"
-                           title="Sinkron ke Google Calendar">
+                           title="Google Calendar">
                             <i class="fa-brands fa-google text-[10px] text-indigo-500"></i>
                             <span>Google Cal</span>
                         </a>
@@ -1720,9 +1793,13 @@
             todoTasks.forEach(t => colTodo.insertAdjacentHTML('beforeend', makeCard(t, 'todo')));
             progressTasks.forEach(t => colProgress.insertAdjacentHTML('beforeend', makeCard(t, 'inprogress')));
             doneTasks.forEach(t => colDone.insertAdjacentHTML('beforeend', makeCard(t, 'done')));
+
+            if (window.innerWidth < 768) {
+                setMobileKanbanTab(currentMobileKanbanTab);
+            }
         }
 
-        // VIEW: AGENDA (WITH DRAG-TO-REORDER & DIRECT PRIORITY SELECTOR)
+        // VIEW: AGENDA
         function renderListView(filtered) {
             const listTableBody = document.getElementById('listTableBody');
             const listEmptyMessage = document.getElementById('listEmptyMessage');
@@ -1734,7 +1811,7 @@
             }
             listEmptyMessage.classList.add('hidden');
 
-            filtered.forEach((task, index) => {
+            filtered.forEach(task => {
                 const isDone = task.status === 'done' || task.status === 'selesai';
                 const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
                 const gCalUrl = generateGoogleCalendarUrl(task);
@@ -1742,10 +1819,9 @@
                 let subCount = '';
                 if (task.subtasks && Array.isArray(task.subtasks) && task.subtasks.length > 0) {
                     const doneSt = task.subtasks.filter(s => s.done).length;
-                    subCount = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-semibold ml-1">${doneSt}/${task.subtasks.length} Sub</span>`;
+                    subCount = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-semibold ml-1">${doneSt}/${task.subtasks.length}</span>`;
                 }
 
-                // Interactive Priority Dropdown Badge
                 let prioritySelectClass = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-900';
                 if (task.priority === 'High') {
                     prioritySelectClass = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-900';
@@ -1765,7 +1841,7 @@
                 tr.innerHTML = `
                     <td class="py-2.5 pl-2 whitespace-nowrap">
                         <div class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-grip-vertical text-slate-300 group-hover:text-slate-500 cursor-grab text-[11px]" title="Geser ke atas/bawah untuk atur prioritas"></i>
+                            <i class="fa-solid fa-grip-vertical text-slate-300 group-hover:text-slate-500 cursor-grab text-[11px]" title="Geser untuk atur urutan"></i>
                             <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500 transition">
                                 <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
                             </button>
@@ -1777,22 +1853,20 @@
                         </div>
                         ${task.note ? `<div class="text-[10px] text-slate-400 line-clamp-1">${task.note}</div>` : ''}
                     </td>
-                    <td class="py-2.5 pr-2">
+                    <td class="py-2.5 pr-2 whitespace-nowrap">
                         <span class="font-bold text-slate-700 dark:text-slate-300 block">${cleanPIC(task.pic) || '-'}</span>
                         <span class="text-[10px] text-slate-400 block">${task.section || '-'}</span>
                     </td>
-                    <td class="py-2.5 pr-2">${getTypeBadge(task.type, task.frequency, task.streak)}</td>
-                    <td class="py-2.5 pr-2">
-                        <!-- Direct Priority Changer Dropdown -->
+                    <td class="py-2.5 pr-2 whitespace-nowrap">${getTypeBadge(task.type, task.frequency, task.streak)}</td>
+                    <td class="py-2.5 pr-2 whitespace-nowrap">
                         <select onchange="updateTaskPriority('${task.id}', this.value)" 
-                                class="text-[10px] font-bold py-0.5 px-2 rounded-full border cursor-pointer focus:outline-none ${prioritySelectClass}"
-                                title="Klik untuk ubah prioritas langsung">
+                                class="text-[10px] font-bold py-0.5 px-2 rounded-full border cursor-pointer focus:outline-none ${prioritySelectClass}">
                             <option value="High" ${task.priority === 'High' ? 'selected' : ''}>🔴 High</option>
                             <option value="Medium" ${task.priority === 'Medium' ? 'selected' : ''}>🟡 Med</option>
                             <option value="Low" ${task.priority === 'Low' ? 'selected' : ''}>🟢 Low</option>
                         </select>
                     </td>
-                    <td class="py-2.5 pr-2">
+                    <td class="py-2.5 pr-2 whitespace-nowrap">
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] ${dueStatus.class}">
                             <i class="fa-regular ${dueStatus.icon}"></i> ${dueStatus.label}
                         </span>
@@ -1800,12 +1874,12 @@
                     <td class="py-2.5 pr-2 text-[11px] text-slate-500 whitespace-nowrap">
                         ${task.actualHours || 0} / ${task.estHours || 1} Jam
                     </td>
-                    <td class="py-2.5 pr-2">
+                    <td class="py-2.5 pr-2 whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
-                            <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600" title="Google Cal">
+                            <a href="${gCalUrl}" target="_blank" rel="noopener noreferrer" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600">
                                 <i class="fa-brands fa-google text-[11px]"></i>
                             </a>
-                            <button onclick="downloadSingleICS('${task.id}')" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600" title="Download .ICS">
+                            <button onclick="downloadSingleICS('${task.id}')" class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:text-indigo-600">
                                 <i class="fa-solid fa-mobile-screen-button text-[11px]"></i>
                             </button>
                         </div>
@@ -1856,8 +1930,8 @@
             for (let i = firstDayIndex - 1; i >= 0; i--) {
                 const dayNum = daysInPrevMonth - i;
                 const cell = document.createElement('div');
-                cell.className = 'calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
-                cell.innerHTML = `<span class="text-xs font-semibold">${dayNum}</span>`;
+                cell.className = 'calendar-cell p-1.5 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
+                cell.innerHTML = `<span class="text-[10px] font-semibold">${dayNum}</span>`;
                 calendarGrid.appendChild(cell);
             }
 
@@ -1870,23 +1944,23 @@
                 const dayTasks = tasksByDate[fullDateKey] || [];
 
                 const cell = document.createElement('div');
-                cell.className = `calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 flex flex-col justify-between group relative cursor-pointer ${
+                cell.className = `calendar-cell p-1 sm:p-1.5 border-r border-b border-slate-200/60 dark:border-slate-800 flex flex-col justify-between group relative cursor-pointer ${
                     isToday ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : ''
                 }`;
 
                 let headerHtml = `
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold ${
-                            isToday ? 'w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-700 dark:text-slate-300'
+                        <span class="text-[10px] sm:text-xs font-bold ${
+                            isToday ? 'w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[9px]' : 'text-slate-700 dark:text-slate-300'
                         }">${day}</span>
                         <button onclick="openModalWithDate('${fullDateKey}'); event.stopPropagation();" 
-                            class="opacity-0 group-hover:opacity-100 text-[10px] w-4 h-4 rounded bg-indigo-100 dark:bg-slate-700 text-indigo-600 flex items-center justify-center transition">
+                            class="opacity-0 group-hover:opacity-100 text-[10px] w-4 h-4 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center">
                             <i class="fa-solid fa-plus text-[8px]"></i>
                         </button>
                     </div>
                 `;
 
-                let tasksHtml = '<div class="space-y-1 my-1 overflow-y-auto max-h-[80px]">';
+                let tasksHtml = '<div class="space-y-0.5 sm:space-y-1 my-0.5 overflow-y-auto max-h-[60px] sm:max-h-[80px]">';
                 dayTasks.forEach(task => {
                     const isDone = task.status === 'done' || task.status === 'selesai';
                     const isRepetisi = task.type === 'repetisi';
@@ -1897,7 +1971,7 @@
 
                     tasksHtml += `
                         <div onclick="editTask('${task.id}'); event.stopPropagation();" 
-                             class="text-[9px] px-1 py-0.5 rounded flex items-center gap-1 font-semibold truncate ${pillBg}">
+                             class="text-[8px] sm:text-[9px] px-1 py-0.5 rounded flex items-center gap-1 font-semibold truncate ${pillBg}">
                             <span class="w-1.5 h-1.5 rounded-full ${task.priority === 'High' ? 'bg-rose-500' : 'bg-amber-500'} shrink-0"></span>
                             <span class="truncate">${task.title}</span>
                             ${isDone ? '<i class="fa-solid fa-check text-[7px] text-emerald-500 ml-auto"></i>' : ''}
@@ -1915,8 +1989,8 @@
             const remainingCells = (totalRenderedCells <= 35) ? (35 - totalRenderedCells) : (42 - totalRenderedCells);
             for (let nextDay = 1; nextDay <= remainingCells; nextDay++) {
                 const cell = document.createElement('div');
-                cell.className = 'calendar-cell p-2 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
-                cell.innerHTML = `<span class="text-xs font-semibold">${nextDay}</span>`;
+                cell.className = 'calendar-cell p-1.5 border-r border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-300 dark:text-slate-600 select-none';
+                cell.innerHTML = `<span class="text-[10px] font-semibold">${nextDay}</span>`;
                 calendarGrid.appendChild(cell);
             }
         }
@@ -1943,16 +2017,16 @@
                 const isDone = task.status === 'done' || task.status === 'selesai';
                 const card = `
                     <div class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 shadow-xs flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-2">
-                            <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500 shrink-0">
                                 <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
                             </button>
-                            <div>
-                                <span class="${isDone ? 'line-through text-slate-400' : 'font-semibold text-slate-800 dark:text-slate-200'} block">${task.title}</span>
-                                <span class="text-[10px] text-slate-400">${cleanPIC(task.pic) || '-'} • ${task.section || '-'}</span>
+                            <div class="min-w-0">
+                                <span class="${isDone ? 'line-through text-slate-400' : 'font-semibold text-slate-800 dark:text-slate-200'} block truncate">${task.title}</span>
+                                <span class="text-[10px] text-slate-400 truncate block">${cleanPIC(task.pic) || '-'} • ${task.section || '-'}</span>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1.5 shrink-0">
                             ${getPriorityBadge(task.priority)}
                             <button onclick="editTask('${task.id}')" class="text-slate-400 hover:text-indigo-600 p-1">
                                 <i class="fa-regular fa-pen-to-square text-[11px]"></i>
@@ -1990,7 +2064,6 @@
 
             document.getElementById('currentMonthYearLabel').textContent = fullTitle;
             document.getElementById('calendarHeaderMonth').textContent = fullTitle;
-            document.getElementById('labelSummaryMonth').textContent = monthStr;
 
             const filtered = getFilteredTasksForActiveMonth();
             updateMonthlyProgressMeters();
@@ -2020,7 +2093,6 @@
                 }
 
                 let timeStr = cleanTime(task.dueTime);
-
                 const localStart = new Date(`${dateStr}T${timeStr}:00`);
                 const estHours = parseFloat(task.estHours) || 1;
                 const localEnd = (!isNaN(localStart.getTime())) 
@@ -2168,15 +2240,15 @@
         function getPriorityBadge(priority) {
             const p = String(priority).toLowerCase();
             if (p.startsWith('h')) {
-                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200">
                     <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> High
                 </span>`;
             } else if (p.startsWith('m')) {
-                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+                return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200">
                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Med
                 </span>`;
             } else {
-                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Low
                 </span>`;
             }
@@ -2184,13 +2256,13 @@
 
         function getTypeBadge(type, frequency, streak = 0) {
             if (type === 'repetisi') {
-                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
-                    <i class="fa-solid fa-arrows-rotate text-[9px]"></i> Repetisi
-                    ${streak > 0 ? `<span class="ml-1 text-[9px] font-bold text-amber-500">${streak}🔥</span>` : ''}
+                return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200">
+                    <i class="fa-solid fa-arrows-rotate text-[8px]"></i> Repetisi
+                    ${streak > 0 ? `<span class="ml-0.5 font-bold text-amber-500">${streak}🔥</span>` : ''}
                 </span>`;
             } else {
-                return `<span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-900">
-                    <i class="fa-solid fa-diagram-project text-[9px]"></i> Ad-hoc
+                return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200">
+                    <i class="fa-solid fa-diagram-project text-[8px]"></i> Ad-hoc
                 </span>`;
             }
         }
@@ -2212,7 +2284,6 @@
             }, 3000);
         }
 
-        // AKSI CENTANG SELESAI + OTOMASI SIKLUS BERIKUTNYA
         window.quickToggleDone = function(id) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
@@ -2232,7 +2303,6 @@
             triggerDebouncedAutoSave();
         };
 
-        // AKSI GANTI STATUS DROPDOWN + OTOMASI SIKLUS BERIKUTNYA
         window.updateTaskStatus = function(id, newStatus) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
@@ -2266,10 +2336,10 @@
             const rowId = 'st-row-' + Math.random().toString(36).substring(2, 9);
             const div = document.createElement('div');
             div.id = rowId;
-            div.className = 'flex items-center gap-2';
+            div.className = 'flex items-center gap-1.5';
             div.innerHTML = `
                 <input type="checkbox" class="subtask-checkbox rounded text-indigo-600 focus:ring-indigo-500" ${isDone ? 'checked' : ''}>
-                <input type="text" value="${title}" placeholder="Deskripsi tahapan / milestone..." 
+                <input type="text" value="${title}" placeholder="Deskripsi milestone..." 
                     class="subtask-title-input flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none">
                 <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-slate-400 hover:text-rose-500 p-1">
                     <i class="fa-solid fa-xmark text-xs"></i>
@@ -2445,7 +2515,7 @@
                     note
                 };
                 tasks.unshift(newTask);
-                showToast('Aktivitas baru berhasil dibuat!');
+                showToast('Aktivitas baru dibuat!');
             }
 
             triggerDebouncedAutoSave();
@@ -2459,11 +2529,11 @@
             const btnMy = document.getElementById('btnScopeMy');
 
             if (scope === 'section') {
-                btnSec.className = 'px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold';
-                btnMy.className = 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900';
+                btnSec.className = 'px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold text-xs';
+                btnMy.className = 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 text-xs';
             } else {
-                btnMy.className = 'px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold';
-                btnSec.className = 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900';
+                btnMy.className = 'px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold text-xs';
+                btnSec.className = 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 text-xs';
             }
             render();
         }
@@ -2481,18 +2551,40 @@
             Object.keys(views).forEach(v => {
                 const item = views[v];
                 if (v === target) {
-                    item.btn.className = 'view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs whitespace-nowrap font-bold';
+                    if (item.btn) item.btn.className = 'view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold text-xs whitespace-nowrap';
                     item.el.classList.remove('hidden');
                 } else {
-                    item.btn.className = 'view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 whitespace-nowrap';
+                    if (item.btn) item.btn.className = 'view-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 text-xs whitespace-nowrap';
                     item.el.classList.add('hidden');
                 }
             });
+
+            // Update mobile bottom nav styling
+            const mobBtns = {
+                kanban: document.getElementById('mobNavKanban'),
+                list: document.getElementById('mobNavList'),
+                calendar: document.getElementById('mobNavCalendar'),
+                matrix: document.getElementById('mobNavMatrix'),
+                analytics: document.getElementById('mobNavAnalytics'),
+            };
+
+            Object.keys(mobBtns).forEach(k => {
+                const btn = mobBtns[k];
+                if (!btn) return;
+                if (k === target) {
+                    btn.className = 'flex flex-col items-center gap-0.5 text-indigo-600 dark:text-indigo-400 flex-1';
+                    btn.querySelector('span').className = 'text-[10px] font-bold';
+                } else {
+                    btn.className = 'flex flex-col items-center gap-0.5 text-slate-400 flex-1';
+                    btn.querySelector('span').className = 'text-[10px] font-medium';
+                }
+            });
+
             render();
         }
 
         Object.keys(views).forEach(k => {
-            views[k].btn.addEventListener('click', () => switchView(k));
+            if (views[k].btn) views[k].btn.addEventListener('click', () => switchView(k));
         });
 
         document.getElementById('btnPrevGlobalMonth').addEventListener('click', () => {
@@ -2516,9 +2608,9 @@
         document.querySelectorAll('.type-filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.type-filter-btn').forEach(b => {
-                    b.className = 'type-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900';
+                    b.className = 'type-filter-btn px-2 sm:px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 text-[11px] sm:text-xs';
                 });
-                btn.className = 'type-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold';
+                btn.className = 'type-filter-btn px-2 sm:px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold text-[11px] sm:text-xs';
                 currentTypeFilter = btn.getAttribute('data-type-filter');
                 render();
             });
@@ -2618,13 +2710,12 @@
             filtered.forEach(t => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="p-2 font-medium">${t.title}</td>
-                    <td class="p-2 font-semibold">${cleanPIC(t.pic) || '-'}</td>
-                    <td class="p-2">${t.section || '-'}</td>
-                    <td class="p-2 uppercase font-semibold text-[10px]">${t.type}</td>
-                    <td class="p-2">${t.priority}</td>
-                    <td class="p-2">${t.dueDate}</td>
-                    <td class="p-2 font-bold ${(t.status === 'done' || t.status === 'selesai') ? 'text-emerald-600' : 'text-slate-500'}">${t.status.toUpperCase()}</td>
+                    <td class="p-1.5 font-medium">${t.title}</td>
+                    <td class="p-1.5 font-semibold">${cleanPIC(t.pic) || '-'}</td>
+                    <td class="p-1.5 uppercase font-semibold text-[9px]">${t.type}</td>
+                    <td class="p-1.5">${t.priority}</td>
+                    <td class="p-1.5">${t.dueDate}</td>
+                    <td class="p-1.5 font-bold ${(t.status === 'done' || t.status === 'selesai') ? 'text-emerald-600' : 'text-slate-500'}">${t.status.toUpperCase()}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -2682,12 +2773,12 @@
             if (isTimerRunning) {
                 clearInterval(timerInterval);
                 isTimerRunning = false;
-                btnTimerToggle.textContent = 'Lanjutkan';
-                btnTimerToggle.className = 'px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs';
+                btnTimerToggle.textContent = 'Mulai';
+                btnTimerToggle.className = 'px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold';
             } else {
                 isTimerRunning = true;
                 btnTimerToggle.textContent = 'Jeda';
-                btnTimerToggle.className = 'px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs';
+                btnTimerToggle.className = 'px-4 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold';
                 timerInterval = setInterval(() => {
                     if (timerSeconds > 0) {
                         timerSeconds--;
@@ -2696,7 +2787,7 @@
                         clearInterval(timerInterval);
                         isTimerRunning = false;
                         playCompletionChime();
-                        showToast('Sesi Pomodoro Selesai! Waktunya istirahat ☕', 'fa-mug-hot text-amber-400');
+                        showToast('Sesi Pomodoro Selesai! ☕', 'fa-mug-hot text-amber-400');
                         btnTimerToggle.textContent = 'Mulai Sesi Baru';
                     }
                 }, 1000);
@@ -2708,8 +2799,8 @@
             isTimerRunning = false;
             timerSeconds = 25 * 60;
             updateTimerLabel();
-            btnTimerToggle.textContent = 'Mulai Sesi';
-            btnTimerToggle.className = 'px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs';
+            btnTimerToggle.textContent = 'Mulai';
+            btnTimerToggle.className = 'px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold';
         });
 
         document.getElementById('btnOpenPomodoroModal').addEventListener('click', () => {
@@ -2748,6 +2839,10 @@
             }
             render();
             updateTimerLabel();
+
+            if (window.innerWidth < 768) {
+                setMobileKanbanTab('todo');
+            }
         });
     </script>
 </body>
