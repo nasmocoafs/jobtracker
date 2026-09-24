@@ -38,8 +38,23 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
-        .task-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .task-card:hover { transform: translateY(-2px); }
+        
+        /* Drag and Drop Visual Feedback */
+        .task-card { 
+            cursor: grab;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease; 
+        }
+        .task-card:active { cursor: grabbing; }
+        .task-card.dragging {
+            opacity: 0.45;
+            transform: scale(0.98);
+        }
+        .kanban-dropzone.drag-over {
+            background-color: rgba(99, 102, 241, 0.08);
+            border-color: #6366f1 !important;
+            border-style: dashed !important;
+        }
+
         .calendar-cell { min-height: 115px; transition: background-color 0.15s ease; }
         .calendar-cell:hover { background-color: rgba(99, 102, 241, 0.04); }
         .dark .calendar-cell:hover { background-color: rgba(99, 102, 241, 0.08); }
@@ -391,10 +406,12 @@
             </div>
         </section>
 
-        <!-- VIEW 1: KANBAN BOARD -->
+        <!-- VIEW 1: KANBAN BOARD WITH DRAG AND DROP -->
         <section id="kanbanView" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-            <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
-                <div class="flex items-center justify-between mb-3">
+            <!-- Kolom Belum Mulai -->
+            <div id="colTodoWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
+                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
+                <div class="flex items-center justify-between mb-3 pointer-events-none">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
                         <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Belum Mulai</h2>
@@ -404,8 +421,10 @@
                 <div id="colTodo" class="space-y-3 flex-1"></div>
             </div>
 
-            <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
-                <div class="flex items-center justify-between mb-3">
+            <!-- Kolom Sedang Dikerjakan -->
+            <div id="colProgressWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
+                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'inprogress')">
+                <div class="flex items-center justify-between mb-3 pointer-events-none">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                         <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Sedang Dikerjakan</h2>
@@ -415,8 +434,10 @@
                 <div id="colProgress" class="space-y-3 flex-1"></div>
             </div>
 
-            <div class="bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col">
-                <div class="flex items-center justify-between mb-3">
+            <!-- Kolom Selesai -->
+            <div id="colDoneWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
+                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'done')">
+                <div class="flex items-center justify-between mb-3 pointer-events-none">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                         <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200">Selesai</h2>
@@ -1024,13 +1045,11 @@
             const badgePersonalLock = document.getElementById('badgePersonalLock');
 
             if (isDeptHead || isSecHead) {
-                // Section Head & Dept Head bisa toggle pantau tim vs pribadi
                 scopeFilterWrapper.classList.remove('hidden');
                 scopeFilterWrapper.classList.add('flex');
                 badgePersonalLock.classList.add('hidden');
                 badgePersonalLock.classList.remove('flex');
             } else {
-                // Officer / Analyst / Staff: TERKUNCI HANYA BISA LIHAT TUGAS PRIBADI
                 scopeFilterWrapper.classList.add('hidden');
                 scopeFilterWrapper.classList.remove('flex');
                 badgePersonalLock.classList.remove('hidden');
@@ -1251,7 +1270,6 @@
                     render();
                     updateCloudIndicator('synced');
                 } else if (tasks.length > 0) {
-                    // Jika Sheet kosong tapi di browser lokal ada tugas, langsung upload ke Sheet
                     pushDataToCloudSilently();
                 } else {
                     updateCloudIndicator('synced');
@@ -1294,7 +1312,6 @@
                     const isSecHead = role.includes('section head');
 
                     if (isDeptHead) {
-                        // 1. Dept Head: Bisa memantau semua atau memilih dropdown section
                         if (selectedDept !== 'all' && task.section && task.section !== selectedDept) {
                             matchesHierarchy = false;
                         }
@@ -1303,7 +1320,6 @@
                             if (!p.includes(userName) && !p.includes(userUname)) matchesHierarchy = false;
                         }
                     } else if (isSecHead) {
-                        // 2. Section Head: Hanya memantau tugas anggota di bawah Section-nya
                         if (task.section && task.section !== userSec) {
                             matchesHierarchy = false;
                         }
@@ -1312,7 +1328,7 @@
                             if (!p.includes(userName) && !p.includes(userUname)) matchesHierarchy = false;
                         }
                     } else {
-                        // 3. Officer, Analyst, Staff: HANYA BISA MELIHAT TUGAS PRIBADI (TIDAK BISA INTIP LAINNYA)
+                        // Officer, Analyst, Staff: HANYA BISA MELIHAT TUGAS PRIBADI
                         const p = String(task.pic || '').toLowerCase();
                         const isMyTask = p.includes(userName) || p.includes(userUname);
                         if (!isMyTask) {
@@ -1398,6 +1414,105 @@
             document.getElementById('analyticAdhocPendingBar').style.width = `${100 - adhocPercent}%`;
         }
 
+        // ===================================================================
+        // DRAG AND DROP HANDLERS (PINDAH STATUS & URUTAN ATAS-BAWAH)
+        // ===================================================================
+        let draggedTaskId = null;
+
+        function handleDragStart(e, taskId) {
+            draggedTaskId = taskId;
+            e.dataTransfer.setData('text/plain', taskId);
+            e.dataTransfer.effectAllowed = 'move';
+            e.currentTarget.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.kanban-dropzone').forEach(z => z.classList.remove('drag-over'));
+            document.querySelectorAll('.task-card').forEach(c => c.classList.remove('dragging'));
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const zone = e.currentTarget.closest('.kanban-dropzone');
+            if (zone) zone.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            const zone = e.currentTarget.closest('.kanban-dropzone');
+            if (zone && !zone.contains(e.relatedTarget)) {
+                zone.classList.remove('drag-over');
+            }
+        }
+
+        function handleCardDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleCardDrop(e, targetTaskId, targetStatus) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.querySelectorAll('.kanban-dropzone').forEach(z => z.classList.remove('drag-over'));
+
+            const sourceTaskId = draggedTaskId || e.dataTransfer.getData('text/plain');
+            if (!sourceTaskId || sourceTaskId === targetTaskId) return;
+
+            const fromIndex = tasks.findIndex(t => t.id === sourceTaskId);
+            const toIndex = tasks.findIndex(t => t.id === targetTaskId);
+
+            if (fromIndex === -1 || toIndex === -1) return;
+
+            const movedTask = tasks.splice(fromIndex, 1)[0];
+            const oldStatus = movedTask.status;
+
+            // Update status sesuai kolom kartu tujuan
+            movedTask.status = targetStatus;
+
+            // Sisipkan pada urutan kartu yang dituju (reorder atas-bawah fleksibel)
+            tasks.splice(toIndex, 0, movedTask);
+
+            // Logika repetisi jika dipindah ke Done
+            if ((targetStatus === 'done' || targetStatus === 'selesai') && oldStatus !== 'done' && oldStatus !== 'selesai') {
+                if (movedTask.type === 'repetisi') {
+                    movedTask.streak = (movedTask.streak || 0) + 1;
+                    triggerRecurringCycle(movedTask);
+                }
+                playCompletionChime();
+                showToast('Tugas selesai! 🎉');
+            }
+
+            triggerDebouncedAutoSave();
+        }
+
+        function handleDrop(e, targetStatus) {
+            e.preventDefault();
+            document.querySelectorAll('.kanban-dropzone').forEach(z => z.classList.remove('drag-over'));
+
+            const taskId = draggedTaskId || e.dataTransfer.getData('text/plain');
+            if (!taskId) return;
+
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const oldStatus = task.status;
+            task.status = targetStatus;
+
+            if ((targetStatus === 'done' || targetStatus === 'selesai') && oldStatus !== 'done' && oldStatus !== 'selesai') {
+                if (task.type === 'repetisi') {
+                    task.streak = (task.streak || 0) + 1;
+                    triggerRecurringCycle(task);
+                }
+                playCompletionChime();
+                showToast('Tugas dipindahkan ke Selesai! 🎉');
+            } else {
+                showToast('Status aktivitas diperbarui');
+            }
+
+            triggerDebouncedAutoSave();
+        }
+
         // VIEW: KANBAN
         function renderKanban(filtered) {
             const colTodo = document.getElementById('colTodo');
@@ -1417,7 +1532,7 @@
             document.getElementById('colDoneCount').textContent = doneTasks.length;
 
             const emptyCardHtml = (msg) => `
-                <div class="py-10 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
+                <div class="py-10 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl pointer-events-none">
                     <p class="text-xs text-slate-400 font-medium">${msg}</p>
                 </div>
             `;
@@ -1426,7 +1541,7 @@
             if (progressTasks.length === 0) colProgress.innerHTML = emptyCardHtml('Kosong');
             if (doneTasks.length === 0) colDone.innerHTML = emptyCardHtml('Kosong');
 
-            const makeCard = (task) => {
+            const makeCard = (task, colStatus) => {
                 const isDone = task.status === 'done' || task.status === 'selesai';
                 const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
                 const gCalUrl = generateGoogleCalendarUrl(task);
@@ -1462,7 +1577,12 @@
                 ` : '';
 
                 return `
-                <div class="task-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col gap-2 relative group">
+                <div class="task-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col gap-2 relative group"
+                     draggable="true" 
+                     ondragstart="handleDragStart(event, '${task.id}')"
+                     ondragend="handleDragEnd(event)"
+                     ondragover="handleCardDragOver(event)"
+                     ondrop="handleCardDrop(event, '${task.id}', '${colStatus}')">
                     <div class="flex items-start justify-between gap-2">
                         <div class="flex items-start gap-2 flex-1">
                             <button onclick="quickToggleDone('${task.id}')" class="mt-0.5 text-base text-slate-300 hover:text-emerald-500 transition">
@@ -1529,9 +1649,9 @@
                 </div>`;
             };
 
-            todoTasks.forEach(t => colTodo.insertAdjacentHTML('beforeend', makeCard(t)));
-            progressTasks.forEach(t => colProgress.insertAdjacentHTML('beforeend', makeCard(t)));
-            doneTasks.forEach(t => colDone.insertAdjacentHTML('beforeend', makeCard(t)));
+            todoTasks.forEach(t => colTodo.insertAdjacentHTML('beforeend', makeCard(t, 'todo')));
+            progressTasks.forEach(t => colProgress.insertAdjacentHTML('beforeend', makeCard(t, 'inprogress')));
+            doneTasks.forEach(t => colDone.insertAdjacentHTML('beforeend', makeCard(t, 'done')));
         }
 
         // VIEW: AGENDA
@@ -2007,7 +2127,7 @@
                 if (task.subtasks) task.subtasks.forEach(st => st.done = true);
                 if (task.type === 'repetisi') {
                     task.streak = (task.streak || 0) + 1;
-                    triggerRecurringCycle(task); // Otomatis jadwalkan siklus berikutnya!
+                    triggerRecurringCycle(task);
                 }
                 playCompletionChime();
             } else {
@@ -2021,10 +2141,12 @@
         window.updateTaskStatus = function(id, newStatus) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
+            const oldStatus = task.status;
             task.status = newStatus;
-            if ((newStatus === 'done' || newStatus === 'selesai') && task.type === 'repetisi') {
+
+            if ((newStatus === 'done' || newStatus === 'selesai') && oldStatus !== 'done' && oldStatus !== 'selesai' && task.type === 'repetisi') {
                 task.streak = (task.streak || 0) + 1;
-                triggerRecurringCycle(task); // Otomatis jadwalkan siklus berikutnya!
+                triggerRecurringCycle(task);
                 playCompletionChime();
             }
             triggerDebouncedAutoSave();
@@ -2086,7 +2208,6 @@
             document.getElementById('taskActualHours').value = task.actualHours || 0;
             document.getElementById('taskNote').value = task.note || '';
 
-            // Kontrol Hak Akses Form
             const role = (currentUser?.role || '').toLowerCase();
             const isHead = role.includes('head');
             document.getElementById('taskPIC').readOnly = !isHead;
