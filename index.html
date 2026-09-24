@@ -85,7 +85,7 @@
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200 pb-20 md:pb-6">
 
     <!-- AUTH OVERLAY: LOGIN & SIGN UP -->
-    <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4" style="display: none;">
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
             <div class="text-center mb-4">
                 <div class="w-11 h-11 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-500/20 mb-2">
@@ -1067,57 +1067,100 @@
             showToast(`Siklus baru terjadwal (${nextDueDate})! 🔥`);
         }
 
-        // AUTHENTICATION & SESSION
-        function checkSession() {
-            const saved = localStorage.getItem('aftersales_user_session');
-            if (saved) {
-                try {
-                    currentUser = JSON.parse(saved);
-                    applyUserView();
-                    return true;
-                } catch(e) {}
-            }
-            document.getElementById('authOverlay').classList.remove('hidden');
-            return false;
-        }
+        // AUTHENTICATION & SESSION MANAGEMENT
+function hideAuthOverlay() {
+    const overlay = document.getElementById('authOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+        overlay.style.display = 'none';
+    }
+}
 
-        function applyUserView() {
-            document.getElementById('authOverlay').classList.add('hidden');
-            document.getElementById('userNameBadge').textContent = currentUser.name || currentUser.username;
-            document.getElementById('userRoleBadge').textContent = `${currentUser.role}`;
-            document.getElementById('userAvatar').textContent = (currentUser.name || 'U').charAt(0).toUpperCase();
-            document.getElementById('headerSectionInfo').textContent = `${currentUser.section} • ${currentUser.role}`;
+function showAuthOverlay() {
+    const overlay = document.getElementById('authOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+        overlay.style.display = 'flex';
+    }
+}
 
-            const role = (currentUser.role || '').toLowerCase();
-            const userSec = (currentUser.section || '').trim();
-            const isDeptHead = role.includes('aftersales head') || userSec === 'All Section';
-            const isSecHead = role.includes('section head');
-
-            const deptFilterWrapper = document.getElementById('wrapperDeptFilter');
-            if (isDeptHead) {
-                deptFilterWrapper.classList.remove('hidden');
-                deptFilterWrapper.classList.add('flex');
-            } else {
-                deptFilterWrapper.classList.add('hidden');
-                deptFilterWrapper.classList.remove('flex');
-            }
-
-            const scopeFilterWrapper = document.getElementById('wrapperScopeFilter');
-            const badgePersonalLock = document.getElementById('badgePersonalLock');
-
-            if (isDeptHead || isSecHead) {
-                scopeFilterWrapper.classList.remove('hidden');
-                scopeFilterWrapper.classList.add('flex');
-                badgePersonalLock.classList.add('hidden');
-                badgePersonalLock.classList.remove('flex');
-            } else {
-                scopeFilterWrapper.classList.add('hidden');
-                scopeFilterWrapper.classList.remove('flex');
-                badgePersonalLock.classList.remove('hidden');
-                badgePersonalLock.classList.add('flex');
-                currentScopeFilter = 'my';
+function checkSession() {
+    try {
+        const saved = localStorage.getItem('aftersales_user_session') || localStorage.getItem('tracker_user_session');
+        if (saved) {
+            const parsedUser = JSON.parse(saved);
+            if (parsedUser && (parsedUser.name || parsedUser.username)) {
+                currentUser = parsedUser;
+                applyUserView();
+                hideAuthOverlay();
+                return true;
             }
         }
+    } catch (e) {
+        console.warn("Gagal parse sesi lokal:", e);
+    }
+    showAuthOverlay();
+    return false;
+}
+
+function applyUserView() {
+    hideAuthOverlay();
+    if (!currentUser) return;
+
+    const nameEl = document.getElementById('userNameBadge');
+    if (nameEl) nameEl.textContent = currentUser.name || currentUser.username || '-';
+
+    const roleEl = document.getElementById('userRoleBadge');
+    if (roleEl) roleEl.textContent = `${currentUser.role || 'Staff'}`;
+
+    const avatarEl = document.getElementById('userAvatar');
+    if (avatarEl) avatarEl.textContent = (currentUser.name || currentUser.username || 'U').charAt(0).toUpperCase();
+
+    const infoEl = document.getElementById('headerSectionInfo');
+    if (infoEl) infoEl.textContent = `${currentUser.section || 'Aftersales'} • ${currentUser.role || 'Staff'}`;
+
+    const role = (currentUser.role || '').toLowerCase();
+    const userSec = (currentUser.section || '').trim();
+    const isDeptHead = role.includes('aftersales head') || userSec === 'All Section';
+    const isSecHead = role.includes('section head');
+
+    const deptFilterWrapper = document.getElementById('wrapperDeptFilter');
+    if (deptFilterWrapper) {
+        if (isDeptHead) {
+            deptFilterWrapper.classList.remove('hidden');
+            deptFilterWrapper.classList.add('flex');
+        } else {
+            deptFilterWrapper.classList.add('hidden');
+            deptFilterWrapper.classList.remove('flex');
+        }
+    }
+
+    const scopeFilterWrapper = document.getElementById('wrapperScopeFilter');
+    const badgePersonalLock = document.getElementById('badgePersonalLock');
+
+    if (isDeptHead || isSecHead) {
+        if (scopeFilterWrapper) {
+            scopeFilterWrapper.classList.remove('hidden');
+            scopeFilterWrapper.classList.add('flex');
+        }
+        if (badgePersonalLock) {
+            badgePersonalLock.classList.add('hidden');
+            badgePersonalLock.classList.remove('flex');
+        }
+    } else {
+        if (scopeFilterWrapper) {
+            scopeFilterWrapper.classList.add('hidden');
+            scopeFilterWrapper.classList.remove('flex');
+        }
+        if (badgePersonalLock) {
+            badgePersonalLock.classList.remove('hidden');
+            badgePersonalLock.classList.add('flex');
+        }
+        currentScopeFilter = 'my';
+    }
+}
 
         function switchAuthTab(tab) {
             const isLogin = tab === 'login';
@@ -1215,8 +1258,9 @@
         function handleLogout() {
             if (confirm("Keluar dari akun Anda?")) {
                 localStorage.removeItem('aftersales_user_session');
+                localStorage.removeItem('tracker_user_session');
                 currentUser = null;
-                document.getElementById('authOverlay').classList.remove('hidden');
+                showAuthOverlay();
             }
         }
 
