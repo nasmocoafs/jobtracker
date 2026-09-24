@@ -39,7 +39,7 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         
-        /* Drag and Drop Visual Feedback */
+        /* Drag and Drop Card Visuals */
         .task-card { 
             cursor: grab;
             transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease; 
@@ -53,6 +53,18 @@
             background-color: rgba(99, 102, 241, 0.08);
             border-color: #6366f1 !important;
             border-style: dashed !important;
+        }
+
+        /* Drag and Drop Table Rows */
+        tr.agenda-row {
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+        tr.agenda-row.dragging-row {
+            opacity: 0.4;
+            background-color: rgba(99, 102, 241, 0.1) !important;
+        }
+        tr.agenda-row.drag-over-row {
+            border-top: 2.5px solid #6366f1 !important;
         }
 
         .calendar-cell { min-height: 115px; transition: background-color 0.15s ease; }
@@ -184,6 +196,7 @@
                     <span id="headerTimerBadge" class="font-bold">25:00</span>
                 </button>
 
+                <!-- Tools Dropdown -->
                 <div class="relative group">
                     <button class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
                         <i class="fa-solid fa-ellipsis-vertical text-slate-500"></i>
@@ -242,7 +255,6 @@
 
         <!-- Top Progress & Metric Cards -->
         <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
                 <div>
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pencapaian <span id="labelSummaryMonth">Bulan Ini</span></span>
@@ -317,13 +329,11 @@
                     </div>
                 </div>
             </div>
-
         </section>
 
         <!-- TOOLBAR: FILTERS & VIEWS -->
         <section id="appToolbar" class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
             <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-                
                 <div class="flex flex-wrap items-center gap-2 flex-1">
                     <div class="relative w-full sm:w-48">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -342,7 +352,7 @@
                         </select>
                     </div>
 
-                    <!-- Scope Filter: Tim Section vs Tugas Saya (Hanya Muncul untuk Head) -->
+                    <!-- Scope Filter: Tim Section vs Tugas Saya -->
                     <div id="wrapperScopeFilter" class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
                         <button onclick="setScopeFilter('section')" id="btnScopeSection" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold">
                             Tim Section
@@ -352,7 +362,7 @@
                         </button>
                     </div>
 
-                    <!-- Badge Kunci Tugas Pribadi (Muncul untuk Officer/Analyst/Staff) -->
+                    <!-- Badge Kunci Tugas Pribadi -->
                     <div id="badgePersonalLock" class="hidden items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs rounded-xl border border-indigo-200/80 dark:border-indigo-900">
                         <i class="fa-solid fa-lock text-[10px]"></i> Tugas Pribadi
                     </div>
@@ -402,13 +412,11 @@
                         <span>Analitik</span>
                     </button>
                 </div>
-
             </div>
         </section>
 
         <!-- VIEW 1: KANBAN BOARD WITH DRAG AND DROP -->
         <section id="kanbanView" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-            <!-- Kolom Belum Mulai -->
             <div id="colTodoWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
                  ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
                 <div class="flex items-center justify-between mb-3 pointer-events-none">
@@ -421,7 +429,6 @@
                 <div id="colTodo" class="space-y-3 flex-1"></div>
             </div>
 
-            <!-- Kolom Sedang Dikerjakan -->
             <div id="colProgressWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
                  ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'inprogress')">
                 <div class="flex items-center justify-between mb-3 pointer-events-none">
@@ -434,7 +441,6 @@
                 <div id="colProgress" class="space-y-3 flex-1"></div>
             </div>
 
-            <!-- Kolom Selesai -->
             <div id="colDoneWrapper" class="kanban-dropzone bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-200/70 dark:border-slate-800 min-h-[460px] flex flex-col transition-colors"
                  ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'done')">
                 <div class="flex items-center justify-between mb-3 pointer-events-none">
@@ -448,13 +454,13 @@
             </div>
         </section>
 
-        <!-- VIEW 2: AGENDA LIST TABLE -->
+        <!-- VIEW 2: AGENDA LIST TABLE WITH DRAG-AND-DROP REORDER & PRIORITY CHANGER -->
         <section id="listView" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-4 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
+                <table class="w-full text-left text-sm border-collapse">
                     <thead>
                         <tr class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2.5">
-                            <th class="pb-2.5 pl-2 w-8">Status</th>
+                            <th class="pb-2.5 pl-2 w-12">Urutan</th>
                             <th class="pb-2.5">Aktivitas & Subtugas</th>
                             <th class="pb-2.5">PIC & Section</th>
                             <th class="pb-2.5">Tipe</th>
@@ -617,7 +623,6 @@
     <!-- TASK MODAL DIALOG -->
     <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
         <div class="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] flex flex-col">
-            
             <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <h3 id="modalTitle" class="text-sm font-bold text-slate-800 dark:text-white">Tambah Aktivitas Baru</h3>
                 <button id="btnCloseModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-7 h-7 rounded-lg flex items-center justify-center">
@@ -933,7 +938,7 @@
         let autoSaveTimer = null;
         let isSavingToCloud = false;
 
-        // SANITIZER: BERSIHKAN TANGGAL KOTOR DI KOLOM PIC
+        // SANITIZER: BERSIHKAN TANGGAL KOTOR DI KOLOM PIC & JAM
         function cleanPIC(picVal) {
             if (!picVal) return '';
             let s = String(picVal).trim();
@@ -941,6 +946,18 @@
                 return '';
             }
             return s;
+        }
+
+        function cleanTime(timeVal) {
+            if (!timeVal) return '17:00';
+            let s = String(timeVal).trim();
+            if (s.includes('1899') || s.includes('GMT')) {
+                const m = s.match(/(\d{2}:\d{2})/);
+                if (m) return m[1];
+                return '17:00';
+            }
+            if (/^\d{2}:\d{2}/.test(s)) return s.slice(0, 5);
+            return '17:00';
         }
 
         // ===================================================================
@@ -991,9 +1008,9 @@
                 pic: cleanPIC(task.pic) || (currentUser ? currentUser.name : ''),
                 section: task.section || (currentUser ? currentUser.section : 'GR Business & Retention'),
                 priority: task.priority || 'Medium',
-                status: 'todo', // Kembali belum mulai di siklus baru
-                dueDate: nextDueDate, // Tanggal siklus berikutnya (besok / minggu depan / bulan depan)
-                dueTime: task.dueTime || '17:00',
+                status: 'todo',
+                dueDate: nextDueDate,
+                dueTime: cleanTime(task.dueTime),
                 estHours: task.estHours || 1,
                 actualHours: 0,
                 subtasks: (task.subtasks || []).map(st => ({ title: st.title || st.text, done: false })),
@@ -1030,7 +1047,6 @@
             const isDeptHead = role.includes('aftersales head') || userSec === 'All Section';
             const isSecHead = role.includes('section head');
 
-            // 1. Dropdown Filter Section (Hanya Aftersales Head)
             const deptFilterWrapper = document.getElementById('wrapperDeptFilter');
             if (isDeptHead) {
                 deptFilterWrapper.classList.remove('hidden');
@@ -1040,7 +1056,6 @@
                 deptFilterWrapper.classList.remove('flex');
             }
 
-            // 2. Kontrol Hak Akses Visibilitas
             const scopeFilterWrapper = document.getElementById('wrapperScopeFilter');
             const badgePersonalLock = document.getElementById('badgePersonalLock');
 
@@ -1072,7 +1087,6 @@
                 : 'py-1.5 rounded-lg text-slate-500 dark:text-slate-400 transition';
         }
 
-        // PENGIRIMAN LOGIN VIA METODE POST (BEBAS DARI 404)
         async function handleLoginSubmit(e) {
             e.preventDefault();
             const u = document.getElementById('loginUsername').value.trim();
@@ -1115,7 +1129,6 @@
             }
         }
 
-        // PENGIRIMAN SIGN UP VIA METODE POST
         async function handleSignupSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('regName').value.trim();
@@ -1260,6 +1273,7 @@
                         else if (p.startsWith('l')) t.priority = 'Low';
 
                         if (t.dueDate) t.dueDate = String(t.dueDate).slice(0, 10);
+                        t.dueTime = cleanTime(t.dueTime);
                         t.pic = cleanPIC(t.pic);
                         return t;
                     });
@@ -1300,7 +1314,6 @@
                     (task.note && task.note.toLowerCase().includes(currentSearchQuery.toLowerCase())) ||
                     (task.pic && task.pic.toLowerCase().includes(currentSearchQuery.toLowerCase()));
 
-                // PENEGAKAN HAK AKSES DAN PRIVASI BERTINGKAT
                 let matchesHierarchy = true;
                 if (currentUser) {
                     const role = (currentUser.role || '').toLowerCase();
@@ -1415,7 +1428,7 @@
         }
 
         // ===================================================================
-        // DRAG AND DROP HANDLERS (PINDAH STATUS & URUTAN ATAS-BAWAH)
+        // DRAG AND DROP HANDLERS UNTUK BOARD KANBAN
         // ===================================================================
         let draggedTaskId = null;
 
@@ -1467,13 +1480,9 @@
             const movedTask = tasks.splice(fromIndex, 1)[0];
             const oldStatus = movedTask.status;
 
-            // Update status sesuai kolom kartu tujuan
             movedTask.status = targetStatus;
-
-            // Sisipkan pada urutan kartu yang dituju (reorder atas-bawah fleksibel)
             tasks.splice(toIndex, 0, movedTask);
 
-            // Logika repetisi jika dipindah ke Done
             if ((targetStatus === 'done' || targetStatus === 'selesai') && oldStatus !== 'done' && oldStatus !== 'selesai') {
                 if (movedTask.type === 'repetisi') {
                     movedTask.streak = (movedTask.streak || 0) + 1;
@@ -1512,6 +1521,65 @@
 
             triggerDebouncedAutoSave();
         }
+
+        // ===================================================================
+        // DRAG AND DROP HANDLERS UNTUK TABEL AGENDA
+        // ===================================================================
+        let draggedAgendaTaskId = null;
+
+        function handleAgendaDragStart(e, taskId) {
+            draggedAgendaTaskId = taskId;
+            e.dataTransfer.setData('text/plain', taskId);
+            e.dataTransfer.effectAllowed = 'move';
+            e.currentTarget.classList.add('dragging-row');
+        }
+
+        function handleAgendaDragEnd(e) {
+            e.currentTarget.classList.remove('dragging-row');
+            document.querySelectorAll('tr.agenda-row').forEach(r => r.classList.remove('drag-over-row', 'dragging-row'));
+        }
+
+        function handleAgendaDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const row = e.currentTarget.closest('tr.agenda-row');
+            if (row) row.classList.add('drag-over-row');
+        }
+
+        function handleAgendaDragLeave(e) {
+            const row = e.currentTarget.closest('tr.agenda-row');
+            if (row && !row.contains(e.relatedTarget)) {
+                row.classList.remove('drag-over-row');
+            }
+        }
+
+        function handleAgendaDrop(e, targetTaskId) {
+            e.preventDefault();
+            document.querySelectorAll('tr.agenda-row').forEach(r => r.classList.remove('drag-over-row', 'dragging-row'));
+
+            const sourceTaskId = draggedAgendaTaskId || e.dataTransfer.getData('text/plain');
+            if (!sourceTaskId || sourceTaskId === targetTaskId) return;
+
+            const fromIndex = tasks.findIndex(t => t.id === sourceTaskId);
+            const toIndex = tasks.findIndex(t => t.id === targetTaskId);
+
+            if (fromIndex === -1 || toIndex === -1) return;
+
+            const movedTask = tasks.splice(fromIndex, 1)[0];
+            tasks.splice(toIndex, 0, movedTask);
+
+            showToast('Urutan prioritas agenda diperbarui ⇅');
+            triggerDebouncedAutoSave();
+        }
+
+        // QUICK PRIORITY CHANGER DIRECTLY IN AGENDA
+        window.updateTaskPriority = function(id, newPriority) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            task.priority = newPriority;
+            triggerDebouncedAutoSave();
+            showToast(`Prioritas diubah ke ${newPriority}`);
+        };
 
         // VIEW: KANBAN
         function renderKanban(filtered) {
@@ -1654,7 +1722,7 @@
             doneTasks.forEach(t => colDone.insertAdjacentHTML('beforeend', makeCard(t, 'done')));
         }
 
-        // VIEW: AGENDA
+        // VIEW: AGENDA (WITH DRAG-TO-REORDER & DIRECT PRIORITY SELECTOR)
         function renderListView(filtered) {
             const listTableBody = document.getElementById('listTableBody');
             const listEmptyMessage = document.getElementById('listEmptyMessage');
@@ -1666,7 +1734,7 @@
             }
             listEmptyMessage.classList.add('hidden');
 
-            filtered.forEach(task => {
+            filtered.forEach((task, index) => {
                 const isDone = task.status === 'done' || task.status === 'selesai';
                 const dueStatus = getDueDateStatus(task.dueDate, task.dueTime);
                 const gCalUrl = generateGoogleCalendarUrl(task);
@@ -1677,13 +1745,31 @@
                     subCount = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-semibold ml-1">${doneSt}/${task.subtasks.length} Sub</span>`;
                 }
 
+                // Interactive Priority Dropdown Badge
+                let prioritySelectClass = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-900';
+                if (task.priority === 'High') {
+                    prioritySelectClass = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-900';
+                } else if (task.priority === 'Medium') {
+                    prioritySelectClass = 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-900';
+                }
+
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition text-xs";
+                tr.className = "agenda-row hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition text-xs group";
+                tr.draggable = true;
+                tr.ondragstart = (e) => handleAgendaDragStart(e, task.id);
+                tr.ondragend = (e) => handleAgendaDragEnd(e);
+                tr.ondragover = (e) => handleAgendaDragOver(e);
+                tr.ondragleave = (e) => handleAgendaDragLeave(e);
+                tr.ondrop = (e) => handleAgendaDrop(e, task.id);
+
                 tr.innerHTML = `
-                    <td class="py-2.5 pl-2">
-                        <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500">
-                            <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
-                        </button>
+                    <td class="py-2.5 pl-2 whitespace-nowrap">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-grip-vertical text-slate-300 group-hover:text-slate-500 cursor-grab text-[11px]" title="Geser ke atas/bawah untuk atur prioritas"></i>
+                            <button onclick="quickToggleDone('${task.id}')" class="text-slate-300 hover:text-emerald-500 transition">
+                                <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+                            </button>
+                        </div>
                     </td>
                     <td class="py-2.5 pr-2">
                         <div class="font-bold text-slate-800 dark:text-slate-200 ${isDone ? 'line-through text-slate-400' : ''}">
@@ -1696,13 +1782,22 @@
                         <span class="text-[10px] text-slate-400 block">${task.section || '-'}</span>
                     </td>
                     <td class="py-2.5 pr-2">${getTypeBadge(task.type, task.frequency, task.streak)}</td>
-                    <td class="py-2.5 pr-2">${getPriorityBadge(task.priority)}</td>
+                    <td class="py-2.5 pr-2">
+                        <!-- Direct Priority Changer Dropdown -->
+                        <select onchange="updateTaskPriority('${task.id}', this.value)" 
+                                class="text-[10px] font-bold py-0.5 px-2 rounded-full border cursor-pointer focus:outline-none ${prioritySelectClass}"
+                                title="Klik untuk ubah prioritas langsung">
+                            <option value="High" ${task.priority === 'High' ? 'selected' : ''}>🔴 High</option>
+                            <option value="Medium" ${task.priority === 'Medium' ? 'selected' : ''}>🟡 Med</option>
+                            <option value="Low" ${task.priority === 'Low' ? 'selected' : ''}>🟢 Low</option>
+                        </select>
+                    </td>
                     <td class="py-2.5 pr-2">
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] ${dueStatus.class}">
                             <i class="fa-regular ${dueStatus.icon}"></i> ${dueStatus.label}
                         </span>
                     </td>
-                    <td class="py-2.5 pr-2 text-[11px] text-slate-500">
+                    <td class="py-2.5 pr-2 text-[11px] text-slate-500 whitespace-nowrap">
                         ${task.actualHours || 0} / ${task.estHours || 1} Jam
                     </td>
                     <td class="py-2.5 pr-2">
@@ -1715,7 +1810,7 @@
                             </button>
                         </div>
                     </td>
-                    <td class="py-2.5 text-right pr-2">
+                    <td class="py-2.5 text-right pr-2 whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                             <select onchange="updateTaskStatus('${task.id}', this.value)" class="text-[10px] py-0.5 px-1 bg-slate-50 dark:bg-slate-800 border rounded">
                                 <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To-Do</option>
@@ -1924,8 +2019,7 @@
                     dateStr = new Date().toISOString().slice(0, 10);
                 }
 
-                let timeStr = String(task.dueTime || '17:00').trim().slice(0, 5);
-                if (!/^\d{2}:\d{2}$/.test(timeStr)) timeStr = '17:00';
+                let timeStr = cleanTime(task.dueTime);
 
                 const localStart = new Date(`${dateStr}T${timeStr}:00`);
                 const estHours = parseFloat(task.estHours) || 1;
@@ -1964,7 +2058,7 @@
             tasksToExport.forEach(task => {
                 let dateStr = String(task.dueDate || '').slice(0, 10);
                 if (!dateStr || dateStr.includes('1899')) dateStr = new Date().toISOString().split('T')[0];
-                const timeStr = task.dueTime || '09:00';
+                const timeStr = cleanTime(task.dueTime);
                 const start = new Date(`${dateStr}T${timeStr}:00`);
                 const end = new Date(start.getTime() + (task.estHours || 1) * 60 * 60 * 1000);
                 const now = new Date();
@@ -2031,6 +2125,7 @@
 
             const diffTime = taskDay.getTime() - today.getTime();
             const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+            const formattedTime = cleanTime(dueTimeStr);
 
             if (diffDays < 0) {
                 return {
@@ -2041,14 +2136,14 @@
                 };
             } else if (diffDays === 0) {
                 return {
-                    label: `Hari Ini (${dueTimeStr || '23:59'})`,
+                    label: `Hari Ini (${formattedTime})`,
                     class: 'text-amber-800 bg-amber-100 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300 font-bold',
                     icon: 'fa-bell',
                     isUrgent: true
                 };
             } else if (diffDays === 1) {
                 return {
-                    label: `Besok (${dueTimeStr || '23:59'})`,
+                    label: `Besok (${formattedTime})`,
                     class: 'text-indigo-800 bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-300 font-semibold',
                     icon: 'fa-clock',
                     isUrgent: true
@@ -2117,7 +2212,6 @@
             }, 3000);
         }
 
-        // AKSI CENTANG SELESAI + OTOMASI SIKLUS BERIKUTNYA
         window.quickToggleDone = function(id) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
@@ -2137,7 +2231,6 @@
             triggerDebouncedAutoSave();
         };
 
-        // AKSI GANTI STATUS DROPDOWN + OTOMASI SIKLUS BERIKUTNYA
         window.updateTaskStatus = function(id, newStatus) {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
@@ -2203,7 +2296,7 @@
             document.getElementById('taskPriority').value = task.priority;
             document.getElementById('taskStatus').value = task.status;
             document.getElementById('taskDueDate').value = task.dueDate;
-            document.getElementById('taskDueTime').value = task.dueTime || '17:00';
+            document.getElementById('taskDueTime').value = cleanTime(task.dueTime);
             document.getElementById('taskEstHours').value = task.estHours || 1;
             document.getElementById('taskActualHours').value = task.actualHours || 0;
             document.getElementById('taskNote').value = task.note || '';
@@ -2324,7 +2417,7 @@
                     task.priority = priority;
                     task.status = status;
                     task.dueDate = dueDate;
-                    task.dueTime = dueTime;
+                    task.dueTime = cleanTime(dueTime);
                     task.estHours = estHours;
                     task.actualHours = actualHours;
                     task.subtasks = subtasks;
@@ -2343,7 +2436,7 @@
                     priority,
                     status,
                     dueDate,
-                    dueTime,
+                    dueTime: cleanTime(dueTime),
                     estHours,
                     actualHours,
                     subtasks,
