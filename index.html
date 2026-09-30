@@ -79,8 +79,8 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
 
-    <!-- AUTH OVERLAY: LOGIN & SIGN UP -->
-    <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+   <!-- AUTH OVERLAY: LOGIN & SIGN UP (Sembunyikan default agar tidak logout saat refresh) -->
+    <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4" style="display: none;">
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
             <div class="text-center mb-4">
                 <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-md shadow-indigo-500/20 mb-2">
@@ -203,6 +203,9 @@
                         <span class="hidden sm:inline">Menu</span>
                     </button>
                     <div class="absolute right-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2 hidden group-hover:block z-40">
+                        <button onclick="openEmailConfigModal()" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold border-b border-slate-100 dark:border-slate-700 mb-1">
+                            <i class="fa-regular fa-envelope text-indigo-500"></i> Atur Email Notifikasi
+                        </button>
                         <button id="btnTriggerManualPull" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold">
                             <i class="fa-solid fa-arrows-rotate"></i> Tarik Ulang dari Sheet
                         </button>
@@ -903,6 +906,44 @@
         </div>
     </div>
 
+    <!-- MODAL PENGATURAN EMAIL NOTIFIKASI -->
+    <div id="emailConfigModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-white">Email Notifikasi H-1</h3>
+                </div>
+                <button onclick="closeEmailConfigModal()" class="text-slate-400 hover:text-slate-600 w-7 h-7 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Pengingat otomatis H-1 hanya akan dikirimkan untuk aktivitas di mana Anda menjadi penanggung jawabnya (PIC).
+            </p>
+
+            <form id="emailConfigForm" onsubmit="handleSaveUserEmail(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Email Penerima</label>
+                    <input type="email" id="inputUserEmail" required placeholder="nama@nasmoco.co.id" 
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeEmailConfigModal()" class="px-3 py-1.5 rounded-xl text-slate-500 hover:bg-slate-100 font-semibold">
+                        Batal
+                    </button>
+                    <button type="submit" id="btnSaveUserEmail" class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs transition">
+                        Simpan Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATION -->
     <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
         <div class="bg-slate-900 dark:bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-xs font-medium">
@@ -1022,25 +1063,58 @@
         }
 
         // AUTHENTICATION & SESSION MANAGEMENT
-        function checkSession() {
-            const saved = localStorage.getItem('aftersales_user_session');
-            if (saved) {
-                try {
-                    currentUser = JSON.parse(saved);
-                    applyUserView();
-                    return true;
-                } catch(e) {}
+        function hideAuthOverlay() {
+            const overlay = document.getElementById('authOverlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                overlay.style.display = 'none';
             }
-            document.getElementById('authOverlay').classList.remove('hidden');
+        }
+
+        function showAuthOverlay() {
+            const overlay = document.getElementById('authOverlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+                overlay.style.display = 'flex';
+            }
+        }
+
+        function checkSession() {
+            try {
+                const saved = localStorage.getItem('aftersales_user_session');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && (parsed.name || parsed.username)) {
+                        currentUser = parsed;
+                        applyUserView();
+                        hideAuthOverlay();
+                        return true;
+                    }
+                }
+            } catch(e) {
+                console.warn("Gagal membaca sesi lokal:", e);
+            }
+            showAuthOverlay();
             return false;
         }
 
         function applyUserView() {
-            document.getElementById('authOverlay').classList.add('hidden');
-            document.getElementById('userNameBadge').textContent = currentUser.name || currentUser.username;
-            document.getElementById('userRoleBadge').textContent = `${currentUser.role}`;
-            document.getElementById('userAvatar').textContent = (currentUser.name || 'U').charAt(0).toUpperCase();
-            document.getElementById('headerSectionInfo').textContent = `${currentUser.section} • ${currentUser.role}`;
+            hideAuthOverlay();
+            if (!currentUser) return;
+
+            const nameEl = document.getElementById('userNameBadge');
+            if (nameEl) nameEl.textContent = currentUser.name || currentUser.username || '-';
+
+            const roleEl = document.getElementById('userRoleBadge');
+            if (roleEl) roleEl.textContent = `${currentUser.role || 'Staff'}`;
+
+            const avatarEl = document.getElementById('userAvatar');
+            if (avatarEl) avatarEl.textContent = (currentUser.name || currentUser.username || 'U').charAt(0).toUpperCase();
+
+            const infoEl = document.getElementById('headerSectionInfo');
+            if (infoEl) infoEl.textContent = `${currentUser.section || 'Aftersales'} • ${currentUser.role || 'Staff'}`;
 
             const role = (currentUser.role || '').toLowerCase();
             const userSec = (currentUser.section || '').trim();
@@ -1048,27 +1122,37 @@
             const isSecHead = role.includes('section head');
 
             const deptFilterWrapper = document.getElementById('wrapperDeptFilter');
-            if (isDeptHead) {
-                deptFilterWrapper.classList.remove('hidden');
-                deptFilterWrapper.classList.add('flex');
-            } else {
-                deptFilterWrapper.classList.add('hidden');
-                deptFilterWrapper.classList.remove('flex');
+            if (deptFilterWrapper) {
+                if (isDeptHead) {
+                    deptFilterWrapper.classList.remove('hidden');
+                    deptFilterWrapper.classList.add('flex');
+                } else {
+                    deptFilterWrapper.classList.add('hidden');
+                    deptFilterWrapper.classList.remove('flex');
+                }
             }
 
             const scopeFilterWrapper = document.getElementById('wrapperScopeFilter');
             const badgePersonalLock = document.getElementById('badgePersonalLock');
 
             if (isDeptHead || isSecHead) {
-                scopeFilterWrapper.classList.remove('hidden');
-                scopeFilterWrapper.classList.add('flex');
-                badgePersonalLock.classList.add('hidden');
-                badgePersonalLock.classList.remove('flex');
+                if (scopeFilterWrapper) {
+                    scopeFilterWrapper.classList.remove('hidden');
+                    scopeFilterWrapper.classList.add('flex');
+                }
+                if (badgePersonalLock) {
+                    badgePersonalLock.classList.add('hidden');
+                    badgePersonalLock.classList.remove('flex');
+                }
             } else {
-                scopeFilterWrapper.classList.add('hidden');
-                scopeFilterWrapper.classList.remove('flex');
-                badgePersonalLock.classList.remove('hidden');
-                badgePersonalLock.classList.add('flex');
+                if (scopeFilterWrapper) {
+                    scopeFilterWrapper.classList.add('hidden');
+                    scopeFilterWrapper.classList.remove('flex');
+                }
+                if (badgePersonalLock) {
+                    badgePersonalLock.classList.remove('hidden');
+                    badgePersonalLock.classList.add('flex');
+                }
                 currentScopeFilter = 'my';
             }
         }
@@ -1181,7 +1265,59 @@
             if (confirm("Keluar dari akun Anda?")) {
                 localStorage.removeItem('aftersales_user_session');
                 currentUser = null;
-                document.getElementById('authOverlay').classList.remove('hidden');
+                showAuthOverlay();
+            }
+        }
+
+        // ===================================================================
+        // KONTROL PENGATURAN EMAIL NOTIFIKASI PRIBADI
+        // ===================================================================
+        function openEmailConfigModal() {
+            if (!currentUser) return;
+            const input = document.getElementById('inputUserEmail');
+            input.value = currentUser.email || '';
+            document.getElementById('emailConfigModal').classList.remove('hidden');
+        }
+
+        function closeEmailConfigModal() {
+            document.getElementById('emailConfigModal').classList.add('hidden');
+        }
+
+        async function handleSaveUserEmail(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const emailVal = document.getElementById('inputUserEmail').value.trim();
+            const btn = document.getElementById('btnSaveUserEmail');
+
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
+
+            try {
+                const res = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'update_email',
+                        username: currentUser.username,
+                        email: emailVal
+                    })
+                });
+                const json = await res.json();
+
+                if (json.status === 'success') {
+                    currentUser.email = emailVal;
+                    localStorage.setItem('aftersales_user_session', JSON.stringify(currentUser));
+                    showToast('Email notifikasi berhasil disimpan!');
+                    closeEmailConfigModal();
+                } else {
+                    alert(json.message || 'Gagal menyimpan email!');
+                }
+            } catch (err) {
+                showToast('Koneksi gagal saat menyimpan email', 'fa-triangle-exclamation text-rose-400');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Simpan Email";
             }
         }
 
