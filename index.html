@@ -1438,14 +1438,15 @@
             }
         }
 
-        // HIERARCHY PRIVACY FILTERING LOGIC
+        // HIERARCHY PRIVACY FILTERING & SORTING LOGIC
         function getFilteredTasksForActiveMonth() {
             const curYear = activeDate.getFullYear();
             const curMonth = activeDate.getMonth() + 1;
             const monthPrefix = `${curYear}-${String(curMonth).padStart(2, '0')}`;
             const selectedDept = document.getElementById('filterSectionSelect')?.value || 'all';
 
-            return tasks.filter(task => {
+            // 1. Simpan hasil filter ke dalam variabel 'filtered' (jangan langsung di-return)
+            let filtered = tasks.filter(task => {
                 const isInMonth = task.dueDate && task.dueDate.startsWith(monthPrefix);
                 const matchesType = (currentTypeFilter === 'all') || (task.type === currentTypeFilter);
                 
@@ -1495,8 +1496,32 @@
                     }
                 }
 
-               return isInMonth && matchesType && matchesPriority && matchesSearch && matchesHierarchy;
+                return isInMonth && matchesType && matchesPriority && matchesSearch && matchesHierarchy;
             });
+
+            // 2. Eksekusi Pengurutan Tanggal & Jam (Hanya aktif jika bukan mode manual drag)
+            if (typeof currentSortOrder === 'undefined') {
+                window.currentSortOrder = 'due_asc';
+            }
+
+            if (currentSortOrder === 'due_asc' || currentSortOrder === 'due_desc') {
+                filtered.sort((a, b) => {
+                    const dateA = (a.dueDate && String(a.dueDate).length >= 10) ? String(a.dueDate).slice(0, 10) : '9999-12-31';
+                    const dateB = (b.dueDate && String(b.dueDate).length >= 10) ? String(b.dueDate).slice(0, 10) : '9999-12-31';
+                    const timeA = cleanTime(a.dueTime || '17:00');
+                    const timeB = cleanTime(b.dueTime || '17:00');
+                    const dtA = `${dateA}T${timeA}`;
+                    const dtB = `${dateB}T${timeB}`;
+
+                    return currentSortOrder === 'due_asc' 
+                        ? dtA.localeCompare(dtB) 
+                        : dtB.localeCompare(dtA);
+                });
+            }
+
+            // 3. Kembalikan data yang sudah rapi terurut
+            return filtered;
+        }
 
             // Logika Urutkan Berdasarkan Jatuh Tempo
             if (currentSortOrder === 'due_asc' || currentSortOrder === 'due_desc') {
