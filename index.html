@@ -390,6 +390,12 @@
                         <button data-priority-filter="Medium" class="priority-filter-btn px-2 py-1 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-[11px]">Med</button>
                         <button data-priority-filter="Low" class="priority-filter-btn px-2 py-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-[11px]">Low</button>
                     </div>
+
+                    <!-- Tombol Sort Jatuh Tempo -->
+                    <button id="btnSortDueDate" onclick="toggleSortDueDate()" class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 font-bold text-[11px] flex items-center gap-1.5 transition border border-indigo-200 dark:border-slate-700" title="Klik untuk ubah pengurutan jatuh tempo">
+                        <i id="iconSortDueDate" class="fa-solid fa-arrow-down-short-wide text-indigo-500"></i>
+                        <span id="labelSortDueDate">Jatuh Tempo: Terdekat</span>
+                    </button>
                 </div>
 
                 <!-- 5 Views Switcher -->
@@ -468,7 +474,9 @@
                             <th class="pb-2.5">PIC & Section</th>
                             <th class="pb-2.5">Tipe</th>
                             <th class="pb-2.5">Prioritas</th>
-                            <th class="pb-2.5">Batas Waktu</th>
+                            <th onclick="toggleSortDueDate()" class="pb-2.5 cursor-pointer hover:text-indigo-600 transition select-none" title="Klik untuk mengurutkan jatuh tempo">
+                                Batas Waktu <i id="iconTableSortDue" class="fa-solid fa-sort-down text-[10px] ml-1 text-indigo-500"></i>
+                            </th>
                             <th class="pb-2.5">Durasi</th>
                             <th class="pb-2.5">Sinkron HP</th>
                             <th class="pb-2.5 text-right pr-2">Aksi</th>
@@ -968,6 +976,7 @@
         let currentScopeFilter = 'section';
         let currentSearchQuery = '';
         let currentView = 'kanban';
+        let currentSortOrder = 'due_asc'; // 'due_asc' (terdekat), 'due_desc' (terjauh), 'manual' (drag-drop)
 
         // Timer State
         let timerSeconds = 25 * 60;
@@ -1429,14 +1438,15 @@
             }
         }
 
-        // HIERARCHY PRIVACY FILTERING LOGIC
+        // HIERARCHY PRIVACY FILTERING & SORTING LOGIC
         function getFilteredTasksForActiveMonth() {
             const curYear = activeDate.getFullYear();
             const curMonth = activeDate.getMonth() + 1;
             const monthPrefix = `${curYear}-${String(curMonth).padStart(2, '0')}`;
             const selectedDept = document.getElementById('filterSectionSelect')?.value || 'all';
 
-            return tasks.filter(task => {
+            // 1. Simpan hasil filter ke variabel (tidak langsung return)
+            let filtered = tasks.filter(task => {
                 const isInMonth = task.dueDate && task.dueDate.startsWith(monthPrefix);
                 const matchesType = (currentTypeFilter === 'all') || (task.type === currentTypeFilter);
                 
@@ -1488,6 +1498,29 @@
 
                 return isInMonth && matchesType && matchesPriority && matchesSearch && matchesHierarchy;
             });
+
+            // 2. Jalankan Pengurutan Kronologis Jatuh Tempo
+            if (typeof currentSortOrder === 'undefined') {
+                currentSortOrder = 'due_asc';
+            }
+
+            if (currentSortOrder === 'due_asc' || currentSortOrder === 'due_desc') {
+                filtered.sort((a, b) => {
+                    const dateA = (a.dueDate && String(a.dueDate).length >= 10) ? String(a.dueDate).slice(0, 10) : '9999-12-31';
+                    const dateB = (b.dueDate && String(b.dueDate).length >= 10) ? String(b.dueDate).slice(0, 10) : '9999-12-31';
+                    const timeA = cleanTime(a.dueTime || '17:00');
+                    const timeB = cleanTime(b.dueTime || '17:00');
+                    const dtA = `${dateA}T${timeA}`;
+                    const dtB = `${dateB}T${timeB}`;
+
+                    return currentSortOrder === 'due_asc' 
+                        ? dtA.localeCompare(dtB) 
+                        : dtB.localeCompare(dtA);
+                });
+            }
+
+            // 3. Kembalikan data yang telah tersusun
+            return filtered;
         }
 
         // METRICS UPDATE
@@ -1656,6 +1689,41 @@
             }
 
             triggerDebouncedAutoSave();
+        }
+
+        // ===================================================================
+        // KONTROL ROTASI SORTING JATUH TEMPO
+        // ===================================================================
+        function toggleSortDueDate() {
+            const btnLabel = document.getElementById('labelSortDueDate');
+            const btnIcon = document.getElementById('iconSortDueDate');
+            const tableSortIcon = document.getElementById('iconTableSortDue');
+            const btn = document.getElementById('btnSortDueDate');
+
+            if (currentSortOrder === 'due_asc') {
+                currentSortOrder = 'due_desc';
+                if (btnLabel) btnLabel.textContent = 'Jatuh Tempo: Terjauh';
+                if (btnIcon) btnIcon.className = 'fa-solid fa-arrow-up-wide-short text-indigo-500';
+                if (tableSortIcon) tableSortIcon.className = 'fa-solid fa-sort-up text-[10px] ml-1 text-indigo-500';
+                if (btn) btn.className = 'px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold text-[11px] flex items-center gap-1.5 transition border border-indigo-200 dark:border-slate-700';
+                showToast('Diurutkan: Batas waktu terjauh 📅');
+            } else if (currentSortOrder === 'due_desc') {
+                currentSortOrder = 'manual';
+                if (btnLabel) btnLabel.textContent = 'Urut: Manual (Drag)';
+                if (btnIcon) btnIcon.className = 'fa-solid fa-grip-vertical text-slate-400';
+                if (tableSortIcon) tableSortIcon.className = 'fa-solid fa-sort text-[10px] ml-1 text-slate-400';
+                if (btn) btn.className = 'px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold text-[11px] flex items-center gap-1.5 transition border border-slate-200 dark:border-slate-700';
+                showToast('Mode urutan manual (Drag & Drop) aktif ⇅');
+            } else {
+                currentSortOrder = 'due_asc';
+                if (btnLabel) btnLabel.textContent = 'Jatuh Tempo: Terdekat';
+                if (btnIcon) btnIcon.className = 'fa-solid fa-arrow-down-short-wide text-indigo-500';
+                if (tableSortIcon) tableSortIcon.className = 'fa-solid fa-sort-down text-[10px] ml-1 text-indigo-500';
+                if (btn) btn.className = 'px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold text-[11px] flex items-center gap-1.5 transition border border-indigo-200 dark:border-slate-700';
+                showToast('Diurutkan: Batas waktu terdekat 📅');
+            }
+
+            render();
         }
 
         // ===================================================================
