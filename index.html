@@ -391,6 +391,14 @@
                         <button data-priority-filter="Low" class="priority-filter-btn px-2 py-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-[11px]">Low</button>
                     </div>
 
+                    <!-- Status Filters (To-Do, Progress, Done) -->
+                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                        <button data-status-filter="all" class="status-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold text-[11px]">Semua Status</button>
+                        <button data-status-filter="todo" class="status-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 text-[11px]">To-Do</button>
+                        <button data-status-filter="inprogress" class="status-filter-btn px-2.5 py-1 rounded-lg text-amber-700 dark:text-amber-400 hover:text-amber-900 text-[11px]">Progress</button>
+                        <button data-status-filter="done" class="status-filter-btn px-2.5 py-1 rounded-lg text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 text-[11px]">Done</button>
+                    </div>
+
                     <!-- Tombol Sort Jatuh Tempo -->
                     <button id="btnSortDueDate" onclick="toggleSortDueDate()" class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 font-bold text-[11px] flex items-center gap-1.5 transition border border-indigo-200 dark:border-slate-700" title="Klik untuk ubah pengurutan jatuh tempo">
                         <i id="iconSortDueDate" class="fa-solid fa-arrow-down-short-wide text-indigo-500"></i>
@@ -973,6 +981,7 @@
         let activeDate = new Date();
         let currentTypeFilter = 'all';
         let currentPriorityFilter = 'all';
+        let currentStatusFilter = 'all'; // 'all', 'todo', 'inprogress', 'done'
         let currentScopeFilter = 'section';
         let currentSearchQuery = '';
         let currentView = 'kanban';
@@ -1456,6 +1465,13 @@
                   (filterPri.startsWith('med') && taskPri.startsWith('med')) || 
                   (taskPri === filterPri);
 
+                // Filter Status (To-Do, Progress, Done)
+                const taskSt = String(task.status || 'todo').toLowerCase();
+                const matchesStatus = (currentStatusFilter === 'all') ||
+                    (currentStatusFilter === 'todo' && (taskSt === 'todo' || !task.status)) ||
+                    (currentStatusFilter === 'inprogress' && (taskSt === 'inprogress' || taskSt === 'doing' || taskSt === 'progress')) ||
+                    (currentStatusFilter === 'done' && (taskSt === 'done' || taskSt === 'selesai'));
+
                 const matchesSearch = task.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
                     (task.note && task.note.toLowerCase().includes(currentSearchQuery.toLowerCase())) ||
                     (task.pic && task.pic.toLowerCase().includes(currentSearchQuery.toLowerCase()));
@@ -1496,7 +1512,7 @@
                     }
                 }
 
-                return isInMonth && matchesType && matchesPriority && matchesSearch && matchesHierarchy;
+                return isInMonth && matchesType && matchesPriority && matchesStatus && matchesSearch && matchesHierarchy;
             });
 
             // 2. Jalankan Pengurutan Kronologis Jatuh Tempo
@@ -2735,6 +2751,18 @@
                 });
                 btn.classList.add('bg-slate-200/70', 'dark:bg-slate-800', 'font-semibold');
                 currentPriorityFilter = btn.getAttribute('data-priority-filter');
+                render();
+            });
+        });
+
+        // Event Listener Tombol Filter Status
+        document.querySelectorAll('.status-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.status-filter-btn').forEach(b => {
+                    b.className = 'status-filter-btn px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 text-[11px]';
+                });
+                btn.className = 'status-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold text-[11px]';
+                currentStatusFilter = btn.getAttribute('data-status-filter');
                 render();
             });
         });
