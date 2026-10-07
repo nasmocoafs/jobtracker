@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Project Management Report - PDCA, CAPA & Spreadsheet Sync</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Input styling on mobile to prevent iOS/Android unwanted zoom */
+    @media (max-width: 640px) {
+      input, select, textarea {
+        font-size: 15px !important;
+      }
+      .mobile-touch-target {
+        min-height: 42px;
+      }
+    }
+
+    /* Print Media Styles */
+    @media print {
+      .no-print, .mobile-fab {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        font-size: 10px !important;
+      }
+      .print-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .avoid-break {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      table {
+        page-break-inside: auto;
+        border-collapse: collapse !important;
+        width: 100% !important;
+      }
+      tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      thead {
+        display: table-header-group !important;
+      }
+
+      /* Compact KPI Summary Bar for Print */
+      .stat-summary-wrapper {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+      }
+      .stat-box {
+        padding: 4px 8px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 4px !important;
+        background: #f8fafc !important;
+      }
+      .stat-box .stat-val {
+        font-size: 12px !important;
+        font-weight: 800 !important;
+        line-height: 1 !important;
+      }
+      .stat-box .stat-lbl {
+        font-size: 8px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.03em !important;
+      }
+
+      /* Clean Header layout during Print */
+      .doc-header-container {
+        display: block !important;
+        padding-bottom: 5px !important;
+        margin-bottom: 6px !important;
+        border-bottom: 2px solid #0f172a !important;
+      }
+
+      /* Approval Box: STRICTLY ONE HORIZONTAL ROW */
+      #signersContainer {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 5px !important;
+        page-break-inside: avoid !important;
+      }
+      .signer-card {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        border: 1px solid #475569 !important;
+        border-radius: 4px !important;
+        background: #ffffff !important;
+        padding: 4px 2px !important;
+        page-break-inside: avoid !important;
+      }
+      .signer-card .signer-role {
+        font-size: 8.5px !important;
+        font-weight: 700 !important;
+        min-height: 18px !important;
+      }
+      .signer-card .signer-sig-area {
+        height: 42px !important;
+      }
+      .signer-card .signer-name-txt {
+        font-size: 9px !important;
+        font-weight: 700 !important;
+      }
+      .signer-card .signer-date-txt {
+        font-size: 8px !important;
+      }
+
+      /* Print Evidence Photo: High clarity layout */
+      .evidence-print-img {
+        width: 58px !important;
+        height: 48px !important;
+        object-fit: cover !important;
+        border: 1px solid #94a3b8 !important;
+        border-radius: 4px !important;
+        display: block !important;
+        margin: 0 auto !important;
+      }
+
+      /* Hide mobile card view in print; enforce standard table */
+      #capaMobileCards {
+        display: none !important;
+      }
+      #capaTableContainer {
+        display: block !important;
+      }
+    }
+
+    /* Wet Physical Signature vs Digital Approved Mode */
+    body.print-blank-approval .signature-digital-box {
+      display: none !important;
+    }
+    body.print-blank-approval .signature-blank-box {
+      display: flex !important;
+    }
+    .signature-blank-box {
+      display: none;
+    }
+
+    /* Optional hide KPI Bar in print */
+    body.print-hide-kpi .stat-summary-wrapper {
+      display: none !important;
+    }
+
+    /* Evidence photo thumbnail hover effects */
+    .evidence-thumb-container {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .evidence-thumb-container:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+
+  <style id="dynamicPrintStyle">
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 6mm 6mm 6mm 6mm;
+      }
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              800: '#0c4a6e',
+              900: '#082f49',
+            },
+            sheets: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen py-3 sm:py-6 px-2 sm:px-6 antialiased pb-24 sm:pb-8">
+
+  <header class="no-print max-w-7xl mx-auto mb-4 bg-white/95 backdrop-blur-md sticky top-2 z-30 p-3 sm:p-3.5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
+    <div class="flex items-center space-x-2.5">
+      <div class="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xs shadow-xs">
+        PMR
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">Universal PMR &amp; CAPA Master</h1>
+          <span id="sheetSyncBadge" class="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-300">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            Offline
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-500 hidden sm:block">Investigasi PDCA, Matriks CAPA dengan Foto Bukti Jelas &amp; Sinkronisasi Google Sheets</p>
+      </div>
+    </div>
+
+    <!-- Multi-Action Buttons -->
+    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+      <!-- Google Sheets Cloud Sync Button -->
+      <button onclick="openModalSpreadsheet()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition transform hover:-translate-y-0.5">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/>
+        </svg>
+        <span>Spreadsheet Sync</span>
+      </button>
+
+      <button onclick="openModalProjectInfo()" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-300 transition">
+        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+        <span class="hidden sm:inline">Info Dokumen</span><span class="sm:hidden">Info</span>
+      </button>
+
+      <button onclick="openModalAddPdca()" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-xl shadow-xs transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        <span>+ PDCA</span>
+      </button>
+
+      <button onclick="openModalAddCapa()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        <span>+ Tindakan</span>
+      </button>
+
+      <button onclick="openModalSigners()" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold rounded-xl transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        <span class="hidden sm:inline">Pengesah</span>
+      </button>
+
+      <!-- Dropdown Opsi Cadangan & Data -->
+      <div class="relative inline-block text-left group">
+        <button class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl shadow-xs transition">
+          <span>Opsi</span>
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </button>
+        <div class="absolute right-0 mt-1 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 hidden group-hover:block z-50">
+          <button onclick="createNewBlankProject()" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Proyek Baru (Form Bersih)
+          </button>
+          <button onclick="loadSampleCase()" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Muat Kasus Audit (Nasmoco)
+          </button>
+          <hr class="my-1 border-slate-100">
+          <button onclick="exportToJSON()" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Simpan Cadangan (JSON)
+          </button>
+          <button onclick="triggerImportJSON()" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            Buka File Cadangan (JSON)
+          </button>
+          <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="handleFileImportJSON(event)">
+        </div>
+      </div>
+
+      <button onclick="exportToCSV()" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span class="hidden sm:inline">Excel</span> (.csv)
+      </button>
+
+      <!-- Main PDF Print Action -->
+      <button onclick="openModalPrintApproval()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition transform hover:-translate-y-0.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+        <span>Cetak PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Floating Quick-Add Button (FAB) -->
+  <div class="sm:hidden fixed bottom-4 right-4 z-40 flex flex-col gap-2 mobile-fab">
+    <button onclick="syncToGoogleSheets()" class="w-12 h-12 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl flex items-center justify-center p-2.5 text-xs font-bold border-2 border-white transition active:scale-95" title="Kirim ke Spreadsheet">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>
+    </button>
+    <button onclick="openModalAddCapa()" class="w-13 h-13 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl flex items-center justify-center p-3 text-xs font-bold border-2 border-white transition active:scale-95" title="Tambah Tindakan">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+    </button>
+  </div>
+
+  <main class="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 p-4 sm:p-8 print-container">
+    
+    <!-- Clean Corporate Document Header (100% Width, Title & Subtitle) -->
+    <div class="doc-header-container border-b-2 border-slate-900 pb-2 mb-3 avoid-break">
+      <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+        <!-- Main Title Row: Status Badge + Full Project Title -->
+        <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <span class="inline-flex items-center bg-slate-900 text-white text-[9px] tracking-wider uppercase font-extrabold px-2 py-0.5 rounded shadow-xs flex-shrink-0" id="docBadge">
+            PMR • FOR APPROVAL
+          </span>
+          <h2 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight uppercase leading-snug" id="docTitle">
+            PROJECT MANAGEMENT REPORT: TMS ESTABLISHMENT
+          </h2>
+        </div>
+
+        <!-- Sync Indicator for Print / Top right -->
+        <div class="text-[9.5px] text-slate-400 font-mono hidden sm:block text-right">
+          <span id="headerSyncLabel">Sheets: Disinkronkan</span>
+        </div>
+      </div>
+
+      <!-- Subtitle & Document Metadata Row -->
+      <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10.5px] text-slate-600">
+        <span class="font-semibold text-slate-800" id="docSubTitle">Laporan PDCA Operasional TMS</span>
+        <span class="text-slate-300 font-bold hidden sm:inline">&bull;</span>
+        <div class="flex items-center gap-1">
+          <span class="text-slate-400">Unit:</span>
+          <strong class="text-slate-900 font-bold" id="docEntity">Aftersales Department</strong>
+        </div>
+        <span class="text-slate-300 font-bold hidden sm:inline">&bull;</span>
+        <div class="flex items-center gap-1">
+          <span class="text-slate-400">No:</span>
+          <strong class="font-mono text-slate-800 font-semibold" id="docNumber">PMR/2026/001</strong>
+        </div>
+        <span class="text-slate-300 font-bold hidden md:inline">&bull;</span>
+        <div class="flex items-center gap-1">
+          <span class="text-slate-400">Periode:</span>
+          <strong class="text-slate-800 font-medium" id="docPeriod">Okt 2026</strong>
+        </div>
+        <span class="text-slate-300 font-bold hidden md:inline">&bull;</span>
+        <div class="flex items-center gap-1">
+          <span class="text-slate-400">Tgl Cetak:</span>
+          <span class="font-mono text-slate-700 font-medium" id="docPrintDate">06/10/2026</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status & Progress Summary Ribbon -->
+    <section class="stat-summary-wrapper grid grid-cols-2 md:grid-cols-4 gap-2 mb-3.5">
+      <div class="stat-box bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+        <div>
+          <span class="stat-lbl text-[9.5px] font-bold text-slate-500 uppercase tracking-wide block">Total Tindakan</span>
+          <span class="stat-val text-lg sm:text-xl font-black text-slate-900 leading-tight" id="statTotal">0</span>
+        </div>
+        <span class="text-[9px] font-bold text-slate-500 bg-slate-200/80 px-1.5 py-0.5 rounded">Items</span>
+      </div>
+
+      <div class="stat-box bg-emerald-50/70 p-2.5 rounded-lg border border-emerald-200 flex items-center justify-between">
+        <div>
+          <span class="stat-lbl text-[9.5px] font-bold text-emerald-800 uppercase tracking-wide block">Selesai (Closed)</span>
+          <span class="stat-val text-lg sm:text-xl font-black text-emerald-700 leading-tight" id="statClosed">0</span>
+        </div>
+        <span class="text-xs font-black text-emerald-700 bg-emerald-100/90 px-1.5 py-0.5 rounded" id="statPercentage">0%</span>
+      </div>
+
+      <div class="stat-box bg-amber-50/70 p-2.5 rounded-lg border border-amber-200 flex items-center justify-between">
+        <div>
+          <span class="stat-lbl text-[9.5px] font-bold text-amber-800 uppercase tracking-wide block">Sedang Berjalan</span>
+          <span class="stat-val text-lg sm:text-xl font-black text-amber-700 leading-tight" id="statInProgress">0</span>
+        </div>
+        <span class="text-[9px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Active</span>
+      </div>
+
+      <div class="stat-box bg-rose-50/70 p-2.5 rounded-lg border border-rose-200 flex items-center justify-between">
+        <div>
+          <span class="stat-lbl text-[9.5px] font-bold text-rose-800 uppercase tracking-wide block">Tertunda / Open</span>
+          <span class="stat-val text-lg sm:text-xl font-black text-rose-700 leading-tight" id="statOpen">0</span>
+        </div>
+        <span class="text-[9px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded">Pending</span>
+      </div>
+    </section>
+
+    <section class="mb-4">
+      <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1.5 pb-1 border-b border-slate-300">
+        <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+          <span class="w-4.5 h-4.5 rounded bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold">1</span>
+          Aktivitas PDCA &amp; Investigasi Lapangan (Genba)
+        </h3>
+        <div class="flex items-center gap-2">
+          <span class="text-[9.5px] text-slate-500 italic hidden sm:inline">Audit, Consensus, &amp; Execution Meetings</span>
+          <button onclick="openModalAddPdca()" class="no-print inline-flex items-center gap-1 text-[10.5px] font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 px-2 py-0.5 rounded transition">
+            + Agenda
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto border border-slate-300 rounded-lg">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-300 uppercase tracking-wider text-[9.5px]">
+              <th class="py-2 px-2.5 w-10 text-center">No</th>
+              <th class="py-2 px-2.5 w-20 text-center">Tahap</th>
+              <th class="py-2 px-3">Agenda / Aktivitas PDCA &amp; Genba</th>
+              <th class="py-2 px-3 w-40">PIC &amp; Departemen</th>
+              <th class="py-2 px-2.5 w-24 text-center">Tanggal</th>
+              <th class="py-2 px-3">Output / Ringkasan Hasil</th>
+              <th class="py-2 px-2 w-14 text-center no-print">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200" id="pdcaTableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mb-4">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2 mb-2 pb-1 border-b border-slate-300">
+        <div>
+          <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+            <span class="w-4.5 h-4.5 rounded bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold">2</span>
+            Matriks Tindak Lanjut: Corrective &amp; Preventive Action (CAPA)
+          </h3>
+          <p class="text-[9.5px] text-slate-500">Penanganan kuratif (*Corrective*) &amp; pencegahan sistemik (*Preventive*) dengan foto bukti jelas</p>
+        </div>
+        
+        <!-- Filter Controls & Mobile View Switcher (No Print) -->
+        <div class="no-print flex flex-wrap items-center gap-1.5 text-xs">
+          <!-- Mobile View Switcher (Visible on mobile only) -->
+          <div class="sm:hidden flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-300">
+            <button id="btnViewCard" onclick="setMobileView('card')" class="px-2 py-1 text-[11px] font-bold rounded-md bg-white shadow-xs text-slate-800 transition">
+              Kartu Foto
+            </button>
+            <button id="btnViewTable" onclick="setMobileView('table')" class="px-2 py-1 text-[11px] font-medium rounded-md text-slate-600 transition">
+              Tabel
+            </button>
+          </div>
+
+          <select id="filterCategory" onchange="renderCAPATable()" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-slate-700 text-xs">
+            <option value="ALL">Semua Kategori</option>
+          </select>
+
+          <select id="filterType" onchange="renderCAPATable()" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-slate-700 text-xs">
+            <option value="ALL">Semua Tipe</option>
+            <option value="Corrective">Corrective</option>
+            <option value="Preventive">Preventive</option>
+          </select>
+
+          <select id="filterStatus" onchange="renderCAPATable()" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-slate-700 text-xs">
+            <option value="ALL">Semua Status</option>
+            <option value="Closed">Closed</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Open">Open</option>
+          </select>
+
+          <button onclick="openModalAddCapa()" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold flex items-center gap-1 shadow-xs transition">
+            + Tambah Aksi
+          </button>
+        </div>
+      </div>
+
+      <!-- Desktop Table Container with Enlarged Evidence Column -->
+      <div id="capaTableContainer" class="overflow-x-auto border border-slate-300 rounded-lg">
+        <table class="w-full text-left text-xs border-collapse" id="capaTable">
+          <thead>
+            <tr class="bg-slate-800 text-white font-semibold text-[9.5px] uppercase tracking-wider">
+              <th class="py-2 px-2 w-10 text-center">ID</th>
+              <th class="py-2 px-2.5 w-28">Kategori</th>
+              <th class="py-2 px-2 w-20 text-center">Jenis</th>
+              <th class="py-2 px-3">Uraian Rencana Tindakan (Action Plan)</th>
+              <th class="py-2 px-2.5 w-28">PIC / Dept</th>
+              <th class="py-2 px-2 text-center w-24">Due Date</th>
+              <!-- Enlarged Foto Bukti Header -->
+              <th class="py-2 px-2 text-center w-28">Foto Bukti (Evidence)</th>
+              <th class="py-2 px-2 text-center w-24">Status</th>
+              <th class="py-2 px-2 text-center w-14 no-print">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 text-[11px]" id="capaTableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Touch-Friendly Card View with Large Visual Image Display -->
+      <div id="capaMobileCards" class="hidden sm:hidden space-y-3">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </section>
+
+    <section class="border-t-2 border-slate-900 pt-3 mb-2 avoid-break">
+      <!-- Optional Reviewer Evaluation Notes Box -->
+      <div id="printDisposisiBox" class="hidden mb-2.5 p-2.5 border border-slate-400 rounded-lg bg-slate-50 text-xs">
+        <div class="font-bold text-slate-800 text-[9.5px] uppercase mb-1 flex items-center justify-between">
+          <span>Catatan / Disposisi Evaluasi Pimpinan (Review Notes)</span>
+          <span class="text-[8.5px] text-slate-500 font-normal">Diisi saat proses sirkulasi persetujuan</span>
+        </div>
+        <div class="h-8 border-b border-slate-300 border-dotted mb-1"></div>
+        <div class="flex justify-between text-[8.5px] text-slate-600 pt-0.5">
+          <span>Keputusan: [ &nbsp; ] Approved &nbsp;&nbsp;&nbsp; [ &nbsp; ] Approved Bersyarat &nbsp;&nbsp;&nbsp; [ &nbsp; ] Perlu Revisi</span>
+          <span>Paraf / Inisial Pemeriksa: ____________________</span>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-1.5 mb-2">
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Lembar Pengesahan Lintas Departemen (Cross-Department Approval)
+          </h3>
+          <p class="text-[9.5px] text-slate-500">Persetujuan pimpinan unit/departemen terkait komitmen penyelesaian seluruh butir tindakan</p>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[9.5px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-300" id="overallApprovalBadge">
+            STATUS: APPROVED &amp; VALIDATED
+          </span>
+          <button onclick="openModalSigners()" class="no-print inline-flex items-center gap-1 text-[10.5px] font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded transition">
+            Kelola Pengesah
+          </button>
+        </div>
+      </div>
+
+      <!-- Single-Line Approval Grid Container (Strictly 1 Row Horizontal) -->
+      <div id="signersContainer" class="flex flex-row flex-nowrap w-full gap-2 border border-slate-300 rounded-lg overflow-hidden bg-slate-50 p-1.5">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </section>
+
+    <!-- Footer Timestamp -->
+    <div class="mt-3.5 pt-2 border-t border-slate-200 flex flex-wrap justify-between items-center text-[9px] text-slate-400">
+      <span id="footerEntityText">Dokumen Resmi Project Management Report &bull; Nasmoco Solo Baru</span>
+      <span id="footerSyncStatus">Google Sheets Connected &bull; Terakhir Diperbarui Otomatis</span>
+    </div>
+
+  </main>
+
+  <div id="spreadsheetModal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 max-h-[92vh] flex flex-col">
+      <div class="bg-emerald-700 text-white px-5 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-bold text-white">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm">Sambungkan ke Google Spreadsheet</h3>
+            <p class="text-[10px] text-emerald-100">Simpan otomatis data PDCA &amp; CAPA langsung ke Google Sheets Anda</p>
+          </div>
+        </div>
+        <button onclick="closeModalSpreadsheet()" class="text-emerald-200 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+
+      <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 text-xs">
+        <!-- Connection Form -->
+        <div class="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2">
+          <label class="block font-bold text-emerald-900">
+            Google Apps Script Web App URL:
+          </label>
+          <div class="flex gap-2">
+            <input type="url" id="sheetWebhookUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="flex-1 border border-emerald-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 bg-white font-mono">
+            <button onclick="saveAndTestSheetConnection()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition shadow-xs whitespace-nowrap">
+              Tes &amp; Simpan
+            </button>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="autoSyncCheck" class="rounded text-emerald-600 focus:ring-emerald-500">
+              <span class="font-medium text-slate-700">Auto-Sync (Kirim otomatis setiap kali Anda menyimpan tindakan)</span>
+            </label>
+            <span id="sheetConnectionStatus" class="font-bold text-slate-500">Status: Belum Terhubung</span>
+          </div>
+        </div>
+
+        <!-- Sync Actions -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button onclick="syncToGoogleSheets()" class="p-3 bg-white border border-slate-300 hover:border-emerald-500 rounded-xl text-left flex items-start gap-2.5 shadow-xs transition group">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition">
+              &uarr;
+            </div>
+            <div>
+              <strong class="text-slate-800 block font-bold text-xs">Kirim Data ke Spreadsheet</strong>
+              <span class="text-[10px] text-slate-500">Menulis/memperbarui sheet CAPA_Tracker &amp; PDCA_Log di Google Sheets.</span>
+            </div>
+          </button>
+
+          <button onclick="exportToCSV()" class="p-3 bg-white border border-slate-300 hover:border-blue-500 rounded-xl text-left flex items-start gap-2.5 shadow-xs transition group">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition">
+              &darr;
+            </div>
+            <div>
+              <strong class="text-slate-800 block font-bold text-xs">Download File Excel (.CSV)</strong>
+              <span class="text-[10px] text-slate-500">Buka langsung di Microsoft Excel atau impor manual ke Google Drive.</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Step-by-Step 2-Minute Setup Guide -->
+        <div class="border border-slate-200 rounded-xl overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-2 font-bold text-slate-800 text-[11px] flex justify-between items-center">
+            <span>Panduan Cepat Menghubungkan Google Sheets (2 Menit):</span>
+            <button onclick="copyAppsScriptCode()" class="text-brand-600 hover:text-brand-800 font-semibold text-[10px] flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              Salin Kode Apps Script
+            </button>
+          </div>
+          <div class="p-3 bg-slate-50 space-y-2 text-[10.5px] text-slate-600 leading-relaxed">
+            <p>1. Buka spreadsheet baru di <strong>Google Sheets</strong> (<a href="https://sheets.new" target="_blank" class="text-emerald-600 underline font-semibold">sheets.new</a>).</p>
+            <p>2. Klik menu <strong>Extensions (Ekstensi)</strong> &rarr; <strong>Apps Script</strong>.</p>
+            <p>3. Hapus semua kode bawaan, lalu <strong>tempel (paste) kode Apps Script di bawah</strong>.</p>
+            <p>4. Klik tombol biru <strong>Deploy (Terapkan)</strong> di kanan atas &rarr; pilih <strong>New deployment (Penerapan baru)</strong> &rarr; jenis: <strong>Web app</strong>.</p>
+            <p>5. Pada opsi <em>Who has access (Siapa yang memiliki akses)</em>, pilih: <strong>Anyone (Siapa saja)</strong> &rarr; Klik <strong>Deploy</strong>.</p>
+            <p>6. Salin <strong>Web App URL</strong> yang dihasilkan, lalu tempel pada isian di atas.</p>
+          </div>
+          <pre id="appsScriptCodeBlock" class="p-3 bg-slate-900 text-slate-200 font-mono text-[9.5px] overflow-x-auto max-h-40 border-t border-slate-800">
+function doPost(e) {
+  try {
+    var contents = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // 1. Simpan Sheet CAPA
+    var capaSheet = ss.getSheetByName("CAPA_Tracker") || ss.insertSheet("CAPA_Tracker");
+    capaSheet.clearContents();
+    capaSheet.appendRow(["ID", "Kategori", "Jenis", "Rencana Tindakan", "PIC / Dept", "Due Date", "Status", "Ada Bukti Foto"]);
+    if (contents.capaList && contents.capaList.length > 0) {
+      contents.capaList.forEach(function(item) {
+        capaSheet.appendRow([
+          item.id,
+          item.category,
+          item.type,
+          item.plan,
+          item.pic,
+          item.dueDate,
+          item.status,
+          item.evidence ? "Ya (Terlampir)" : "-"
+        ]);
+      });
+    }
+
+    // 2. Simpan Sheet PDCA
+    var pdcaSheet = ss.getSheetByName("PDCA_Log") || ss.insertSheet("PDCA_Log");
+    pdcaSheet.clearContents();
+    pdcaSheet.appendRow(["No", "Tahap", "Agenda / Aktivitas", "PIC / Dept", "Tanggal", "Output Hasil"]);
+    if (contents.pdcaList && contents.pdcaList.length > 0) {
+      contents.pdcaList.forEach(function(item, idx) {
+        pdcaSheet.appendRow([idx + 1, item.step, item.agenda, item.pic, item.date, item.output]);
+      });
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", timestamp: new Date() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+          </pre>
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+        <button onclick="closeModalSpreadsheet()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-semibold transition text-xs">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="actionModal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 max-h-[95vh] flex flex-col">
+      <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
+        <h3 class="font-bold text-sm" id="modalTitle">Tambah Rencana Tindakan CAPA</h3>
+        <button onclick="closeModalCapa()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+      <form id="formCapa" onsubmit="saveAction(event)" class="p-4 sm:p-5 space-y-3 text-xs overflow-y-auto flex-1">
+        <input type="hidden" id="editIndex" value="-1">
+        <input type="hidden" id="modalEvidenceData" value="">
+        
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">
+            Kategori Masalah <span class="text-slate-400 font-normal">(Ketik bebas atau pilih)</span>
+          </label>
+          <input type="text" id="modalCategoryInput" list="categoryDatalist" required placeholder="Contoh: Outstanding Saldo, Bug Backend, Material" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+          <datalist id="categoryDatalist"></datalist>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Jenis Tindakan</label>
+            <select id="modalType" required class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+              <option value="Corrective">Corrective (Perbaikan Sekarang)</option>
+              <option value="Preventive">Preventive (Pencegahan Sistem)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Status Progres</label>
+            <select id="modalStatus" required class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+              <option value="Closed">🟢 Closed (Selesai)</option>
+              <option value="In Progress">🟡 In Progress (Berjalan)</option>
+              <option value="Open">🔴 Open (Belum Mulai)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Uraian Rencana Tindakan (Action Plan)</label>
+          <textarea id="modalPlan" rows="2" required placeholder="Detail aksi kuratif atau pencegahan..." class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Departemen / PIC</label>
+            <input type="text" id="modalPIC" required placeholder="Contoh: IT (Doni), Finance" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Target Selesai (Due Date)</label>
+            <input type="text" id="modalDueDate" required placeholder="Contoh: W4 Nov 25, Jan 26" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <!-- Evidence Attachment Section with Smartphone Camera and Large Preview -->
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <label class="block font-bold text-slate-800 mb-1 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              Foto Bukti Tindak Lanjut (Evidence)
+            </span>
+            <span class="text-[10px] text-slate-400 font-normal">Kompresi HD Otomatis</span>
+          </label>
+
+          <div class="flex items-center gap-2 mt-1">
+            <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold text-slate-700 hover:bg-slate-100 transition shadow-xs text-xs">
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+              <span id="btnUploadLabel">Ambil Foto / Pilih File</span>
+              <input type="file" id="modalEvidenceFileInput" accept="image/*" class="hidden" onchange="handleEvidenceUpload(event)">
+            </label>
+
+            <button type="button" id="btnRemoveEvidence" onclick="removeModalEvidence()" class="hidden text-rose-600 hover:text-rose-800 text-xs font-semibold items-center gap-1 p-1">
+              &times; Hapus Foto
+            </button>
+          </div>
+
+          <!-- Enlarged Thumbnail Preview Container -->
+          <div id="modalEvidencePreviewContainer" class="hidden mt-2.5 flex flex-col items-start gap-2 p-2 bg-white rounded-lg border border-slate-200">
+            <img id="modalEvidencePreviewImg" src="" alt="Bukti" class="w-full max-h-48 object-cover rounded-lg border border-slate-300 shadow-xs cursor-pointer" onclick="openLightbox(this.src, 'Preview Bukti Tindakan')">
+            <div class="flex justify-between items-center w-full text-[11px] text-slate-600">
+              <span class="text-slate-800 font-semibold">Foto bukti terlampir</span>
+              <span class="text-[10px] text-brand-600 font-medium cursor-pointer" onclick="openLightbox(document.getElementById('modalEvidencePreviewImg').src, 'Preview Bukti Tindakan')">Klik untuk zoom &rarr;</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeModalCapa()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition">Batal</button>
+          <button type="submit" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-medium shadow-xs transition">Simpan Tindakan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="pdcaModal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
+        <h3 class="font-bold text-sm" id="pdcaModalTitle">Tambah Agenda PDCA &amp; Genba</h3>
+        <button onclick="closeModalPdca()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+      <form id="formPdca" onsubmit="savePdca(event)" class="p-4 sm:p-5 space-y-3 text-xs">
+        <input type="hidden" id="editPdcaIndex" value="-1">
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Tahap PDCA</label>
+            <select id="modalPdcaStep" required class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+              <option value="Plan">Plan (Perencanaan)</option>
+              <option value="Do">Do (Pelaksanaan)</option>
+              <option value="Check">Check (Evaluasi)</option>
+              <option value="Act">Act (Standarisasi)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Tanggal / Waktu</label>
+            <input type="text" id="modalPdcaDate" required placeholder="Contoh: 11-Jun-25 / Ags-25" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Agenda / Aktivitas PDCA &amp; Genba</label>
+          <textarea id="modalPdcaAgenda" rows="2" required placeholder="Rapat, investigasi fisik, atau audit..." class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">PIC &amp; Departemen Terlibat</label>
+          <input type="text" id="modalPdcaPic" required placeholder="Contoh: Sakti Dito, Abdul Karim (Finance)" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Output / Ringkasan Hasil</label>
+          <textarea id="modalPdcaOutput" rows="2" required placeholder="Hasil kesepakatan, temuan, atau output meeting..." class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+        <div class="pt-2 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeModalPdca()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition">Batal</button>
+          <button type="submit" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-medium shadow-xs transition">Simpan Agenda</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Edit Info Dokumen & Proyek -->
+  <div id="projectInfoModal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
+        <h3 class="font-bold text-sm">Pengaturan Informasi Dokumen Proyek</h3>
+        <button onclick="closeModalProjectInfo()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+      <form id="formProjectInfo" onsubmit="saveProjectInfo(event)" class="p-4 sm:p-5 space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Judul Laporan / Project Title</label>
+          <input type="text" id="metaTitle" required class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Sub-Judul / Pokok Masalah Proyek</label>
+          <input type="text" id="metaSubTitle" required class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Unit / Cabang / Entitas</label>
+            <input type="text" id="metaEntity" required class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Nomor Dokumen</label>
+            <input type="text" id="metaNumber" required class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Periode Proyek</label>
+          <input type="text" id="metaPeriod" required class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div class="pt-2 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeModalProjectInfo()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition">Tutup</button>
+          <button type="submit" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-medium shadow-xs transition">Perbarui Dokumen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Kelola Pengesah (Dynamic Multi-Signers dengan Tanggal Approval) -->
+  <div id="signersModal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 max-h-[90vh] flex flex-col">
+      <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-sm">Kelola Pejabat Pengesah &amp; Tanggal Approval</h3>
+          <p class="text-[10px] text-slate-400">Seluruh pengesah akan otomatis ditampilkan dalam 1 baris mendatar</p>
+        </div>
+        <button onclick="closeModalSigners()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+
+      <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3 text-xs">
+        <div class="flex justify-between items-center mb-1">
+          <span class="font-semibold text-slate-700">Daftar Pejabat Penandatangan:</span>
+          <button onclick="addNewSignerRow()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-xs transition">
+            + Tambah Pengesah
+          </button>
+        </div>
+
+        <div id="signersListEditor" class="space-y-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+        <button onclick="closeModalSigners()" class="px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-medium transition text-xs">Tutup</button>
+        <button onclick="saveAllSigners()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition text-xs">Terapkan Pengesahan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="printApprovalModal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-rose-600 flex items-center justify-center text-white font-bold text-xs">
+            PDF
+          </div>
+          <div>
+            <h3 class="font-bold text-sm">Cetak PDF Laporan &amp; Approval</h3>
+            <p class="text-[10px] text-slate-400">Pengaturan cetak dokumen resmi berstandar korporat</p>
+          </div>
+        </div>
+        <button onclick="closeModalPrintApproval()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+
+      <div class="p-4 sm:p-5 space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">1. Format Tanda Tangan</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex flex-col p-2.5 rounded-lg border border-slate-300 hover:border-slate-500 bg-slate-50 cursor-pointer has-[:checked]:border-slate-900 has-[:checked]:bg-slate-100">
+              <div class="flex items-center gap-2 mb-0.5">
+                <input type="radio" name="printApprovalMode" value="blank" checked class="text-slate-900 focus:ring-slate-900">
+                <span class="font-bold text-slate-900 text-xs">Tanda Tangan Basah</span>
+              </div>
+              <p class="text-[9.5px] text-slate-500 leading-tight">
+                Kolom kosong bertitik untuk tanda tangan fisik &amp; stempel manual.
+              </p>
+            </label>
+
+            <label class="flex flex-col p-2.5 rounded-lg border border-slate-300 hover:border-slate-500 bg-slate-50 cursor-pointer has-[:checked]:border-slate-900 has-[:checked]:bg-slate-100">
+              <div class="flex items-center gap-2 mb-0.5">
+                <input type="radio" name="printApprovalMode" value="signed" class="text-slate-900 focus:ring-slate-900">
+                <span class="font-bold text-slate-900 text-xs">Digital / Approved</span>
+              </div>
+              <p class="text-[9.5px] text-slate-500 leading-tight">
+                Menampilkan paraf digital dan cap "APPROVED" yang sudah tercatat.
+              </p>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">2. Orientasi Kertas (A4)</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center gap-2 p-2 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-slate-900 has-[:checked]:bg-slate-100">
+              <input type="radio" name="printOrientation" value="landscape" checked class="text-slate-900 focus:ring-slate-900">
+              <div>
+                <span class="font-semibold text-slate-800 block text-xs">Lanskap (Landscape)</span>
+                <span class="text-[9px] text-emerald-700 font-bold">&starf; Standar Rekomendasi</span>
+              </div>
+            </label>
+            <label class="flex items-center gap-2 p-2 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-slate-900 has-[:checked]:bg-slate-100">
+              <input type="radio" name="printOrientation" value="portrait" class="text-slate-900 focus:ring-slate-900">
+              <div>
+                <span class="font-semibold text-slate-800 block text-xs">Potret (Portrait)</span>
+                <span class="text-[9px] text-slate-500">Format vertikal</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+          <label class="block font-bold text-slate-800 mb-0.5">3. Opsi Tampilan Tambahan</label>
+          
+          <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+            <input type="checkbox" id="includeDisposisiCheck" class="rounded text-slate-900 focus:ring-slate-900">
+            <span>Sertakan <strong>Kotak Catatan Disposisi / Evaluasi Pimpinan</strong></span>
+          </label>
+
+          <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+            <input type="checkbox" id="hideKpiOnPrintCheck" class="rounded text-slate-900 focus:ring-slate-900">
+            <span>Sembunyikan <strong>Kartu Ringkasan KPI</strong> (dokumen langsung tabel)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-100 border-t border-slate-200 flex justify-end gap-2">
+        <button onclick="closeModalPrintApproval()" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition text-xs border border-slate-300">Batal</button>
+        <button onclick="executePrintApproval()" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold shadow-xs transition text-xs flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          <span>Buka Dialog Cetak / Simpan PDF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX MODAL (High-Resolution Visual Inspection of Evidence) -->
+  <div id="imageLightboxModal" class="no-print fixed inset-0 bg-slate-950/85 backdrop-blur-md hidden z-50 flex items-center justify-center p-3" onclick="closeLightbox()">
+    <div class="relative max-w-5xl w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 flex flex-col max-h-[95vh]" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-4 py-2.5 text-white border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <span class="text-xs font-bold" id="lightboxTitle">Foto Bukti Tindak Lanjut</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="downloadLightboxImage()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[11px] font-semibold flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Unduh
+          </button>
+          <button onclick="closeLightbox()" class="text-slate-400 hover:text-white text-xl leading-none px-2">&times;</button>
+        </div>
+      </div>
+      <div class="p-3 flex items-center justify-center bg-black/60 overflow-auto flex-1 min-h-[350px]">
+        <img id="lightboxImg" src="" alt="Evidence Full" class="max-h-[80vh] w-auto max-w-full rounded-xl object-contain shadow-2xl border border-slate-700">
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Message -->
+  <div id="toast" class="no-print fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-200 flex items-center gap-2 z-50">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span id="toastMsg">Data berhasil disimpan!</span>
+  </div>
+
+  <script>
+    // Project Metadata Default
+    const defaultProjectMeta = {
+      title: "PROJECT MANAGEMENT REPORT: TEMUAN AUDIT & ACTION PLAN",
+      subTitle: "Progress Tindak Lanjut Temuan Internal Audit — Outstanding Saldo SDP & Sublet AP",
+      entity: "Nasmoco Solo Baru",
+      number: "PMR-AUD/2026/001",
+      period: "Q4 2025 - Q1 2026",
+      badge: "PROJECT MANAGEMENT REPORT • PDCA & CAPA"
+    };
+
+    // Default 5 Signers according to the official reference case
+    const defaultSigners = [
+      { role: "Internal Audit DpH", name: "Sakti Dito A.", date: "10/11/2025", approved: true },
+      { role: "IST / IT DpH", name: "A. Doni Hermawan", date: "10/11/2025", approved: true },
+      { role: "TPA / Finance DpH", name: "Afif Raihan A.P.", date: "10/11/2025", approved: true },
+      { role: "Accounting & Tax DpH", name: "Sioh Jerry Matanari", date: "10/11/2025", approved: true },
+      { role: "Aftersales DpH", name: "Deni Sofyanto", date: "05/11/2025", approved: true }
+    ];
+
+    // Default Agenda PDCA Log
+    const defaultPdcaList = [
+      {
+        step: "Plan",
+        agenda: "Penarikan dan analisa data saldo SDP periode 2017 - 2024",
+        pic: "Arya A. (Internal Audit)",
+        date: "04-Jan-25",
+        output: "Data anomali dan rekap selisih saldo SDP terpetakan"
+      },
+      {
+        step: "Plan",
+        agenda: "Genba (investigasi on-site) di cabang Nasmoco Solo Baru",
+        pic: "Abdul Karim (Finance), Fasa (Aftersales)",
+        date: "11-Jun-25",
+        output: "Temuan fisik alur operasional sublet dan dokumen tagihan"
+      },
+      {
+        step: "Plan",
+        agenda: "Meeting Komite Audit: Usulan penghapusan persediaan & konfirmasi vendor",
+        pic: "Sakti Dito, Arya A. (Audit & Finance)",
+        date: "26-Jul-25",
+        output: "Konfirmasi tertulis vendor tidak ada tagihan menggantung"
+      },
+      {
+        step: "Do",
+        agenda: "Konfirmasi hasil Genba & sinkronisasi metode pengecekan audit cabang",
+        pic: "Deni, Fasa (Aftersales), Arya (IA)",
+        date: "Ags-25",
+        output: "Standarisasi sampling audit disepakati seluruh divisi"
+      },
+      {
+        step: "Check",
+        agenda: "Meeting progres & finalisasi usulan Corrective & Preventive Action",
+        pic: "All DpH (Audit, IST, Finance, Acc, Aftersales)",
+        date: "06-Nov-25",
+        output: "Penyusunan matriks persetujuan final (Approved by 5 DpH)"
+      }
+    ];
+
+    // Sample High-Clarity SVG Mock for initial evidence photo demonstrations
+    const sampleEvidenceImg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="%230f172a"/><path d="M50 140 L110 80 L170 130 L220 70 L270 140 Z" fill="%23059669" opacity="0.6"/><circle cx="80" cy="55" r="22" fill="%23f59e0b"/><text x="150" y="175" fill="%23ffffff" font-size="14" font-weight="bold" font-family="sans-serif" text-anchor="middle">BUKTI GENBA TERVERIFIKASI</text></svg>';
+
+    // Default CAPA Actions with clear evidence illustration
+    const defaultCapaList = [
+      {
+        id: "1.1",
+        category: "Outstanding Saldo",
+        type: "Corrective",
+        plan: "Membuat kronologi kejadian resmi (menggunakan form standar dari Internal Audit)",
+        pic: "Internal Audit (Sakti/Arya)",
+        dueDate: "W1 Nov 25",
+        status: "Closed",
+        evidence: sampleEvidenceImg
+      },
+      {
+        id: "1.2",
+        category: "Outstanding Saldo",
+        type: "Corrective",
+        plan: "Mengirimkan data detail transaksi yang perlu dilakukan proses adjustment",
+        pic: "Internal Audit (Arya)",
+        dueDate: "W2 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "1.3",
+        category: "Outstanding Saldo",
+        type: "Corrective",
+        plan: "Melakukan jurnal memorial dan eksekusi penghapusan persediaan",
+        pic: "Accounting (Jerry)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: sampleEvidenceImg
+      },
+      {
+        id: "1.4",
+        category: "Outstanding Saldo",
+        type: "Corrective",
+        plan: "Melakukan konfirmasi formal atas outstanding tagihan ke masing-masing vendor",
+        pic: "Finance (Karim)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "1.5",
+        category: "Outstanding Saldo",
+        type: "Preventive",
+        plan: "Membuat standarisasi perbedaan nomor bukti transaksi sublet per masing-masing vendor",
+        pic: "Finance & Aftersales",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "1.6",
+        category: "Outstanding Saldo",
+        type: "Preventive",
+        plan: "Melakukan pengecekan menyeluruh ke seluruh dealer (cross-dealer check) apakah terjadi case serupa",
+        pic: "IST & Accounting",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "1.7",
+        category: "Outstanding Saldo",
+        type: "Preventive",
+        plan: "Makesure dan verifikasi logic NIS sesuai dengan aturan dan SOP alur sistem",
+        pic: "IST (Doni)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: sampleEvidenceImg
+      },
+      {
+        id: "2.1",
+        category: "Dobel AP",
+        type: "Corrective",
+        plan: "Melakukan pengecekan atas temuan data dobel input AP pada database",
+        pic: "IST (Erwin)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "2.2",
+        category: "Dobel AP",
+        type: "Corrective",
+        plan: "Cek saldo outstanding per WO dengan ketersediaan AP sehingga balance dan tidak menggantung lagi",
+        pic: "Finance (Febry)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "2.3",
+        category: "Dobel AP",
+        type: "Corrective",
+        plan: "Adjustment atas dobel pencatatan di laporan keuangan berdasar opini akhir IST & Finance",
+        pic: "Accounting (Novita)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "2.4",
+        category: "Dobel AP",
+        type: "Preventive",
+        plan: "Menerapkan sistem 3-way matching validasi order sublet melalui proses otomasi",
+        pic: "Finance (Afif)",
+        dueDate: "Jan 26",
+        status: "In Progress",
+        evidence: ""
+      },
+      {
+        id: "2.5",
+        category: "Dobel AP",
+        type: "Preventive",
+        plan: "Memastikan logic NIS accounting terkunci sehingga tidak dapat terjadi dobel nomor invoice",
+        pic: "IST (Doni)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "2.6",
+        category: "Dobel AP",
+        type: "Preventive",
+        plan: "Membuat report secara periodik atas saldo SDP dan AP aging untuk memastikan posisi saldo selalu balance",
+        pic: "Finance (Karim)",
+        dueDate: "Setiap Bulan",
+        status: "In Progress",
+        evidence: ""
+      },
+      {
+        id: "3.1",
+        category: "WO Tidak Teridentifikasi",
+        type: "Corrective",
+        plan: "Melakukan pengecekan dan investigasi trace log atas transaksi WO yang tidak dapat diidentifikasi",
+        pic: "IST (Erwin)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "3.2",
+        category: "WO Tidak Teridentifikasi",
+        type: "Corrective",
+        plan: "Adjustment nilai di laporan keuangan berdasarkan rekomendasi data audit dan IST",
+        pic: "Accounting (Jerry)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "3.3",
+        category: "WO Tidak Teridentifikasi",
+        type: "Preventive",
+        plan: "Koreksi logic NIS yang mewajibkan input identitas WO pada seluruh transaksi sublet",
+        pic: "IST (Doni)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "3.4",
+        category: "WO Tidak Teridentifikasi",
+        type: "Preventive",
+        plan: "Menyiapkan tools bantuan otomasi penarikan data transaksi tertunda untuk monitoring harian",
+        pic: "IST (Erwin)",
+        dueDate: "W4 Nov 25",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "3.5",
+        category: "WO Tidak Teridentifikasi",
+        type: "Preventive",
+        plan: "Continuous audit action dan monitoring berkala atas integritas data transaksi",
+        pic: "Internal Audit (Sakti)",
+        dueDate: "Setiap Bulan",
+        status: "In Progress",
+        evidence: ""
+      }
+    ];
+
+    // State Variables
+    let currentMobileView = localStorage.getItem('pmr_mobile_view') || 'card';
+    let projectMeta = JSON.parse(localStorage.getItem('pmr_project_meta')) || defaultProjectMeta;
+    let signersList = JSON.parse(localStorage.getItem('pmr_signers_list')) || defaultSigners;
+    let pdcaList = JSON.parse(localStorage.getItem('pmr_pdca_list')) || defaultPdcaList;
+    let capaList = JSON.parse(localStorage.getItem('pmr_capa_data')) || defaultCapaList;
+    
+    // Spreadsheet Integration State
+    let sheetWebhookUrl = localStorage.getItem('pmr_sheet_webhook_url') || '';
+    let autoSyncEnabled = localStorage.getItem('pmr_sheet_auto_sync') === 'true';
+
+    function saveAllToStorage() {
+      localStorage.setItem('pmr_project_meta', JSON.stringify(projectMeta));
+      localStorage.setItem('pmr_signers_list', JSON.stringify(signersList));
+      localStorage.setItem('pmr_pdca_list', JSON.stringify(pdcaList));
+      localStorage.setItem('pmr_capa_data', JSON.stringify(capaList));
+
+      if (autoSyncEnabled && sheetWebhookUrl) {
+        syncToGoogleSheets(true);
+      }
+    }
+
+    // Google Sheets Integration Functions
+    function openModalSpreadsheet() {
+      document.getElementById('sheetWebhookUrl').value = sheetWebhookUrl;
+      document.getElementById('autoSyncCheck').checked = autoSyncEnabled;
+      updateSheetStatusUI();
+      document.getElementById('spreadsheetModal').classList.remove('hidden');
+    }
+
+    function closeModalSpreadsheet() {
+      document.getElementById('spreadsheetModal').classList.add('hidden');
+    }
+
+    function updateSheetStatusUI() {
+      const statusEl = document.getElementById('sheetConnectionStatus');
+      const badgeEl = document.getElementById('sheetSyncBadge');
+      const headerLabel = document.getElementById('headerSyncLabel');
+      const footerStatus = document.getElementById('footerSyncStatus');
+
+      if (sheetWebhookUrl) {
+        statusEl.innerHTML = `<span class="text-emerald-600 font-bold flex items-center gap-1">&bull; URL Terkonfigurasi</span>`;
+        badgeEl.className = "hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300";
+        badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Sheets Synced`;
+        headerLabel.innerText = "Google Sheets: Terhubung";
+        footerStatus.innerText = "Tersambung ke Google Spreadsheet • Cloud Sync Aktif";
+      } else {
+        statusEl.innerHTML = `<span class="text-slate-400 font-normal">Belum Terhubung (Offline)</span>`;
+        badgeEl.className = "hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-300";
+        badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Offline Mode`;
+        headerLabel.innerText = "Mode Offline (Lokal)";
+        footerStatus.innerText = "Tersimpan Lokal di Perangkat • Belum Tersambung Sheets";
+      }
+    }
+
+    async function saveAndTestSheetConnection() {
+      const url = document.getElementById('sheetWebhookUrl').value.trim();
+      autoSyncEnabled = document.getElementById('autoSyncCheck').checked;
+      localStorage.setItem('pmr_sheet_auto_sync', autoSyncEnabled ? 'true' : 'false');
+
+      if (!url) {
+        sheetWebhookUrl = '';
+        localStorage.removeItem('pmr_sheet_webhook_url');
+        updateSheetStatusUI();
+        showToast("Konfigurasi Google Sheets dihapus.");
+        return;
+      }
+
+      sheetWebhookUrl = url;
+      localStorage.setItem('pmr_sheet_webhook_url', sheetWebhookUrl);
+      updateSheetStatusUI();
+
+      showToast("Menguji koneksi ke Google Sheets...");
+      await syncToGoogleSheets(false);
+    }
+
+    async function syncToGoogleSheets(silent = false) {
+      if (!sheetWebhookUrl) {
+        if (!silent) {
+          openModalSpreadsheet();
+          showToast("Silakan masukkan Google Apps Script Web App URL terlebih dahulu.");
+        }
+        return;
+      }
+
+      if (!silent) showToast("Mengirim data ke Google Sheets...");
+
+      const payload = {
+        projectMeta,
+        pdcaList,
+        capaList: capaList.map(item => ({
+          id: item.id,
+          category: item.category,
+          type: item.type,
+          plan: item.plan,
+          pic: item.pic,
+          dueDate: item.dueDate,
+          status: item.status,
+          evidence: !!item.evidence
+        })),
+        signersList,
+        syncedAt: new Date().toISOString()
+      };
+
+      try {
+        await fetch(sheetWebhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const syncTime = new Date().toLocaleTimeString('id-ID');
+        document.getElementById('footerSyncStatus').innerText = `Tersambung ke Google Spreadsheet • Terakhir Disinkronkan pukul ${syncTime}`;
+        if (!silent) showToast(`Data berhasil dikirim ke Google Sheets (${syncTime})!`);
+      } catch (err) {
+        if (!silent) showToast("Gagal menyambung ke Google Sheets. Periksa URL Anda.");
+      }
+    }
+
+    function copyAppsScriptCode() {
+      const code = document.getElementById('appsScriptCodeBlock').innerText;
+      const tempArea = document.createElement('textarea');
+      tempArea.value = code;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempArea);
+      showToast("Kode Apps Script berhasil disalin ke clipboard!");
+    }
+
+    function renderProjectHeader() {
+      document.getElementById('docTitle').innerText = projectMeta.title;
+      document.getElementById('docSubTitle').innerText = projectMeta.subTitle;
+      document.getElementById('docEntity').innerText = projectMeta.entity;
+      document.getElementById('docNumber').innerText = projectMeta.number;
+      document.getElementById('docPeriod').innerText = projectMeta.period;
+      document.getElementById('docPrintDate').innerText = new Date().toLocaleDateString('id-ID');
+      document.getElementById('footerEntityText').innerText = `Dokumen Resmi Project Management Report • ${projectMeta.entity}`;
+    }
+
+    function renderSignersSection() {
+      const container = document.getElementById('signersContainer');
+      container.innerHTML = '';
+
+      if (signersList.length === 0) {
+        container.innerHTML = `<div class="w-full py-3 text-center text-slate-400 italic text-xs">Belum ada pejabat penandatangan. Klik 'Kelola Pengesah' untuk menambahkan.</div>`;
+        return;
+      }
+
+      signersList.forEach((signer, index) => {
+        const card = document.createElement('div');
+        card.className = "signer-card bg-white rounded-lg p-2 border border-slate-300 flex flex-col justify-between text-center relative overflow-hidden flex-1 min-w-0";
+        
+        const approvedBadge = signer.approved 
+          ? `<span class="border border-emerald-600 text-emerald-800 text-[9px] font-black px-1 py-0.5 rounded transform rotate-6 bg-emerald-50/80">APPROVED</span>`
+          : `<span class="border border-amber-600 text-amber-800 text-[9px] font-black px-1 py-0.5 rounded transform -rotate-6 bg-amber-50/80">IN REVIEW</span>`;
+
+        card.innerHTML = `
+          <!-- Header Jabatan / Departemen -->
+          <div class="signer-role text-[10px] font-bold text-slate-800 uppercase pb-1 border-b border-slate-200 truncate" title="${signer.role}">
+            ${signer.role}
+          </div>
+
+          <!-- Digital Signature Area -->
+          <div class="signature-digital-box signer-sig-area h-14 sm:h-16 flex flex-col items-center justify-center my-0.5 relative cursor-pointer" onclick="toggleSignerApproval(${index})" title="Klik untuk ubah status approval">
+            <div class="font-serif italic text-blue-900 font-bold text-base select-none transform -rotate-3 hover:scale-105 transition truncate max-w-full px-1">
+              ${signer.name.split(' ')[0]}...
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none">
+              ${approvedBadge}
+            </div>
+          </div>
+
+          <!-- Blank Signature Area for Wet Signature -->
+          <div class="signature-blank-box signer-sig-area h-14 sm:h-16 flex-col justify-end items-center my-0.5 pb-1">
+            <div class="w-10/12 border-b border-slate-400 border-dotted mb-1"></div>
+            <div class="text-[8px] text-slate-400 italic">Tanda Tangan &amp; Cap</div>
+          </div>
+
+          <!-- Informasi Nama Pejabat & Tanggal Approval -->
+          <div class="pt-1 border-t border-slate-200">
+            <div class="signer-name-txt text-[10.5px] font-bold text-slate-900 truncate" title="${signer.name}">
+              ${signer.name}
+            </div>
+            
+            <!-- Tanggal Approval Digital -->
+            <div class="signature-digital-box signer-date-txt text-[9px] text-slate-600 mt-0.5 font-medium truncate">
+              Tgl Approval: <span class="font-semibold text-slate-800">${signer.date || '-'}</span>
+            </div>
+
+            <!-- Tanggal Approval Blank (Format Isian Fisik) -->
+            <div class="signature-blank-box signer-date-txt text-[9px] text-slate-600 font-mono mt-0.5 truncate">
+              Tgl: ___/___/20__
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Update badge status
+      const allApproved = signersList.every(s => s.approved);
+      const overallBadge = document.getElementById('overallApprovalBadge');
+      if (allApproved && signersList.length > 0) {
+        overallBadge.className = "text-[9.5px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-300";
+        overallBadge.innerText = "STATUS: FULLY SIGNED & APPROVED";
+      } else {
+        overallBadge.className = "text-[9.5px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-bold border border-amber-300";
+        overallBadge.innerText = "STATUS: WAITING SIGNATURES";
+      }
+    }
+
+    function toggleSignerApproval(index) {
+      signersList[index].approved = !signersList[index].approved;
+      saveAllToStorage();
+      renderSignersSection();
+      showToast(`Status approval ${signersList[index].name} diperbarui.`);
+    }
+
+    function renderPDCATable() {
+      const tbody = document.getElementById('pdcaTableBody');
+      tbody.innerHTML = '';
+
+      if (pdcaList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-slate-400 italic">Belum ada agenda PDCA. Klik '+ Agenda' untuk menambahkan.</td></tr>`;
+        return;
+      }
+
+      pdcaList.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.className = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
+
+        const badgeColor = {
+          'Plan': 'bg-blue-100 text-blue-800 border-blue-200',
+          'Do': 'bg-purple-100 text-purple-800 border-purple-200',
+          'Check': 'bg-amber-100 text-amber-800 border-amber-200',
+          'Act': 'bg-emerald-100 text-emerald-800 border-emerald-200'
+        }[item.step] || 'bg-slate-100 text-slate-800 border-slate-200';
+
+        tr.innerHTML = `
+          <td class="py-2 px-2.5 text-center font-bold text-slate-500">${index + 1}</td>
+          <td class="py-2 px-2.5 text-center">
+            <span class="inline-block px-1.5 py-0.5 rounded text-[9.5px] font-bold border ${badgeColor}">${item.step}</span>
+          </td>
+          <td class="py-2 px-3 font-semibold text-slate-800 leading-snug">${item.agenda}</td>
+          <td class="py-2 px-3 text-slate-600 font-medium">${item.pic}</td>
+          <td class="py-2 px-2.5 text-center text-slate-600 font-mono text-[10.5px] whitespace-nowrap">${item.date}</td>
+          <td class="py-2 px-3 text-slate-600 italic text-[10.5px] leading-snug">${item.output}</td>
+          <td class="py-2 px-2 text-center no-print whitespace-nowrap">
+            <button onclick="editPdca(${index})" class="text-blue-600 hover:text-blue-800 p-0.5 mr-1" title="Edit">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+            </button>
+            <button onclick="deletePdca(${index})" class="text-rose-500 hover:text-rose-700 p-0.5" title="Hapus">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateDynamicCategories() {
+      const selectFilter = document.getElementById('filterCategory');
+      const datalist = document.getElementById('categoryDatalist');
+      
+      const currentSelected = selectFilter.value;
+      const categories = Array.from(new Set(capaList.map(item => item.category.trim()).filter(Boolean)));
+      
+      selectFilter.innerHTML = '<option value="ALL">Semua Kategori</option>';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.innerText = cat;
+        selectFilter.appendChild(opt);
+      });
+
+      if (categories.includes(currentSelected)) {
+        selectFilter.value = currentSelected;
+      }
+
+      datalist.innerHTML = '';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        datalist.appendChild(opt);
+      });
+    }
+
+    function renderCAPATable() {
+      updateDynamicCategories();
+
+      const tbody = document.getElementById('capaTableBody');
+      const mobileCards = document.getElementById('capaMobileCards');
+      const catFilter = document.getElementById('filterCategory').value;
+      const typeFilter = document.getElementById('filterType').value;
+      const statusFilter = document.getElementById('filterStatus').value;
+
+      tbody.innerHTML = '';
+      mobileCards.innerHTML = '';
+
+      let filtered = capaList.filter(item => {
+        const matchCat = (catFilter === 'ALL') || (item.category === catFilter);
+        const matchType = (typeFilter === 'ALL') || (item.type === typeFilter);
+        const matchStatus = (statusFilter === 'ALL') || (item.status === statusFilter);
+        return matchCat && matchType && matchStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-400 italic">Tidak ada butir aksi yang sesuai filter.</td></tr>`;
+        mobileCards.innerHTML = `<div class="p-6 text-center text-slate-400 italic bg-white rounded-xl border border-slate-200">Tidak ada butir aksi. Ketuk '+ Tindakan' di bawah untuk menambah data.</div>`;
+      } else {
+        filtered.forEach((item) => {
+          const realIndex = capaList.findIndex(x => x.id === item.id);
+          
+          // Status Badges
+          const statusBadge = {
+            'Closed': '<span class="cursor-pointer inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full text-[9.5px] font-bold whitespace-nowrap" onclick="toggleStatus(' + realIndex + ')">🟢 Closed</span>',
+            'In Progress': '<span class="cursor-pointer inline-flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full text-[9.5px] font-bold whitespace-nowrap" onclick="toggleStatus(' + realIndex + ')">🟡 In Progress</span>',
+            'Open': '<span class="cursor-pointer inline-flex items-center gap-1 bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded-full text-[9.5px] font-bold whitespace-nowrap" onclick="toggleStatus(' + realIndex + ')">🔴 Open</span>'
+          }[item.status] || `<span class="bg-slate-100 px-1.5 py-0.5 rounded text-[9.5px]">${item.status}</span>`;
+
+          const typeBadge = item.type === 'Corrective' 
+            ? '<span class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded text-[9.5px] font-bold whitespace-nowrap">Corrective</span>'
+            : '<span class="bg-teal-50 text-teal-700 border border-teal-200 px-1.5 py-0.5 rounded text-[9.5px] font-bold whitespace-nowrap">Preventive</span>';
+
+          // ENLARGED EVIDENCE PRESENTATION
+          let evidenceHtmlDesktop = '<span class="text-slate-300 text-[10px] italic">Tidak ada foto</span>';
+          let evidenceHtmlMobile = '';
+
+          if (item.evidence) {
+            // Generous 72x52px clear visual photo thumbnail for desktop & print
+            evidenceHtmlDesktop = `
+              <div class="evidence-thumb-container relative inline-block cursor-pointer group" onclick="openLightbox('${item.evidence}', 'Bukti Tindak Lanjut ID ${item.id} - ${item.category}')">
+                <img src="${item.evidence}" alt="Bukti" class="w-20 h-14 object-cover rounded-lg border border-slate-300 shadow-sm transition group-hover:brightness-95 evidence-print-img">
+                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center text-white text-[9px] font-bold no-print">
+                  Zoom
+                </div>
+                <span class="absolute -top-1 -right-1 bg-emerald-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold shadow-xs">✓</span>
+              </div>
+            `;
+
+            // Clear, large banner photo layout for mobile card view
+            evidenceHtmlMobile = `
+              <div class="mt-2.5 bg-slate-50 border border-slate-200 rounded-xl p-2">
+                <div class="flex items-center justify-between pb-1.5">
+                  <span class="text-[10.5px] font-bold text-slate-700 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Foto Bukti Lapangan
+                  </span>
+                  <button type="button" onclick="openLightbox('${item.evidence}', 'Bukti ID ${item.id}')" class="text-[10px] text-brand-600 font-bold hover:underline">
+                    Perbesar Penuh &rarr;
+                  </button>
+                </div>
+                <div class="relative rounded-lg overflow-hidden cursor-pointer" onclick="openLightbox('${item.evidence}', 'Bukti ID ${item.id}')">
+                  <img src="${item.evidence}" alt="Evidence" class="w-full h-36 object-cover rounded-lg border border-slate-300 shadow-inner">
+                  <div class="absolute bottom-1.5 right-1.5 bg-slate-900/80 backdrop-blur-xs text-white text-[9px] font-semibold px-2 py-0.5 rounded">
+                    Sentuh untuk memperbesar
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          // 1. Desktop Table Row
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50/80 transition border-b border-slate-200';
+          tr.innerHTML = `
+            <td class="py-2.5 px-2 text-center font-bold text-slate-400">${item.id}</td>
+            <td class="py-2.5 px-2.5 font-semibold text-slate-900 text-[10.5px]">${item.category}</td>
+            <td class="py-2.5 px-2 text-center">${typeBadge}</td>
+            <td class="py-2.5 px-3 text-slate-700 leading-snug">${item.plan}</td>
+            <td class="py-2.5 px-2.5 font-medium text-slate-600 text-[10.5px]">${item.pic}</td>
+            <td class="py-2.5 px-2 text-center text-slate-500 font-mono text-[10.5px] whitespace-nowrap">${item.dueDate}</td>
+            <td class="py-2.5 px-2 text-center select-none">${evidenceHtmlDesktop}</td>
+            <td class="py-2.5 px-2 text-center select-none">${statusBadge}</td>
+            <td class="py-2.5 px-2 text-center no-print whitespace-nowrap">
+              <button onclick="editCapa(${realIndex})" class="text-blue-600 hover:text-blue-800 p-1 mr-0.5" title="Edit Aksi">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+              </button>
+              <button onclick="deleteCapa(${realIndex})" class="text-rose-500 hover:text-rose-700 p-1" title="Hapus Aksi">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+
+          // 2. Mobile Touch-Friendly Card
+          const card = document.createElement('div');
+          card.className = 'p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-2';
+          card.innerHTML = `
+            <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">ID ${item.id}</span>
+                <span class="font-bold text-slate-800 text-xs">${item.category}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                ${typeBadge}
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-800 font-medium leading-relaxed">${item.plan}</p>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 text-[10.5px] text-slate-500 pt-0.5">
+              <div>PIC: <strong class="text-slate-800 font-semibold">${item.pic}</strong></div>
+              <div>Due: <span class="font-mono font-medium text-slate-700">${item.dueDate}</span></div>
+            </div>
+
+            ${evidenceHtmlMobile}
+
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div class="flex-1">
+                <button type="button" onclick="toggleStatus(${realIndex})" class="w-full text-left">
+                  ${statusBadge}
+                </button>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="editCapa(${realIndex})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                  Edit
+                </button>
+                <button onclick="deleteCapa(${realIndex})" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </div>
+          `;
+          mobileCards.appendChild(card);
+        });
+      }
+
+      updateStatistics();
+      applyMobileView();
+    }
+
+    function compressImageFile(file, maxWidth = 1200, quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve(compressedDataUrl);
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleEvidenceUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showToast("Format file harus berupa gambar/foto.");
+        return;
+      }
+
+      try {
+        showToast("Memproses & mengompresi foto...");
+        const compressedBase64 = await compressImageFile(file, 1200, 0.8);
+        document.getElementById('modalEvidenceData').value = compressedBase64;
+        document.getElementById('modalEvidencePreviewImg').src = compressedBase64;
+        document.getElementById('modalEvidencePreviewContainer').classList.remove('hidden');
+        document.getElementById('btnRemoveEvidence').classList.remove('hidden');
+        document.getElementById('btnRemoveEvidence').classList.add('flex');
+        document.getElementById('btnUploadLabel').innerText = "Ganti Foto";
+        showToast("Foto bukti beresolusi tinggi berhasil dilampirkan.");
+      } catch (err) {
+        showToast("Gagal memproses foto.");
+      }
+    }
+
+    function removeModalEvidence() {
+      document.getElementById('modalEvidenceData').value = "";
+      document.getElementById('modalEvidenceFileInput').value = "";
+      document.getElementById('modalEvidencePreviewContainer').classList.add('hidden');
+      document.getElementById('btnRemoveEvidence').classList.add('hidden');
+      document.getElementById('btnRemoveEvidence').classList.remove('flex');
+      document.getElementById('btnUploadLabel').innerText = "Ambil Foto / Pilih File";
+      showToast("Foto bukti dihapus.");
+    }
+
+    function openLightbox(src, title) {
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightboxTitle').innerText = title || 'Foto Bukti Tindak Lanjut';
+      document.getElementById('imageLightboxModal').classList.remove('hidden');
+    }
+
+    function closeLightbox() {
+      document.getElementById('imageLightboxModal').classList.add('hidden');
+    }
+
+    function downloadLightboxImage() {
+      const src = document.getElementById('lightboxImg').src;
+      if (!src) return;
+      const downloadLink = document.createElement('a');
+      downloadLink.href = src;
+      downloadLink.download = `Evidence_Photo_${new Date().toISOString().slice(0, 10)}.jpg`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      showToast("Foto bukti diunduh.");
+    }
+
+    function openModalAddCapa() {
+      document.getElementById('editIndex').value = "-1";
+      document.getElementById('modalTitle').innerText = "Tambah Rencana Tindakan CAPA";
+      document.getElementById('formCapa').reset();
+      document.getElementById('modalEvidenceData').value = "";
+      document.getElementById('btnUploadLabel').innerText = "Ambil Foto / Pilih File";
+      document.getElementById('btnRemoveEvidence').classList.add('hidden');
+      document.getElementById('modalEvidencePreviewContainer').classList.add('hidden');
+      document.getElementById('actionModal').classList.remove('hidden');
+    }
+
+    function closeModalCapa() {
+      document.getElementById('actionModal').classList.add('hidden');
+    }
+
+    function editCapa(index) {
+      const item = capaList[index];
+      document.getElementById('editIndex').value = index;
+      document.getElementById('modalTitle').innerText = `Edit Aksi (ID: ${item.id})`;
+      document.getElementById('modalCategoryInput').value = item.category;
+      document.getElementById('modalType').value = item.type;
+      document.getElementById('modalPlan').value = item.plan;
+      document.getElementById('modalPIC').value = item.pic;
+      document.getElementById('modalDueDate').value = item.dueDate;
+      document.getElementById('modalStatus').value = item.status;
+      
+      const evidence = item.evidence || "";
+      document.getElementById('modalEvidenceData').value = evidence;
+      if (evidence) {
+        document.getElementById('modalEvidencePreviewImg').src = evidence;
+        document.getElementById('modalEvidencePreviewContainer').classList.remove('hidden');
+        document.getElementById('btnRemoveEvidence').classList.remove('hidden');
+        document.getElementById('btnRemoveEvidence').classList.add('flex');
+        document.getElementById('btnUploadLabel').innerText = "Ganti Foto";
+      } else {
+        document.getElementById('modalEvidencePreviewContainer').classList.add('hidden');
+        document.getElementById('btnRemoveEvidence').classList.add('hidden');
+        document.getElementById('btnRemoveEvidence').classList.remove('flex');
+        document.getElementById('btnUploadLabel').innerText = "Ambil Foto / Pilih File";
+      }
+
+      document.getElementById('actionModal').classList.remove('hidden');
+    }
+
+    function deleteCapa(index) {
+      const item = capaList[index];
+      capaList.splice(index, 1);
+      saveAllToStorage();
+      renderCAPATable();
+      showToast(`Aksi ID ${item.id} berhasil dihapus.`);
+    }
+
+    function saveAction(e) {
+      e.preventDefault();
+      const editIdx = parseInt(document.getElementById('editIndex').value);
+      const category = document.getElementById('modalCategoryInput').value.trim() || 'Umum';
+      const type = document.getElementById('modalType').value;
+      const plan = document.getElementById('modalPlan').value.trim();
+      const pic = document.getElementById('modalPIC').value.trim();
+      const dueDate = document.getElementById('modalDueDate').value.trim();
+      const status = document.getElementById('modalStatus').value;
+      const evidence = document.getElementById('modalEvidenceData').value;
+
+      if (editIdx >= 0) {
+        capaList[editIdx] = {
+          ...capaList[editIdx],
+          category,
+          type,
+          plan,
+          pic,
+          dueDate,
+          status,
+          evidence
+        };
+        showToast("Perubahan aksi berhasil disimpan.");
+      } else {
+        const newId = (capaList.length + 1) + ".0";
+        capaList.push({
+          id: newId,
+          category,
+          type,
+          plan,
+          pic,
+          dueDate,
+          status,
+          evidence
+        });
+        showToast("Tindakan baru berhasil ditambahkan.");
+      }
+
+      saveAllToStorage();
+      closeModalCapa();
+      renderCAPATable();
+    }
+
+    function toggleStatus(index) {
+      const curr = capaList[index].status;
+      if (curr === 'Open') capaList[index].status = 'In Progress';
+      else if (curr === 'In Progress') capaList[index].status = 'Closed';
+      else capaList[index].status = 'Open';
+
+      saveAllToStorage();
+      renderCAPATable();
+      showToast(`Status Aksi ${capaList[index].id} diubah ke ${capaList[index].status}`);
+    }
+
+    function updateStatistics() {
+      const total = capaList.length;
+      const closed = capaList.filter(x => x.status === 'Closed').length;
+      const inProgress = capaList.filter(x => x.status === 'In Progress').length;
+      const open = capaList.filter(x => x.status === 'Open').length;
+      const pct = total > 0 ? Math.round((closed / total) * 100) : 0;
+
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statClosed').innerText = closed;
+      document.getElementById('statInProgress').innerText = inProgress;
+      document.getElementById('statOpen').innerText = open;
+      document.getElementById('statPercentage').innerText = `${pct}%`;
+    }
+
+    function openModalAddPdca() {
+      document.getElementById('editPdcaIndex').value = "-1";
+      document.getElementById('pdcaModalTitle').innerText = "Tambah Agenda PDCA & Genba";
+      document.getElementById('formPdca').reset();
+      document.getElementById('pdcaModal').classList.remove('hidden');
+    }
+
+    function closeModalPdca() {
+      document.getElementById('pdcaModal').classList.add('hidden');
+    }
+
+    function editPdca(index) {
+      const item = pdcaList[index];
+      document.getElementById('editPdcaIndex').value = index;
+      document.getElementById('pdcaModalTitle').innerText = `Edit Agenda PDCA (No. ${index + 1})`;
+      document.getElementById('modalPdcaStep').value = item.step;
+      document.getElementById('modalPdcaDate').value = item.date;
+      document.getElementById('modalPdcaAgenda').value = item.agenda;
+      document.getElementById('modalPdcaPic').value = item.pic;
+      document.getElementById('modalPdcaOutput').value = item.output;
+      document.getElementById('pdcaModal').classList.remove('hidden');
+    }
+
+    function deletePdca(index) {
+      pdcaList.splice(index, 1);
+      saveAllToStorage();
+      renderPDCATable();
+      showToast("Agenda PDCA berhasil dihapus.");
+    }
+
+    function savePdca(e) {
+      e.preventDefault();
+      const editIdx = parseInt(document.getElementById('editPdcaIndex').value);
+      const step = document.getElementById('modalPdcaStep').value;
+      const date = document.getElementById('modalPdcaDate').value.trim();
+      const agenda = document.getElementById('modalPdcaAgenda').value.trim();
+      const pic = document.getElementById('modalPdcaPic').value.trim();
+      const output = document.getElementById('modalPdcaOutput').value.trim();
+
+      if (editIdx >= 0) {
+        pdcaList[editIdx] = { step, date, agenda, pic, output };
+        showToast("Agenda PDCA berhasil diperbarui.");
+      } else {
+        pdcaList.push({ step, date, agenda, pic, output });
+        showToast("Agenda PDCA baru ditambahkan.");
+      }
+
+      saveAllToStorage();
+      closeModalPdca();
+      renderPDCATable();
+    }
+
+    function openModalProjectInfo() {
+      document.getElementById('metaTitle').value = projectMeta.title;
+      document.getElementById('metaSubTitle').value = projectMeta.subTitle;
+      document.getElementById('metaEntity').value = projectMeta.entity;
+      document.getElementById('metaNumber').value = projectMeta.number;
+      document.getElementById('metaPeriod').value = projectMeta.period;
+      document.getElementById('projectInfoModal').classList.remove('hidden');
+    }
+
+    function closeModalProjectInfo() {
+      document.getElementById('projectInfoModal').classList.add('hidden');
+    }
+
+    function saveProjectInfo(e) {
+      e.preventDefault();
+      projectMeta.title = document.getElementById('metaTitle').value.trim();
+      projectMeta.subTitle = document.getElementById('metaSubTitle').value.trim();
+      projectMeta.entity = document.getElementById('metaEntity').value.trim();
+      projectMeta.number = document.getElementById('metaNumber').value.trim();
+      projectMeta.period = document.getElementById('metaPeriod').value.trim();
+
+      saveAllToStorage();
+      renderProjectHeader();
+      closeModalProjectInfo();
+      showToast("Informasi dokumen proyek berhasil diperbarui.");
+    }
+
+    // Signers Management Functions
+    function openModalSigners() {
+      renderSignersEditor();
+      document.getElementById('signersModal').classList.remove('hidden');
+    }
+
+    function closeModalSigners() {
+      document.getElementById('signersModal').classList.add('hidden');
+    }
+
+    function renderSignersEditor() {
+      const container = document.getElementById('signersListEditor');
+      container.innerHTML = '';
+
+      signersList.forEach((signer, idx) => {
+        const row = document.createElement('div');
+        row.className = "p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5";
+        row.innerHTML = `
+          <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+            <span class="font-bold text-slate-800 text-[11px]">Pengesah #${idx + 1}</span>
+            <button type="button" onclick="removeSignerRow(${idx})" class="text-rose-600 hover:text-rose-800 text-[10px] font-semibold">
+              &times; Hapus
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Jabatan / Role</label>
+              <input type="text" class="signer-role w-full border border-slate-300 rounded p-1.5 text-xs" value="${signer.role}">
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Nama Lengkap Pejabat</label>
+              <input type="text" class="signer-name w-full border border-slate-300 rounded p-1.5 text-xs" value="${signer.name}">
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Tanggal Approval</label>
+              <input type="text" class="signer-date w-full border border-slate-300 rounded p-1.5 text-xs" value="${signer.date}">
+            </div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function addNewSignerRow() {
+      signersList.push({
+        role: "Department Head",
+        name: "Nama Pejabat",
+        date: new Date().toLocaleDateString('id-ID'),
+        approved: true
+      });
+      renderSignersEditor();
+    }
+
+    function removeSignerRow(index) {
+      signersList.splice(index, 1);
+      renderSignersEditor();
+    }
+
+    function saveAllSigners() {
+      const roles = document.querySelectorAll('.signer-role');
+      const names = document.querySelectorAll('.signer-name');
+      const dates = document.querySelectorAll('.signer-date');
+
+      const updated = [];
+      roles.forEach((el, i) => {
+        updated.push({
+          role: el.value.trim() || 'Department Head',
+          name: names[i].value.trim() || 'Nama',
+          date: dates[i].value.trim() || '-',
+          approved: signersList[i] ? signersList[i].approved : true
+        });
+      });
+
+      signersList = updated;
+      saveAllToStorage();
+      renderSignersSection();
+      closeModalSigners();
+      showToast("Daftar pengesah dan tanggal approval diperbarui.");
+    }
+
+    function createNewBlankProject() {
+      projectMeta = {
+        title: "PROJECT MANAGEMENT REPORT: [NAMA PROYEK]",
+        subTitle: "Laporan Tindak Lanjut Temuan & Perbaikan Operasional (PDCA & CAPA)",
+        entity: "Divisi / Cabang / Departemen Anda",
+        number: `PMR/${new Date().getFullYear()}/001`,
+        period: `${new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}`,
+        badge: "PROJECT MANAGEMENT REPORT • PDCA & CAPA"
+      };
+
+      signersList = [
+        { role: "Project Lead", name: "[Nama Lead]", date: new Date().toLocaleDateString('id-ID'), approved: true },
+        { role: "Department Head", name: "[Nama Ka. Divisi]", date: new Date().toLocaleDateString('id-ID'), approved: true }
+      ];
+
+      pdcaList = [
+        {
+          step: "Plan",
+          agenda: "Kick-off meeting & identifikasi awal kendala operasional",
+          pic: "Tim Proyek",
+          date: new Date().toLocaleDateString('id-ID'),
+          output: "Sasaran dan parameter perbaikan disepakati"
+        }
+      ];
+
+      capaList = [
+        {
+          id: "1.1",
+          category: "Operasional",
+          type: "Corrective",
+          plan: "Investigasi dan perbaikan kendala berjalan",
+          pic: "PIC Terkait",
+          dueDate: "Segera",
+          status: "Open",
+          evidence: ""
+        }
+      ];
+
+      saveAllToStorage();
+      renderAll();
+      showToast("Form bersih untuk proyek baru siap digunakan.");
+    }
+
+    function loadSampleCase() {
+      projectMeta = { ...defaultProjectMeta };
+      signersList = [...defaultSigners];
+      pdcaList = [...defaultPdcaList];
+      capaList = [...defaultCapaList];
+
+      saveAllToStorage();
+      renderAll();
+      showToast("Kasus referensi Nasmoco Solo Baru berhasil dimuat.");
+    }
+
+    function exportToJSON() {
+      const exportData = {
+        projectMeta,
+        signersList,
+        pdcaList,
+        capaList,
+        exportedAt: new Date().toISOString()
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `PMR_Backup_${projectMeta.entity.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("File cadangan JSON berhasil diunduh.");
+    }
+
+    function triggerImportJSON() {
+      document.getElementById('jsonFileInput').click();
+    }
+
+    function handleFileImportJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.projectMeta && parsed.capaList) {
+            projectMeta = parsed.projectMeta;
+            signersList = parsed.signersList || defaultSigners;
+            pdcaList = parsed.pdcaList || [];
+            capaList = parsed.capaList || [];
+            saveAllToStorage();
+            renderAll();
+            showToast("Proyek berhasil dipulihkan dari cadangan JSON.");
+          } else {
+            showToast("Format file JSON tidak sesuai.");
+          }
+        } catch (err) {
+          showToast("Gagal membaca file JSON.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function exportToCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      
+      csvContent += `"${projectMeta.title}"\r\n`;
+      csvContent += `"${projectMeta.subTitle}"\r\n`;
+      csvContent += `Unit / Entitas,"${projectMeta.entity}",No Dokumen,"${projectMeta.number}",Periode,"${projectMeta.period}"\r\n\r\n`;
+
+      csvContent += "[BAGIAN 1: AKTIVITAS PDCA & GENBA]\r\n";
+      csvContent += "No,Tahap,Agenda Aktivitas,PIC / Dept,Tanggal,Output Hasil\r\n";
+      pdcaList.forEach((p, idx) => {
+        csvContent += `${idx + 1},${p.step},"${p.agenda.replace(/"/g, '""')}","${p.pic.replace(/"/g, '""')}","${p.date}","${p.output.replace(/"/g, '""')}"\r\n`;
+      });
+
+      csvContent += "\r\n[BAGIAN 2: MATRIKS TINDAK LANJUT CAPA]\r\n";
+      csvContent += "ID,Kategori Masalah,Jenis Aksi,Uraian Tindakan,Dept / PIC,Due Date,Status,Ada Foto Bukti\r\n";
+      capaList.forEach(item => {
+        const cleanPlan = `"${item.plan.replace(/"/g, '""')}"`;
+        const cleanPic = `"${item.pic.replace(/"/g, '""')}"`;
+        const hasEvidence = item.evidence ? "Ya (Terlampir)" : "Tidak";
+        csvContent += `${item.id},"${item.category}",${item.type},${cleanPlan},${cleanPic},"${item.dueDate}",${item.status},${hasEvidence}\r\n`;
+      });
+
+      csvContent += "\r\n[BAGIAN 3: LEMBAR PENGESAHAN (APPROVAL)]\r\n";
+      csvContent += "Jabatan / Departemen,Nama Pejabat,Tanggal Approval,Status\r\n";
+      signersList.forEach(s => {
+        csvContent += `"${s.role}","${s.name}","${s.date}",${s.approved ? 'APPROVED' : 'PENDING'}\r\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `PMR_Report_${projectMeta.entity.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("File Excel CSV berhasil diekspor.");
+    }
+
+    function openModalPrintApproval() {
+      document.getElementById('printApprovalModal').classList.remove('hidden');
+    }
+
+    function closeModalPrintApproval() {
+      document.getElementById('printApprovalModal').classList.add('hidden');
+    }
+
+    function executePrintApproval() {
+      const mode = document.querySelector('input[name="printApprovalMode"]:checked').value;
+      const orientation = document.querySelector('input[name="printOrientation"]:checked').value;
+      const includeDisposisi = document.getElementById('includeDisposisiCheck').checked;
+      const hideKpi = document.getElementById('hideKpiOnPrintCheck').checked;
+
+      // Update @page CSS dynamically for orientation & print margins
+      const styleEl = document.getElementById('dynamicPrintStyle');
+      styleEl.innerHTML = `
+        @media print {
+          @page {
+            size: A4 ${orientation};
+            margin: 6mm 6mm 6mm 6mm;
+          }
+        }
+      `;
+
+      // Set signature style mode
+      if (mode === 'blank') {
+        document.body.classList.add('print-blank-approval');
+      } else {
+        document.body.classList.remove('print-blank-approval');
+      }
+
+      // Hide KPI ribbon if checked
+      if (hideKpi) {
+        document.body.classList.add('print-hide-kpi');
+      } else {
+        document.body.classList.remove('print-hide-kpi');
+      }
+
+      // Review notes box
+      const disposisiBox = document.getElementById('printDisposisiBox');
+      if (includeDisposisi) {
+        disposisiBox.classList.remove('hidden');
+      } else {
+        disposisiBox.classList.add('hidden');
+      }
+
+      const docBadge = document.getElementById('docBadge');
+      const originalBadgeText = docBadge.innerText;
+      if (mode === 'blank') {
+        docBadge.innerText = 'DOKUMEN PENGAJUAN • FOR APPROVAL REVIEW';
+      }
+
+      closeModalPrintApproval();
+
+      // Trigger print dialog
+      setTimeout(() => {
+        window.print();
+
+        setTimeout(() => {
+          document.body.classList.remove('print-blank-approval');
+          document.body.classList.remove('print-hide-kpi');
+          docBadge.innerText = originalBadgeText;
+          disposisiBox.classList.add('hidden');
+        }, 1200);
+      }, 350);
+    }
+
+    // Responsive Mobile Views
+    function setMobileView(view) {
+      currentMobileView = view;
+      localStorage.setItem('pmr_mobile_view', view);
+      applyMobileView();
+    }
+
+    function applyMobileView() {
+      const cardsEl = document.getElementById('capaMobileCards');
+      const tableContainer = document.getElementById('capaTableContainer');
+      const btnCard = document.getElementById('btnViewCard');
+      const btnTable = document.getElementById('btnViewTable');
+
+      if (window.innerWidth < 640) {
+        if (currentMobileView === 'card') {
+          cardsEl.classList.remove('hidden');
+          tableContainer.classList.add('hidden');
+          btnCard.className = "px-2 py-1 text-[11px] font-bold rounded-md bg-white shadow-xs text-slate-800 transition";
+          btnTable.className = "px-2 py-1 text-[11px] font-medium rounded-md text-slate-600 transition";
+        } else {
+          cardsEl.classList.add('hidden');
+          tableContainer.classList.remove('hidden');
+          btnTable.className = "px-2 py-1 text-[11px] font-bold rounded-md bg-white shadow-xs text-slate-800 transition";
+          btnCard.className = "px-2 py-1 text-[11px] font-medium rounded-md text-slate-600 transition";
+        }
+      } else {
+        cardsEl.classList.add('hidden');
+        tableContainer.classList.remove('hidden');
+      }
+    }
+
+    window.addEventListener('resize', applyMobileView);
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    function renderAll() {
+      renderProjectHeader();
+      renderPDCATable();
+      renderCAPATable();
+      renderSignersSection();
+      updateSheetStatusUI();
+    }
+
+    // Startup Initialization
+    window.onload = function() {
+      renderAll();
+    };
+  </script>
+</body>
+</html>
