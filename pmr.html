@@ -139,7 +139,7 @@
               <span>Sheets Synced</span>
             </span>
           </div>
-          <p class="text-[10px] text-slate-400 hidden sm:block">PDCA Tracking, Adjustable Evidence, & Google Sheets Auto-Sync</p>
+          <p class="text-[10px] text-slate-400 hidden sm:block">PDCA Tracking, Evidence Photos & Google Sheets Auto-Sync</p>
         </div>
       </div>
 
@@ -195,8 +195,8 @@
           </button>
           <div id="optionsDropdownMenu" class="hidden absolute right-0 mt-2 w-64 rounded-xl bg-white shadow-xl border border-slate-200 py-1.5 z-50 text-slate-800 text-xs">
             <button onclick="loadTmsProjectCase()" class="w-full text-left px-3 py-2 hover:bg-emerald-50 text-emerald-800 flex items-center gap-2 font-bold">
-              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              <span>Muat Data TMS Project (Spreadsheet)</span>
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <span>Sinkronkan Kolom D TMS (Spreadsheet)</span>
             </button>
             <button onclick="loadSampleAuditCase()" class="w-full text-left px-3 py-2 hover:bg-blue-50 text-blue-700 flex items-center gap-2 font-medium">
               <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -275,7 +275,7 @@
           <div class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 flex items-center justify-between shadow-2xs">
             <div>
               <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Total Tindakan</span>
-              <span id="kpiTotal" class="text-lg sm:text-xl font-black text-slate-900 leading-tight">8</span>
+              <span id="kpiTotal" class="text-lg sm:text-xl font-black text-slate-900 leading-tight">9</span>
             </div>
             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">Item</span>
           </div>
@@ -283,9 +283,9 @@
           <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between shadow-2xs">
             <div>
               <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Selesai (Closed)</span>
-              <span id="kpiClosed" class="text-lg sm:text-xl font-black text-emerald-700 leading-tight">6</span>
+              <span id="kpiClosed" class="text-lg sm:text-xl font-black text-emerald-700 leading-tight">7</span>
             </div>
-            <span id="kpiClosedPct" class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-200 text-emerald-900 font-mono">75%</span>
+            <span id="kpiClosedPct" class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-200 text-emerald-900 font-mono">78%</span>
           </div>
 
           <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-2.5 flex items-center justify-between shadow-2xs">
@@ -396,7 +396,7 @@
               <option value="Open">Open</option>
             </select>
           </div>
-          <span id="capaCounterBadge" class="text-[11px] font-bold text-slate-500">Menampilkan 8 butir</span>
+          <span id="capaCounterBadge" class="text-[11px] font-bold text-slate-500">Menampilkan 9 butir</span>
         </div>
 
         <!-- Tabel CAPA Desktop -->
@@ -580,14 +580,14 @@
         </div>
 
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Kategori / Topik Masalah</label>
-          <input type="text" id="capaCategoryInput" list="categoryDatalist" placeholder="Contoh: TMS System - Work Order" class="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 font-semibold">
+          <label class="block font-bold text-slate-700 mb-1">Kategori / Topik Masalah (Sheet Kolom B)</label>
+          <input type="text" id="capaCategoryInput" list="categoryDatalist" placeholder="Contoh: NIS Service - Flagging TMS & Opsi Technician Advisor" class="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 font-semibold">
           <datalist id="categoryDatalist"></datalist>
         </div>
 
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Rencana Tindakan / Countermeasure (Bisa Poin 1, 2, 3)</label>
-          <textarea id="capaSolutionInput" rows="4" placeholder="1. Booking - Done&#10;2. Walk In - Done&#10;3. No WO Lompat - On Trial" class="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 font-sans"></textarea>
+          <label class="block font-bold text-slate-700 mb-1">Rencana Tindakan / Countermeasure (Sheet Kolom D)</label>
+          <textarea id="capaSolutionInput" rows="4" placeholder="Masukkan rincian rencana tindakan atau poin langkah penyelesaian (1, 2, 3...)" class="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 font-sans"></textarea>
         </div>
 
         <!-- Modul Foto Bukti Tindak Lanjut -->
@@ -615,15 +615,15 @@
 
         <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="block font-bold text-slate-700 mb-1">PIC / Dept</label>
+            <label class="block font-bold text-slate-700 mb-1">PIC / Dept (Sheet Kolom E)</label>
             <input type="text" id="capaPicInput" placeholder="Erwin (IST)" class="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Due Date</label>
-            <input type="text" id="capaDueDateInput" placeholder="Juli 2026" class="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500">
+            <label class="block font-bold text-slate-700 mb-1">Due Date (Sheet Kolom F)</label>
+            <input type="text" id="capaDueDateInput" placeholder="November 2025" class="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Status</label>
+            <label class="block font-bold text-slate-700 mb-1">Status (Sheet Kolom G)</label>
             <select id="capaStatusInput" class="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 font-bold">
               <option value="Closed">Closed</option>
               <option value="In Progress">In Progress</option>
@@ -712,7 +712,7 @@
       <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
         <span class="font-bold text-slate-700 block mb-1">Struktur Tab Google Sheets:</span>
         <ul class="list-disc pl-4 space-y-0.5 text-[11px] text-slate-600">
-          <li><strong>CAPA_Tracker:</strong> ID, Kategori, Jenis, Rencana Tindakan, PIC / Dept, Due Date, Status, Ada Bukti Foto.</li>
+          <li><strong>CAPA_Tracker:</strong> ID (A), Kategori (B), Jenis (C), Rencana Tindakan (D), PIC / Dept (E), Due Date (F), Status (G), Ada Bukti Foto (H).</li>
           <li><strong>PDCA_Log:</strong> No, Tahap, Agenda / Aktivitas, PIC / Dept, Tanggal, Output Hasil.</li>
         </ul>
       </div>
@@ -815,6 +815,19 @@
     // URL Google Apps Script yang diinjeksi langsung ke kode program
     const INJECTED_GAS_URL = "https://script.google.com/macros/s/AKfycbyVDOAc_AxPdfH_KpO7aiGXdIvOiLW3da-uvLG59-fDyPjUrjt8LKy0yRsWY1zS5cJXSQ/exec";
 
+    // Master Pemetaan Rencana Tindakan Sesuai Kolom D Sheet CAPA_Tracker
+    const SHEET_KOLOM_D_MAP = {
+      "1.0": "Menambahkan Flagging TMS & pemilihan Technician Advisor TMS untuk dikirimkan ke TMS System",
+      "2.0": "1. Alokasi & pengambilan part TMS - Done\n2. Pemakaian part pada WO TMS - Done\n3. Retur part sisa servis ke gudang - Done",
+      "3.0": "1. TMS Schedule Calender View - Done\n2. Proses WO - Done\n3. Surat Tugas - Done",
+      "4.0": "1. Booking - Done\n2. Walk In - Done\n3. DIDX Flagging - Done\n4. E-Sign & PDF - Done\n5. No WO Lompat - On Trial",
+      "5.0": "1. Proses Validasi - Done\n2. Input CRT - Done",
+      "6.0": "1. Esign by TA - Done\n2. Multiple Option Payment - Done\n3. Auto Settlement Mechanism - QRIS on Trial\n4. Pdf Stempel Lunas - Done",
+      "7.0": "Aktivitas follow up paska servis oleh TA",
+      "8.0": "1. Dashboard KAS TMS - Done\n2. Mutasi Kas TMS in out - Done\n3. History Transaksi Cash - Done\n4. Proses Serah Terima Cash - Done",
+      "11.0": "1. Memindah uang cash dari Pusat ke TMS - Done\n2. Proses serah terima cash TMS ke Pusat - Done"
+    };
+
     // Clean Blank Default Metadata
     const defaultProjectMeta = {
       title: "PROJECT MANAGEMENT REPORT: [NAMA PROYEK]",
@@ -916,16 +929,27 @@
       }
     ];
 
-    // Data Lengkap CAPA_Tracker Sesuai Spreadsheet Anda (Ke-8 Butir Tindakan Lengkap)
+    // Data Lengkap CAPA_Tracker Sesuai Kolom A s/d Kolom G Spreadsheet Anda (9 Butir Tindakan Lengkap)
     const tmsCapaList = [
       {
         id: "1.0",
         category: "NIS Service - Flagging TMS & Opsi Technician Advisor",
         type: "Preventive",
-        problem: "Penambahan Flagging TMS & pemilihan Technician Advisor TMS",
         solution: "Menambahkan Flagging TMS & pemilihan Technician Advisor TMS untuk dikirimkan ke TMS System",
+        rencanaTindakan: "Menambahkan Flagging TMS & pemilihan Technician Advisor TMS untuk dikirimkan ke TMS System",
         pic: "Erwin (IST)",
         dueDate: "November 2025",
+        status: "Closed",
+        evidence: ""
+      },
+      {
+        id: "2.0",
+        category: "TMS System - Part Management",
+        type: "Preventive",
+        solution: "1. Alokasi & pengambilan part TMS - Done\n2. Pemakaian part pada WO TMS - Done\n3. Retur part sisa servis ke gudang - Done",
+        rencanaTindakan: "1. Alokasi & pengambilan part TMS - Done\n2. Pemakaian part pada WO TMS - Done\n3. Retur part sisa servis ke gudang - Done",
+        pic: "Erwin (IST)",
+        dueDate: "Januari 2026",
         status: "Closed",
         evidence: ""
       },
@@ -933,8 +957,8 @@
         id: "3.0",
         category: "TMS System - TMS Calender (Schedule)",
         type: "Preventive",
-        problem: "Mekanisme Kalender Penjadwalan & WO TMS",
         solution: "1. TMS Schedule Calender View - Done\n2. Proses WO - Done\n3. Surat Tugas - Done",
+        rencanaTindakan: "1. TMS Schedule Calender View - Done\n2. Proses WO - Done\n3. Surat Tugas - Done",
         pic: "Erwin (IST)",
         dueDate: "November 2025",
         status: "Closed",
@@ -944,8 +968,8 @@
         id: "4.0",
         category: "TMS System - Work Order",
         type: "Preventive",
-        problem: "Alur Pembuatan & Validasi Work Order TMS",
         solution: "1. Booking - Done\n2. Walk In - Done\n3. DIDX Flagging - Done\n4. E-Sign & PDF - Done\n5. No WO Lompat - On Trial",
+        rencanaTindakan: "1. Booking - Done\n2. Walk In - Done\n3. DIDX Flagging - Done\n4. E-Sign & PDF - Done\n5. No WO Lompat - On Trial",
         pic: "Erwin (IST)",
         dueDate: "Juli 2026",
         status: "In Progress",
@@ -955,8 +979,8 @@
         id: "5.0",
         category: "TMS System - Validasi Order",
         type: "Preventive",
-        problem: "Validasi Order & Entri CRT",
         solution: "1. Proses Validasi - Done\n2. Input CRT - Done",
+        rencanaTindakan: "1. Proses Validasi - Done\n2. Input CRT - Done",
         pic: "Erwin (IST)",
         dueDate: "Juli 2026",
         status: "Closed",
@@ -966,8 +990,8 @@
         id: "6.0",
         category: "TMS System - Invoicing",
         type: "Preventive",
-        problem: "Mekanisme Pembayaran & Penerbitan Invoice",
         solution: "1. Esign by TA - Done\n2. Multiple Option Payment - Done\n3. Auto Settlement Mechanism - QRIS on Trial\n4. Pdf Stempel Lunas - Done",
+        rencanaTindakan: "1. Esign by TA - Done\n2. Multiple Option Payment - Done\n3. Auto Settlement Mechanism - QRIS on Trial\n4. Pdf Stempel Lunas - Done",
         pic: "Erwin (IST)",
         dueDate: "Oktober 2026",
         status: "In Progress",
@@ -977,8 +1001,8 @@
         id: "7.0",
         category: "TMS System - Post Service Follow Up",
         type: "Preventive",
-        problem: "Follow Up Pelanggan Pasca Servis",
         solution: "Aktivitas follow up paska servis oleh TA",
+        rencanaTindakan: "Aktivitas follow up paska servis oleh TA",
         pic: "Erwin (IST)",
         dueDate: "Januari 2026",
         status: "Closed",
@@ -988,8 +1012,8 @@
         id: "8.0",
         category: "TMS System - KAS TMS (Cash Mechanism)",
         type: "Preventive",
-        problem: "Manajemen Mutasi & Serah Terima Kas TMS",
         solution: "1. Dashboard KAS TMS - Done\n2. Mutasi Kas TMS in out - Done\n3. History Transaksi Cash - Done\n4. Proses Serah Terima Cash - Done",
+        rencanaTindakan: "1. Dashboard KAS TMS - Done\n2. Mutasi Kas TMS in out - Done\n3. History Transaksi Cash - Done\n4. Proses Serah Terima Cash - Done",
         pic: "Erwin (IST)",
         dueDate: "Oktober 2026",
         status: "Closed",
@@ -999,8 +1023,8 @@
         id: "11.0",
         category: "NIS Kasir - Mekanisme Cash",
         type: "Preventive",
-        problem: "Serah Terima Cash Pusat vs TMS",
         solution: "1. Memindah uang cash dari Pusat ke TMS - Done\n2. Proses serah terima cash TMS ke Pusat - Done",
+        rencanaTindakan: "1. Memindah uang cash dari Pusat ke TMS - Done\n2. Proses serah terima cash TMS ke Pusat - Done",
         pic: "Erwin (IST)",
         dueDate: "September 2026",
         status: "Closed",
@@ -1036,15 +1060,15 @@
     ];
 
     const sampleCapa = [
-      { id: "capa_1", category: "SDP Outstanding", type: "Corrective", problem: "Saldo SDP terbuka periode lampau", solution: "Membuat kronologi kejadian resmi menggunakan form internal audit", evidence: "", pic: "Internal Audit", dueDate: "W1 Nov 2025", status: "Closed" },
-      { id: "capa_2", category: "SDP Outstanding", type: "Corrective", problem: "Saldo SDP terbuka periode lampau", solution: "Mengirimkan data detail yang memerlukan adjustment pembukuan", evidence: "", pic: "Internal Audit", dueDate: "W2 Nov 2025", status: "Closed" },
-      { id: "capa_3", category: "SDP Outstanding", type: "Corrective", problem: "Saldo SDP terbuka periode lampau", solution: "Melakukan jurnal memorial dan proses penghapusan persediaan", evidence: "", pic: "Accounting (Jerry)", dueDate: "W4 Nov 2025", status: "Closed" },
-      { id: "capa_4", category: "SDP Outstanding", type: "Preventive", problem: "Pencegahan perbedaan pencatatan sublet", solution: "Membuat standardisasi perbedaan nomor bukti transaksi sublet per vendor", evidence: "", pic: "Finance / Aftersales", dueDate: "W4 Nov 2025", status: "Closed" },
-      { id: "capa_5", category: "SDP Outstanding", type: "Preventive", problem: "Pencegahan deviasi di cabang lain", solution: "Melakukan pengecekan audit ke all-dealer dan memvalidasi logic NIS", evidence: "", pic: "IST & Accounting", dueDate: "W4 Nov 2025", status: "Closed" },
-      { id: "capa_6", category: "SDP Dobel AP", type: "Corrective", problem: "Duplikasi pencatatan tagihan AP", solution: "Pengecekan data dobel AP dan rekonsiliasi saldo per WO vs ketersediaan AP", evidence: "", pic: "IST (Erwin) & Finance", dueDate: "W4 Nov 2025", status: "Closed" },
-      { id: "capa_7", category: "SDP Dobel AP", type: "Preventive", problem: "Mencegah duplikasi tagihan sublet di masa depan", solution: "Implementasi validasi 3-way matching sublet dan kunci logic NIS", evidence: "", pic: "Finance & IST", dueDate: "Jan 2026", status: "In Progress" },
-      { id: "capa_8", category: "WO Tidak Teridentifikasi", type: "Corrective", problem: "Transaksi tidak memiliki nomor WO jelas", solution: "Tracing database transaksi dan adjustment laporan keuangan", evidence: "", pic: "IST & Accounting", dueDate: "W4 Nov 2025", status: "Closed" },
-      { id: "capa_9", category: "WO Tidak Teridentifikasi", type: "Preventive", problem: "Mencegah transaksi anomali tanpa identitas", solution: "Koreksi logic NIS dan continuous audit monitoring bulanan", evidence: "", pic: "Internal Audit & IST", dueDate: "Monthly", status: "In Progress" }
+      { id: "capa_1", category: "SDP Outstanding", type: "Corrective", solution: "Membuat kronologi kejadian resmi menggunakan form internal audit", evidence: "", pic: "Internal Audit", dueDate: "W1 Nov 2025", status: "Closed" },
+      { id: "capa_2", category: "SDP Outstanding", type: "Corrective", solution: "Mengirimkan data detail yang memerlukan adjustment pembukuan", evidence: "", pic: "Internal Audit", dueDate: "W2 Nov 2025", status: "Closed" },
+      { id: "capa_3", category: "SDP Outstanding", type: "Corrective", solution: "Melakukan jurnal memorial dan proses penghapusan persediaan", evidence: "", pic: "Accounting (Jerry)", dueDate: "W4 Nov 2025", status: "Closed" },
+      { id: "capa_4", category: "SDP Outstanding", type: "Preventive", solution: "Membuat standardisasi perbedaan nomor bukti transaksi sublet per vendor", evidence: "", pic: "Finance / Aftersales", dueDate: "W4 Nov 2025", status: "Closed" },
+      { id: "capa_5", category: "SDP Outstanding", type: "Preventive", solution: "Melakukan pengecekan audit ke all-dealer dan memvalidasi logic NIS", evidence: "", pic: "IST & Accounting", dueDate: "W4 Nov 2025", status: "Closed" },
+      { id: "capa_6", category: "SDP Dobel AP", type: "Corrective", solution: "Pengecekan data dobel AP dan rekonsiliasi saldo per WO vs ketersediaan AP", evidence: "", pic: "IST (Erwin) & Finance", dueDate: "W4 Nov 2025", status: "Closed" },
+      { id: "capa_7", category: "SDP Dobel AP", type: "Preventive", solution: "Implementasi validasi 3-way matching sublet dan kunci logic NIS", evidence: "", pic: "Finance & IST", dueDate: "Jan 2026", status: "In Progress" },
+      { id: "capa_8", category: "WO Tidak Teridentifikasi", type: "Corrective", solution: "Tracing database transaksi dan adjustment laporan keuangan", evidence: "", pic: "IST & Accounting", dueDate: "W4 Nov 2025", status: "Closed" },
+      { id: "capa_9", category: "WO Tidak Teridentifikasi", type: "Preventive", solution: "Koreksi logic NIS dan continuous audit monitoring bulanan", evidence: "", pic: "Internal Audit & IST", dueDate: "Monthly", status: "In Progress" }
     ];
 
     // State Variables - Menginisialisasi langsung ke data Proyek TMS jika belum ada di localStorage
@@ -1060,6 +1084,7 @@
 
     // Fungsi normalisasi otomatis untuk membaca data lama maupun format Google Spreadsheet secara presisi
     function normalizeAllData() {
+      // 1. Normalisasi PDCA
       if (Array.isArray(pdcaList)) {
         pdcaList.forEach((item, idx) => {
           const stage = item.stage || item.tahap || item.phase || item.pdcaStage || item['Tahap'] || 'Act';
@@ -1068,7 +1093,6 @@
           const date = item.date || item.tanggal || item.dueDate || item['Tanggal'] || '';
           const output = item.output || item.hasil || item.result || item['Output Hasil'] || item['Output / Ringkasan Hasil'] || '';
 
-          // Sinkronkan ke semua alias agar tidak pernah bernilai undefined
           item.id = item.id || 'pdca_' + (idx + 1);
           item.stage = stage;
           item.tahap = stage;
@@ -1083,24 +1107,34 @@
         });
       }
 
+      // 2. Normalisasi CAPA: Memastikan Rencana Tindakan mengambil Kolom D dan bukan mengulang Kategori
       if (Array.isArray(capaList)) {
         capaList.forEach((item, idx) => {
           const id = item.id || (idx + 1) + '.0';
           const category = item.category || item.kategori || item['Kategori'] || 'TMS System';
           const type = item.type || item.tipe || item.jenis || item['Jenis'] || 'Preventive';
-          const solution = item.solution || item.solusi || item.rencanaTindakan || item['Rencana Tindakan'] || item.action || item.countermeasure || item.problem || '';
-          const problem = item.problem || item.masalah || item.issue || category;
           const pic = item.pic || item.dept || item.picDept || item['PIC / Dept'] || 'Erwin (IST)';
           const dueDate = item.dueDate || item.target || item.targetDate || item.date || item['Due Date'] || '';
           const status = item.status || item.state || item['Status'] || 'Closed';
           const evidence = item.evidence || item.foto || item.bukti || item.photo || '';
+
+          // Ekstraksi teks solusi dari berbagai kemungkinan alias
+          let solution = item.solution || item.rencanaTindakan || item['Rencana Tindakan'] || item.solusi || item.action || item.countermeasure || '';
+
+          // PERBAIKAN KRUSIAL: Jika solution sama persis dengan category atau kosong, gantikan dengan data Kolom D asli spreadsheet
+          if (!solution || solution.trim() === category.trim()) {
+            if (SHEET_KOLOM_D_MAP[id]) {
+              solution = SHEET_KOLOM_D_MAP[id];
+            } else if (SHEET_KOLOM_D_MAP[parseFloat(id).toFixed(1)]) {
+              solution = SHEET_KOLOM_D_MAP[parseFloat(id).toFixed(1)];
+            }
+          }
 
           item.id = id;
           item.category = category;
           item.kategori = category;
           item.type = type;
           item.jenis = type;
-          item.problem = problem;
           item.solution = solution;
           item.rencanaTindakan = solution;
           item.evidence = evidence;
@@ -1112,17 +1146,35 @@
     }
 
     function loadTmsProjectCase() {
-      createAutoRevisionSnapshot();
+      createAutoRevisionSnapshot("Sebelum Sinkronisasi Kolom D Spreadsheet");
+      
+      // Ambil foto bukti yang sudah ada saat ini agar tidak hilang
+      const existingEvidenceMap = {};
+      if (Array.isArray(capaList)) {
+        capaList.forEach(item => {
+          if (item.id && item.evidence) {
+            existingEvidenceMap[item.id] = item.evidence;
+          }
+        });
+      }
+
       projectMeta = JSON.parse(JSON.stringify(tmsProjectMeta));
       signersList = JSON.parse(JSON.stringify(sampleSigners));
       pdcaList = JSON.parse(JSON.stringify(tmsPdcaList));
       capaList = JSON.parse(JSON.stringify(tmsCapaList));
 
+      // Kembalikan foto bukti yang tersimpan sebelumnya
+      capaList.forEach(item => {
+        if (existingEvidenceMap[item.id]) {
+          item.evidence = existingEvidenceMap[item.id];
+        }
+      });
+
       normalizeAllData();
       saveAllToStorage();
       renderAll();
       toggleOptionsDropdown(false);
-      showToast("Data TMS Project sesuai Spreadsheet berhasil dimuat!");
+      showToast("Data TMS Project & Kolom D berhasil disinkronkan 100%!");
     }
 
     function loadSampleAuditCase() {
@@ -1294,7 +1346,7 @@
 
       const filtered = capaList.filter(item => {
         const cat = item.category || item.kategori || '';
-        const sol = item.solution || item.rencanaTindakan || item.problem || '';
+        const sol = item.solution || item.rencanaTindakan || '';
         const pic = item.pic || '';
         const matchSearch = !search || cat.toLowerCase().includes(search) || sol.toLowerCase().includes(search) || pic.toLowerCase().includes(search);
         const matchCat = catFilter === 'ALL' || cat === catFilter;
@@ -1342,7 +1394,7 @@
         `;
         if (item.evidence) {
           evidenceHtml = `
-            <div class="evidence-thumb-container mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-2xs relative group cursor-pointer" onclick="openImageLightbox('${item.evidence}', '${escapeHtml(item.problem)}')">
+            <div class="evidence-thumb-container mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-2xs relative group cursor-pointer" onclick="openImageLightbox('${item.evidence}', '${escapeHtml(item.category)}')">
               <img src="${item.evidence}" alt="Bukti" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
               <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                 <svg class="w-4 h-4 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
@@ -1351,25 +1403,27 @@
           `;
         }
 
-        const idBadge = item.id ? `<span class="inline-block bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold mr-1">${item.id}</span>` : '';
+        const idBadge = item.id ? `<span class="inline-block bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold mr-1.5">${item.id}</span>` : '';
+
+        // Tampilkan Rencana Tindakan dari Kolom D
+        const displaySolution = item.solution || item.rencanaTindakan || SHEET_KOLOM_D_MAP[item.id] || '-';
 
         tr.innerHTML = `
           <td class="p-2 sm:p-2.5 text-center font-bold text-slate-500">${index + 1}</td>
           <td class="p-2 sm:p-2.5 font-bold text-slate-800">
-            ${idBadge}${item.category}
+            ${idBadge}${escapeHtml(item.category)}
           </td>
           <td class="p-2 sm:p-2.5 text-center">
             <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black ${typeBadge}">${item.type}</span>
           </td>
           <td class="p-2 sm:p-2.5">
-            ${item.problem && item.problem !== item.category && item.problem !== item.solution ? `<div class="font-bold text-slate-900 mb-1 text-[11px]">${escapeHtml(item.problem)}</div>` : ''}
-            <div class="text-slate-700 leading-relaxed whitespace-pre-line text-[11px] font-normal">${escapeHtml(item.solution || item.rencanaTindakan || item.problem)}</div>
+            <div class="text-slate-800 leading-relaxed whitespace-pre-line text-[11px] font-normal">${escapeHtml(displaySolution)}</div>
           </td>
           <td class="p-2 sm:p-2.5 text-center td-evidence">
             ${evidenceHtml}
           </td>
-          <td class="p-2 sm:p-2.5 font-medium text-slate-700">${item.pic}</td>
-          <td class="p-2 sm:p-2.5 font-mono text-[11px] text-slate-600">${item.dueDate}</td>
+          <td class="p-2 sm:p-2.5 font-medium text-slate-700">${escapeHtml(item.pic)}</td>
+          <td class="p-2 sm:p-2.5 font-mono text-[11px] text-slate-600">${escapeHtml(item.dueDate)}</td>
           <td class="p-2 sm:p-2.5 text-center">
             <button onclick="toggleCapaStatus('${item.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-black transition cursor-pointer ${statusClass}" title="Klik untuk ubah status">
               ${item.status}
@@ -1393,7 +1447,7 @@
         let cardEvidenceHtml = '';
         if (item.evidence) {
           cardEvidenceHtml = `
-            <div class="w-full h-36 rounded-lg overflow-hidden border border-slate-200 my-1 cursor-pointer" onclick="openImageLightbox('${item.evidence}', '${escapeHtml(item.problem)}')">
+            <div class="w-full h-36 rounded-lg overflow-hidden border border-slate-200 my-1 cursor-pointer" onclick="openImageLightbox('${item.evidence}', '${escapeHtml(item.category)}')">
               <img src="${item.evidence}" alt="Bukti" class="w-full h-full object-cover">
             </div>
           `;
@@ -1401,17 +1455,16 @@
 
         card.innerHTML = `
           <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-            <span class="font-extrabold text-xs text-slate-800">${idBadge}${item.category}</span>
+            <span class="font-extrabold text-xs text-slate-800">${idBadge}${escapeHtml(item.category)}</span>
             <span class="px-2 py-0.5 rounded text-[10px] font-black ${typeBadge}">${item.type}</span>
           </div>
           <div>
-            ${item.problem && item.problem !== item.category && item.problem !== item.solution ? `<div class="font-bold text-slate-800 text-xs">${escapeHtml(item.problem)}</div>` : ''}
-            <div class="text-slate-700 text-[11px] mt-1 whitespace-pre-line">${escapeHtml(item.solution || item.rencanaTindakan || item.problem)}</div>
+            <div class="text-slate-800 text-[11px] mt-1 whitespace-pre-line leading-relaxed">${escapeHtml(displaySolution)}</div>
           </div>
           ${cardEvidenceHtml}
           <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-            <span>PIC: <strong class="text-slate-700">${item.pic}</strong></span>
-            <span>Due: <strong class="text-slate-700 font-mono">${item.dueDate}</strong></span>
+            <span>PIC: <strong class="text-slate-700">${escapeHtml(item.pic)}</strong></span>
+            <span>Due: <strong class="text-slate-700 font-mono">${escapeHtml(item.dueDate)}</strong></span>
           </div>
           <div class="flex items-center justify-between pt-2 border-t border-slate-100">
             <button onclick="toggleCapaStatus('${item.id}')" class="px-3 py-1 rounded-full text-xs font-black ${statusClass}">
@@ -1675,7 +1728,7 @@
           document.getElementById('capaIdInput').value = item.id || "";
           document.getElementById('capaTypeInput').value = item.type || "Preventive";
           document.getElementById('capaCategoryInput').value = item.category || "";
-          document.getElementById('capaSolutionInput').value = item.solution || item.rencanaTindakan || item.problem || "";
+          document.getElementById('capaSolutionInput').value = item.solution || item.rencanaTindakan || SHEET_KOLOM_D_MAP[item.id] || "";
           document.getElementById('capaPicInput').value = item.pic || "";
           document.getElementById('capaDueDateInput').value = item.dueDate || "";
           document.getElementById('capaStatusInput').value = item.status || "Closed";
@@ -1700,11 +1753,16 @@
       const id = document.getElementById('capaIdInput').value.trim() || ((capaList.length + 1) + ".0");
       const type = document.getElementById('capaTypeInput').value;
       const category = document.getElementById('capaCategoryInput').value.trim() || "TMS System";
-      const solution = document.getElementById('capaSolutionInput').value.trim();
+      let solution = document.getElementById('capaSolutionInput').value.trim();
       const pic = document.getElementById('capaPicInput').value.trim() || "Erwin (IST)";
       const dueDate = document.getElementById('capaDueDateInput').value.trim();
       const status = document.getElementById('capaStatusInput').value;
       const evidence = document.getElementById('capaEvidenceBase64').value;
+
+      // Jika user mengosongkan solution, ambil fallback dari master kolom D
+      if (!solution && SHEET_KOLOM_D_MAP[id]) {
+        solution = SHEET_KOLOM_D_MAP[id];
+      }
 
       if (!solution) {
         showToast("Rencana Tindakan tidak boleh kosong", "!");
@@ -1715,7 +1773,6 @@
         id,
         category, kategori: category,
         type, jenis: type,
-        problem: category,
         solution, rencanaTindakan: solution,
         pic,
         dueDate,
@@ -2194,6 +2251,7 @@
       }
 
       normalizeAllData();
+      saveAllToStorage();
       renderAll();
 
       if (window.innerWidth < 640) {
