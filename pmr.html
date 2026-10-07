@@ -12,12 +12,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <style>
+    :root {
+      --evidence-w: 84px;
+      --evidence-h: 60px;
+      --evidence-print-w: 64px;
+      --evidence-print-h: 48px;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Input styling on mobile to prevent iOS/Android unwanted zoom */
+    /* Prevent unwanted zoom on mobile */
     @media (max-width: 640px) {
       input, select, textarea {
         font-size: 15px !important;
@@ -27,9 +34,23 @@
       }
     }
 
+    /* Dynamic Evidence Photo Sizes */
+    .evidence-thumb-img {
+      width: var(--evidence-w) !important;
+      height: var(--evidence-h) !important;
+      object-fit: cover !important;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+
+    .th-evidence, .td-evidence {
+      width: calc(var(--evidence-w) + 20px) !important;
+      min-width: calc(var(--evidence-w) + 20px) !important;
+      transition: width 0.2s ease;
+    }
+
     /* Print Media Styles */
     @media print {
-      .no-print, .mobile-fab {
+      .no-print, .mobile-fab, #photoSizeControlBar {
         display: none !important;
       }
       body {
@@ -39,7 +60,7 @@
         margin: 0 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-        font-size: 10px !important;
+        font-size: 9.5px !important;
       }
       .print-container {
         width: 100% !important;
@@ -138,10 +159,10 @@
         font-size: 8px !important;
       }
 
-      /* Print Evidence Photo: High clarity layout */
+      /* Dynamic Print Evidence Photo: Proportionate to user setting */
       .evidence-print-img {
-        width: 58px !important;
-        height: 48px !important;
+        width: var(--evidence-print-w) !important;
+        height: var(--evidence-print-h) !important;
         object-fit: cover !important;
         border: 1px solid #94a3b8 !important;
         border-radius: 4px !important;
@@ -179,7 +200,7 @@
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .evidence-thumb-container:hover {
-      transform: scale(1.05);
+      transform: scale(1.04);
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     }
   </style>
@@ -205,13 +226,6 @@
               700: '#075985',
               800: '#0c4a6e',
               900: '#082f49',
-            },
-            sheets: {
-              50: '#ecfdf5',
-              100: '#d1fae5',
-              600: '#059669',
-              700: '#047857',
-              800: '#065f46'
             }
           }
         }
@@ -234,7 +248,7 @@
             Offline
           </span>
         </div>
-        <p class="text-[11px] text-slate-500 hidden sm:block">Investigasi PDCA, Matriks CAPA dengan Foto Bukti Jelas &amp; Sinkronisasi Google Sheets</p>
+        <p class="text-[11px] text-slate-500 hidden sm:block">PDCA Investigation, Adjustable Evidence Photos &amp; Google Sheets Sync</p>
       </div>
     </div>
 
@@ -327,26 +341,26 @@
         <!-- Main Title Row: Status Badge + Full Project Title -->
         <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <span class="inline-flex items-center bg-slate-900 text-white text-[9px] tracking-wider uppercase font-extrabold px-2 py-0.5 rounded shadow-xs flex-shrink-0" id="docBadge">
-            PMR • FOR APPROVAL
+            DOKUMEN PENGAJUAN • FOR APPROVAL REVIEW
           </span>
           <h2 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight uppercase leading-snug" id="docTitle">
-            PROJECT MANAGEMENT REPORT: TMS ESTABLISHMENT
+            PROJECT MANAGEMENT REPORT: [NAMA PROYEK]
           </h2>
         </div>
 
         <!-- Sync Indicator for Print / Top right -->
         <div class="text-[9.5px] text-slate-400 font-mono hidden sm:block text-right">
-          <span id="headerSyncLabel">Sheets: Disinkronkan</span>
+          <span id="headerSyncLabel">Sheets: Mode Offline</span>
         </div>
       </div>
 
       <!-- Subtitle & Document Metadata Row -->
       <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10.5px] text-slate-600">
-        <span class="font-semibold text-slate-800" id="docSubTitle">Laporan PDCA Operasional TMS</span>
+        <span class="font-semibold text-slate-800" id="docSubTitle">Laporan Tindak Lanjut Temuan &amp; Perbaikan Operasional (PDCA &amp; CAPA)</span>
         <span class="text-slate-300 font-bold hidden sm:inline">&bull;</span>
         <div class="flex items-center gap-1">
           <span class="text-slate-400">Unit:</span>
-          <strong class="text-slate-900 font-bold" id="docEntity">Aftersales Department</strong>
+          <strong class="text-slate-900 font-bold" id="docEntity">Divisi / Cabang / Departemen Anda</strong>
         </div>
         <span class="text-slate-300 font-bold hidden sm:inline">&bull;</span>
         <div class="flex items-center gap-1">
@@ -361,7 +375,7 @@
         <span class="text-slate-300 font-bold hidden md:inline">&bull;</span>
         <div class="flex items-center gap-1">
           <span class="text-slate-400">Tgl Cetak:</span>
-          <span class="font-mono text-slate-700 font-medium" id="docPrintDate">06/10/2026</span>
+          <span class="font-mono text-slate-700 font-medium" id="docPrintDate">07/10/2026</span>
         </div>
       </div>
     </div>
@@ -442,10 +456,10 @@
             <span class="w-4.5 h-4.5 rounded bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold">2</span>
             Matriks Tindak Lanjut: Corrective &amp; Preventive Action (CAPA)
           </h3>
-          <p class="text-[9.5px] text-slate-500">Penanganan kuratif (*Corrective*) &amp; pencegahan sistemik (*Preventive*) dengan foto bukti jelas</p>
+          <p class="text-[9.5px] text-slate-500">Penanganan kuratif (*Corrective*) &amp; pencegahan sistemik (*Preventive*) dengan foto bukti yang dapat diatur ukurannya</p>
         </div>
         
-        <!-- Filter Controls & Mobile View Switcher (No Print) -->
+        <!-- Filter Controls, Photo Resizer & Mobile View Switcher (No Print) -->
         <div class="no-print flex flex-wrap items-center gap-1.5 text-xs">
           <!-- Mobile View Switcher (Visible on mobile only) -->
           <div class="sm:hidden flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-300">
@@ -455,6 +469,25 @@
             <button id="btnViewTable" onclick="setMobileView('table')" class="px-2 py-1 text-[11px] font-medium rounded-md text-slate-600 transition">
               Tabel
             </button>
+          </div>
+
+          <!-- PHOTO SIZE CONTROLLER (S / M / L / XL + Range Slider) -->
+          <div id="photoSizeControlBar" class="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2 py-1 shadow-2xs">
+            <span class="text-[10px] font-bold text-slate-600 flex items-center gap-1 mr-0.5">
+              <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <span>Foto:</span>
+            </span>
+
+            <div class="flex items-center bg-slate-100 rounded-md p-0.5 border border-slate-200">
+              <button type="button" onclick="setPhotoSizePreset('S')" id="btnPhotoS" title="Kecil (Small - 48px)" class="px-1.5 py-0.5 text-[9.5px] font-bold rounded text-slate-600 hover:text-slate-900 transition">S</button>
+              <button type="button" onclick="setPhotoSizePreset('M')" id="btnPhotoM" title="Sedang (Medium - 84px)" class="px-1.5 py-0.5 text-[9.5px] font-bold rounded bg-white shadow-2xs text-indigo-700 transition">M</button>
+              <button type="button" onclick="setPhotoSizePreset('L')" id="btnPhotoL" title="Besar (Large - 120px)" class="px-1.5 py-0.5 text-[9.5px] font-bold rounded text-slate-600 hover:text-slate-900 transition">L</button>
+              <button type="button" onclick="setPhotoSizePreset('XL')" id="btnPhotoXL" title="Ekstra Besar (XL - 160px)" class="px-1.5 py-0.5 text-[9.5px] font-bold rounded text-slate-600 hover:text-slate-900 transition">XL</button>
+            </div>
+
+            <!-- Slider Range for Fine-grained adjustment -->
+            <input type="range" id="photoSizeRange" min="48" max="170" step="4" value="84" oninput="handlePhotoSliderChange(this.value)" class="w-14 sm:w-16 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 ml-1" title="Geser untuk memperbesar / memperkecil foto bukti">
+            <span id="photoSizeLabel" class="text-[9px] font-mono text-slate-500 hidden sm:inline">84px</span>
           </div>
 
           <select id="filterCategory" onchange="renderCAPATable()" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-slate-700 text-xs">
@@ -480,7 +513,7 @@
         </div>
       </div>
 
-      <!-- Desktop Table Container with Enlarged Evidence Column -->
+      <!-- Desktop Table Container with Dynamically Sized Evidence Column -->
       <div id="capaTableContainer" class="overflow-x-auto border border-slate-300 rounded-lg">
         <table class="w-full text-left text-xs border-collapse" id="capaTable">
           <thead>
@@ -491,8 +524,8 @@
               <th class="py-2 px-3">Uraian Rencana Tindakan (Action Plan)</th>
               <th class="py-2 px-2.5 w-28">PIC / Dept</th>
               <th class="py-2 px-2 text-center w-24">Due Date</th>
-              <!-- Enlarged Foto Bukti Header -->
-              <th class="py-2 px-2 text-center w-28">Foto Bukti (Evidence)</th>
+              <!-- Adjustable Dynamic Foto Bukti Header -->
+              <th class="py-2 px-2 text-center th-evidence">Foto Bukti (Evidence)</th>
               <th class="py-2 px-2 text-center w-24">Status</th>
               <th class="py-2 px-2 text-center w-14 no-print">Aksi</th>
             </tr>
@@ -532,8 +565,8 @@
           <p class="text-[9.5px] text-slate-500">Persetujuan pimpinan unit/departemen terkait komitmen penyelesaian seluruh butir tindakan</p>
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="text-[9.5px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-300" id="overallApprovalBadge">
-            STATUS: APPROVED &amp; VALIDATED
+          <span class="text-[9.5px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-semibold border border-slate-200" id="overallApprovalBadge">
+            STATUS: BELUM ADA PENGESAH
           </span>
           <button onclick="openModalSigners()" class="no-print inline-flex items-center gap-1 text-[10.5px] font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded transition">
             Kelola Pengesah
@@ -549,8 +582,8 @@
 
     <!-- Footer Timestamp -->
     <div class="mt-3.5 pt-2 border-t border-slate-200 flex flex-wrap justify-between items-center text-[9px] text-slate-400">
-      <span id="footerEntityText">Dokumen Resmi Project Management Report &bull; Nasmoco Solo Baru</span>
-      <span id="footerSyncStatus">Google Sheets Connected &bull; Terakhir Diperbarui Otomatis</span>
+      <span id="footerEntityText">Dokumen Resmi Project Management Report</span>
+      <span id="footerSyncStatus">Tersimpan Lokal di Perangkat • Belum Tersambung Sheets</span>
     </div>
 
   </main>
@@ -585,7 +618,7 @@
           <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
             <label class="flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" id="autoSyncCheck" class="rounded text-emerald-600 focus:ring-emerald-500">
-              <span class="font-medium text-slate-700">Auto-Sync (Kirim otomatis setiap kali Anda menyimpan tindakan)</span>
+              <span class="font-medium text-slate-700">Auto-Sync (Kirim otomatis saat simpan tindakan)</span>
             </label>
             <span id="sheetConnectionStatus" class="font-bold text-slate-500">Status: Belum Terhubung</span>
           </div>
@@ -1010,8 +1043,18 @@ function doPost(e) {
   </div>
 
   <script>
-    // Project Metadata Default
+    // Clean Blank Default Metadata
     const defaultProjectMeta = {
+      title: "PROJECT MANAGEMENT REPORT: [NAMA PROYEK]",
+      subTitle: "Laporan Tindak Lanjut Temuan & Perbaikan Operasional (PDCA & CAPA)",
+      entity: "Divisi / Cabang / Departemen Anda",
+      number: "PMR/2026/001",
+      period: "Okt 2026",
+      badge: "DOKUMEN PENGAJUAN • FOR APPROVAL REVIEW"
+    };
+
+    // Reference Audit Sample Metadata (Nasmoco)
+    const sampleProjectMeta = {
       title: "PROJECT MANAGEMENT REPORT: TEMUAN AUDIT & ACTION PLAN",
       subTitle: "Progress Tindak Lanjut Temuan Internal Audit — Outstanding Saldo SDP & Sublet AP",
       entity: "Nasmoco Solo Baru",
@@ -1020,8 +1063,7 @@ function doPost(e) {
       badge: "PROJECT MANAGEMENT REPORT • PDCA & CAPA"
     };
 
-    // Default 5 Signers according to the official reference case
-    const defaultSigners = [
+    const sampleSigners = [
       { role: "Internal Audit DpH", name: "Sakti Dito A.", date: "10/11/2025", approved: true },
       { role: "IST / IT DpH", name: "A. Doni Hermawan", date: "10/11/2025", approved: true },
       { role: "TPA / Finance DpH", name: "Afif Raihan A.P.", date: "10/11/2025", approved: true },
@@ -1029,239 +1071,47 @@ function doPost(e) {
       { role: "Aftersales DpH", name: "Deni Sofyanto", date: "05/11/2025", approved: true }
     ];
 
-    // Default Agenda PDCA Log
-    const defaultPdcaList = [
-      {
-        step: "Plan",
-        agenda: "Penarikan dan analisa data saldo SDP periode 2017 - 2024",
-        pic: "Arya A. (Internal Audit)",
-        date: "04-Jan-25",
-        output: "Data anomali dan rekap selisih saldo SDP terpetakan"
-      },
-      {
-        step: "Plan",
-        agenda: "Genba (investigasi on-site) di cabang Nasmoco Solo Baru",
-        pic: "Abdul Karim (Finance), Fasa (Aftersales)",
-        date: "11-Jun-25",
-        output: "Temuan fisik alur operasional sublet dan dokumen tagihan"
-      },
-      {
-        step: "Plan",
-        agenda: "Meeting Komite Audit: Usulan penghapusan persediaan & konfirmasi vendor",
-        pic: "Sakti Dito, Arya A. (Audit & Finance)",
-        date: "26-Jul-25",
-        output: "Konfirmasi tertulis vendor tidak ada tagihan menggantung"
-      },
-      {
-        step: "Do",
-        agenda: "Konfirmasi hasil Genba & sinkronisasi metode pengecekan audit cabang",
-        pic: "Deni, Fasa (Aftersales), Arya (IA)",
-        date: "Ags-25",
-        output: "Standarisasi sampling audit disepakati seluruh divisi"
-      },
-      {
-        step: "Check",
-        agenda: "Meeting progres & finalisasi usulan Corrective & Preventive Action",
-        pic: "All DpH (Audit, IST, Finance, Acc, Aftersales)",
-        date: "06-Nov-25",
-        output: "Penyusunan matriks persetujuan final (Approved by 5 DpH)"
-      }
+    const samplePdcaList = [
+      { step: "Plan", agenda: "Penarikan dan analisa data saldo SDP periode 2017 - 2024", pic: "Arya A. (Internal Audit)", date: "04-Jan-25", output: "Data anomali dan rekap selisih saldo SDP terpetakan" },
+      { step: "Plan", agenda: "Genba (investigasi on-site) di cabang Nasmoco Solo Baru", pic: "Abdul Karim (Finance), Fasa (Aftersales)", date: "11-Jun-25", output: "Temuan fisik alur operasional sublet dan dokumen tagihan" },
+      { step: "Plan", agenda: "Meeting Komite Audit: Usulan penghapusan persediaan & konfirmasi vendor", pic: "Sakti Dito, Arya A. (Audit & Finance)", date: "26-Jul-25", output: "Konfirmasi tertulis vendor tidak ada tagihan menggantung" },
+      { step: "Do", agenda: "Konfirmasi hasil Genba & sinkronisasi metode pengecekan audit cabang", pic: "Deni, Fasa (Aftersales), Arya (IA)", date: "Ags-25", output: "Standarisasi sampling audit disepakati seluruh divisi" },
+      { step: "Check", agenda: "Meeting progres & finalisasi usulan Corrective & Preventive Action", pic: "All DpH (Audit, IST, Finance, Acc, Aftersales)", date: "06-Nov-25", output: "Penyusunan matriks persetujuan final (Approved by 5 DpH)" }
     ];
 
-    // Sample High-Clarity SVG Mock for initial evidence photo demonstrations
     const sampleEvidenceImg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="%230f172a"/><path d="M50 140 L110 80 L170 130 L220 70 L270 140 Z" fill="%23059669" opacity="0.6"/><circle cx="80" cy="55" r="22" fill="%23f59e0b"/><text x="150" y="175" fill="%23ffffff" font-size="14" font-weight="bold" font-family="sans-serif" text-anchor="middle">BUKTI GENBA TERVERIFIKASI</text></svg>';
 
-    // Default CAPA Actions with clear evidence illustration
-    const defaultCapaList = [
-      {
-        id: "1.1",
-        category: "Outstanding Saldo",
-        type: "Corrective",
-        plan: "Membuat kronologi kejadian resmi (menggunakan form standar dari Internal Audit)",
-        pic: "Internal Audit (Sakti/Arya)",
-        dueDate: "W1 Nov 25",
-        status: "Closed",
-        evidence: sampleEvidenceImg
-      },
-      {
-        id: "1.2",
-        category: "Outstanding Saldo",
-        type: "Corrective",
-        plan: "Mengirimkan data detail transaksi yang perlu dilakukan proses adjustment",
-        pic: "Internal Audit (Arya)",
-        dueDate: "W2 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "1.3",
-        category: "Outstanding Saldo",
-        type: "Corrective",
-        plan: "Melakukan jurnal memorial dan eksekusi penghapusan persediaan",
-        pic: "Accounting (Jerry)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: sampleEvidenceImg
-      },
-      {
-        id: "1.4",
-        category: "Outstanding Saldo",
-        type: "Corrective",
-        plan: "Melakukan konfirmasi formal atas outstanding tagihan ke masing-masing vendor",
-        pic: "Finance (Karim)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "1.5",
-        category: "Outstanding Saldo",
-        type: "Preventive",
-        plan: "Membuat standarisasi perbedaan nomor bukti transaksi sublet per masing-masing vendor",
-        pic: "Finance & Aftersales",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "1.6",
-        category: "Outstanding Saldo",
-        type: "Preventive",
-        plan: "Melakukan pengecekan menyeluruh ke seluruh dealer (cross-dealer check) apakah terjadi case serupa",
-        pic: "IST & Accounting",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "1.7",
-        category: "Outstanding Saldo",
-        type: "Preventive",
-        plan: "Makesure dan verifikasi logic NIS sesuai dengan aturan dan SOP alur sistem",
-        pic: "IST (Doni)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: sampleEvidenceImg
-      },
-      {
-        id: "2.1",
-        category: "Dobel AP",
-        type: "Corrective",
-        plan: "Melakukan pengecekan atas temuan data dobel input AP pada database",
-        pic: "IST (Erwin)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "2.2",
-        category: "Dobel AP",
-        type: "Corrective",
-        plan: "Cek saldo outstanding per WO dengan ketersediaan AP sehingga balance dan tidak menggantung lagi",
-        pic: "Finance (Febry)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "2.3",
-        category: "Dobel AP",
-        type: "Corrective",
-        plan: "Adjustment atas dobel pencatatan di laporan keuangan berdasar opini akhir IST & Finance",
-        pic: "Accounting (Novita)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "2.4",
-        category: "Dobel AP",
-        type: "Preventive",
-        plan: "Menerapkan sistem 3-way matching validasi order sublet melalui proses otomasi",
-        pic: "Finance (Afif)",
-        dueDate: "Jan 26",
-        status: "In Progress",
-        evidence: ""
-      },
-      {
-        id: "2.5",
-        category: "Dobel AP",
-        type: "Preventive",
-        plan: "Memastikan logic NIS accounting terkunci sehingga tidak dapat terjadi dobel nomor invoice",
-        pic: "IST (Doni)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "2.6",
-        category: "Dobel AP",
-        type: "Preventive",
-        plan: "Membuat report secara periodik atas saldo SDP dan AP aging untuk memastikan posisi saldo selalu balance",
-        pic: "Finance (Karim)",
-        dueDate: "Setiap Bulan",
-        status: "In Progress",
-        evidence: ""
-      },
-      {
-        id: "3.1",
-        category: "WO Tidak Teridentifikasi",
-        type: "Corrective",
-        plan: "Melakukan pengecekan dan investigasi trace log atas transaksi WO yang tidak dapat diidentifikasi",
-        pic: "IST (Erwin)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "3.2",
-        category: "WO Tidak Teridentifikasi",
-        type: "Corrective",
-        plan: "Adjustment nilai di laporan keuangan berdasarkan rekomendasi data audit dan IST",
-        pic: "Accounting (Jerry)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "3.3",
-        category: "WO Tidak Teridentifikasi",
-        type: "Preventive",
-        plan: "Koreksi logic NIS yang mewajibkan input identitas WO pada seluruh transaksi sublet",
-        pic: "IST (Doni)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "3.4",
-        category: "WO Tidak Teridentifikasi",
-        type: "Preventive",
-        plan: "Menyiapkan tools bantuan otomasi penarikan data transaksi tertunda untuk monitoring harian",
-        pic: "IST (Erwin)",
-        dueDate: "W4 Nov 25",
-        status: "Closed",
-        evidence: ""
-      },
-      {
-        id: "3.5",
-        category: "WO Tidak Teridentifikasi",
-        type: "Preventive",
-        plan: "Continuous audit action dan monitoring berkala atas integritas data transaksi",
-        pic: "Internal Audit (Sakti)",
-        dueDate: "Setiap Bulan",
-        status: "In Progress",
-        evidence: ""
-      }
+    const sampleCapaList = [
+      { id: "1.1", category: "Outstanding Saldo", type: "Corrective", plan: "Membuat kronologi kejadian resmi (menggunakan form standar dari Internal Audit)", pic: "Internal Audit (Sakti/Arya)", dueDate: "W1 Nov 25", status: "Closed", evidence: sampleEvidenceImg },
+      { id: "1.2", category: "Outstanding Saldo", type: "Corrective", plan: "Mengirimkan data detail transaksi yang perlu dilakukan proses adjustment", pic: "Internal Audit (Arya)", dueDate: "W2 Nov 25", status: "Closed", evidence: "" },
+      { id: "1.3", category: "Outstanding Saldo", type: "Corrective", plan: "Melakukan jurnal memorial dan eksekusi penghapusan persediaan", pic: "Accounting (Jerry)", dueDate: "W4 Nov 25", status: "Closed", evidence: sampleEvidenceImg },
+      { id: "1.4", category: "Outstanding Saldo", type: "Corrective", plan: "Melakukan konfirmasi formal atas outstanding tagihan ke masing-masing vendor", pic: "Finance (Karim)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "1.5", category: "Outstanding Saldo", type: "Preventive", plan: "Membuat standarisasi perbedaan nomor bukti transaksi sublet per masing-masing vendor", pic: "Finance & Aftersales", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "1.6", category: "Outstanding Saldo", type: "Preventive", plan: "Melakukan pengecekan menyeluruh ke seluruh dealer apakah terjadi case serupa", pic: "IST & Accounting", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "1.7", category: "Outstanding Saldo", type: "Preventive", plan: "Makesure dan verifikasi logic NIS sesuai dengan aturan dan SOP alur sistem", pic: "IST (Doni)", dueDate: "W4 Nov 25", status: "Closed", evidence: sampleEvidenceImg },
+      { id: "2.1", category: "Dobel AP", type: "Corrective", plan: "Melakukan pengecekan atas temuan data dobel input AP pada database", pic: "IST (Erwin)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "2.2", category: "Dobel AP", type: "Corrective", plan: "Cek saldo outstanding per WO dengan ketersediaan AP sehingga balance", pic: "Finance (Febry)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "2.3", category: "Dobel AP", type: "Corrective", plan: "Adjustment atas dobel pencatatan di laporan keuangan berdasar opini akhir IST & Finance", pic: "Accounting (Novita)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "2.4", category: "Dobel AP", type: "Preventive", plan: "Menerapkan sistem 3-way matching validasi order sublet melalui proses otomasi", pic: "Finance (Afif)", dueDate: "Jan 26", status: "In Progress", evidence: "" },
+      { id: "2.5", category: "Dobel AP", type: "Preventive", plan: "Memastikan logic NIS accounting terkunci sehingga tidak dapat terjadi dobel nomor invoice", pic: "IST (Doni)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "2.6", category: "Dobel AP", type: "Preventive", plan: "Membuat report secara periodik atas saldo SDP dan AP aging", pic: "Finance (Karim)", dueDate: "Setiap Bulan", status: "In Progress", evidence: "" },
+      { id: "3.1", category: "WO Tidak Teridentifikasi", type: "Corrective", plan: "Melakukan pengecekan dan investigasi trace log atas transaksi WO tidak teridentifikasi", pic: "IST (Erwin)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "3.2", category: "WO Tidak Teridentifikasi", type: "Corrective", plan: "Adjustment nilai di laporan keuangan berdasarkan rekomendasi data audit dan IST", pic: "Accounting (Jerry)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "3.3", category: "WO Tidak Teridentifikasi", type: "Preventive", plan: "Koreksi logic NIS yang mewajibkan input identitas WO pada seluruh transaksi sublet", pic: "IST (Doni)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "3.4", category: "WO Tidak Teridentifikasi", type: "Preventive", plan: "Menyiapkan tools bantuan otomasi penarikan data transaksi tertunda", pic: "IST (Erwin)", dueDate: "W4 Nov 25", status: "Closed", evidence: "" },
+      { id: "3.5", category: "WO Tidak Teridentifikasi", type: "Preventive", plan: "Continuous audit action dan monitoring berkala atas integritas data transaksi", pic: "Internal Audit (Sakti)", dueDate: "Setiap Bulan", status: "In Progress", evidence: "" }
     ];
 
-    // State Variables
+    // State Variables - Default clean and empty
     let currentMobileView = localStorage.getItem('pmr_mobile_view') || 'card';
     let projectMeta = JSON.parse(localStorage.getItem('pmr_project_meta')) || defaultProjectMeta;
-    let signersList = JSON.parse(localStorage.getItem('pmr_signers_list')) || defaultSigners;
-    let pdcaList = JSON.parse(localStorage.getItem('pmr_pdca_list')) || defaultPdcaList;
-    let capaList = JSON.parse(localStorage.getItem('pmr_capa_data')) || defaultCapaList;
+    let signersList = JSON.parse(localStorage.getItem('pmr_signers_list')) || [];
+    let pdcaList = JSON.parse(localStorage.getItem('pmr_pdca_list')) || [];
+    let capaList = JSON.parse(localStorage.getItem('pmr_capa_data')) || [];
     
+    // Photo Size State: S (48px), M (84px), L (120px), XL (160px)
+    let currentPhotoSizePx = parseInt(localStorage.getItem('pmr_photo_size_px')) || 84;
+
     // Spreadsheet Integration State
     let sheetWebhookUrl = localStorage.getItem('pmr_sheet_webhook_url') || '';
     let autoSyncEnabled = localStorage.getItem('pmr_sheet_auto_sync') === 'true';
@@ -1271,10 +1121,68 @@ function doPost(e) {
       localStorage.setItem('pmr_signers_list', JSON.stringify(signersList));
       localStorage.setItem('pmr_pdca_list', JSON.stringify(pdcaList));
       localStorage.setItem('pmr_capa_data', JSON.stringify(capaList));
+      localStorage.setItem('pmr_photo_size_px', currentPhotoSizePx);
 
       if (autoSyncEnabled && sheetWebhookUrl) {
         syncToGoogleSheets(true);
       }
+    }
+
+    // Photo Size Adjustment Logic
+    function applyPhotoSize(px) {
+      currentPhotoSizePx = parseInt(px);
+      localStorage.setItem('pmr_photo_size_px', currentPhotoSizePx);
+
+      // Height maintains ~0.71 aspect ratio
+      const heightPx = Math.round(currentPhotoSizePx * 0.71);
+      const printWidthPx = Math.round(currentPhotoSizePx * 0.76);
+      const printHeightPx = Math.round(printWidthPx * 0.72);
+
+      // Update CSS variables
+      document.documentElement.style.setProperty('--evidence-w', `${currentPhotoSizePx}px`);
+      document.documentElement.style.setProperty('--evidence-h', `${heightPx}px`);
+      document.documentElement.style.setProperty('--evidence-print-w', `${printWidthPx}px`);
+      document.documentElement.style.setProperty('--evidence-print-h', `${printHeightPx}px`);
+
+      // Update Slider and Label
+      const rangeEl = document.getElementById('photoSizeRange');
+      if (rangeEl) rangeEl.value = currentPhotoSizePx;
+      const labelEl = document.getElementById('photoSizeLabel');
+      if (labelEl) labelEl.innerText = `${currentPhotoSizePx}px`;
+
+      // Update Preset Button highlights
+      const presets = ['S', 'M', 'L', 'XL'];
+      presets.forEach(p => {
+        const btn = document.getElementById(`btnPhoto${p}`);
+        if (btn) {
+          btn.className = "px-1.5 py-0.5 text-[9.5px] font-bold rounded text-slate-600 hover:text-slate-900 transition";
+        }
+      });
+
+      if (currentPhotoSizePx <= 56) {
+        document.getElementById('btnPhotoS').className = "px-1.5 py-0.5 text-[9.5px] font-bold rounded bg-white shadow-2xs text-indigo-700 transition";
+      } else if (currentPhotoSizePx <= 95) {
+        document.getElementById('btnPhotoM').className = "px-1.5 py-0.5 text-[9.5px] font-bold rounded bg-white shadow-2xs text-indigo-700 transition";
+      } else if (currentPhotoSizePx <= 135) {
+        document.getElementById('btnPhotoL').className = "px-1.5 py-0.5 text-[9.5px] font-bold rounded bg-white shadow-2xs text-indigo-700 transition";
+      } else {
+        document.getElementById('btnPhotoXL').className = "px-1.5 py-0.5 text-[9.5px] font-bold rounded bg-white shadow-2xs text-indigo-700 transition";
+      }
+    }
+
+    function setPhotoSizePreset(preset) {
+      const map = {
+        'S': 48,
+        'M': 84,
+        'L': 120,
+        'XL': 160
+      };
+      applyPhotoSize(map[preset] || 84);
+      showToast(`Ukuran foto bukti disetel ke ${preset} (${currentPhotoSizePx}px).`);
+    }
+
+    function handlePhotoSliderChange(val) {
+      applyPhotoSize(val);
     }
 
     // Google Sheets Integration Functions
@@ -1394,6 +1302,7 @@ function doPost(e) {
       document.getElementById('docEntity').innerText = projectMeta.entity;
       document.getElementById('docNumber').innerText = projectMeta.number;
       document.getElementById('docPeriod').innerText = projectMeta.period;
+      document.getElementById('docBadge').innerText = projectMeta.badge || "DOKUMEN PENGAJUAN • FOR APPROVAL REVIEW";
       document.getElementById('docPrintDate').innerText = new Date().toLocaleDateString('id-ID');
       document.getElementById('footerEntityText').innerText = `Dokumen Resmi Project Management Report • ${projectMeta.entity}`;
     }
@@ -1403,7 +1312,10 @@ function doPost(e) {
       container.innerHTML = '';
 
       if (signersList.length === 0) {
-        container.innerHTML = `<div class="w-full py-3 text-center text-slate-400 italic text-xs">Belum ada pejabat penandatangan. Klik 'Kelola Pengesah' untuk menambahkan.</div>`;
+        container.innerHTML = `<div class="w-full py-3.5 text-center text-slate-400 italic text-xs">Belum ada pejabat penandatangan. Klik tombol <strong>'Kelola Pengesah'</strong> untuk menambahkan tanda tangan pengesahan.</div>`;
+        const overallBadge = document.getElementById('overallApprovalBadge');
+        overallBadge.className = "text-[9.5px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-semibold border border-slate-200";
+        overallBadge.innerText = "STATUS: BELUM ADA PENGESAH";
         return;
       }
 
@@ -1481,7 +1393,7 @@ function doPost(e) {
       tbody.innerHTML = '';
 
       if (pdcaList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-slate-400 italic">Belum ada agenda PDCA. Klik '+ Agenda' untuk menambahkan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-slate-400 italic">Belum ada agenda PDCA. Klik tombol <strong>'+ Agenda'</strong> untuk menambahkan kegiatan.</td></tr>`;
         return;
       }
 
@@ -1565,8 +1477,8 @@ function doPost(e) {
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-400 italic">Tidak ada butir aksi yang sesuai filter.</td></tr>`;
-        mobileCards.innerHTML = `<div class="p-6 text-center text-slate-400 italic bg-white rounded-xl border border-slate-200">Tidak ada butir aksi. Ketuk '+ Tindakan' di bawah untuk menambah data.</div>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-400 italic">Belum ada butir tindakan CAPA. Klik <strong>'+ Tindakan'</strong> untuk menambah data.</td></tr>`;
+        mobileCards.innerHTML = `<div class="p-6 text-center text-slate-400 italic bg-white rounded-xl border border-slate-200">Belum ada butir tindakan. Ketuk '+ Tindakan' di bawah untuk menambah data.</div>`;
       } else {
         filtered.forEach((item) => {
           const realIndex = capaList.findIndex(x => x.id === item.id);
@@ -1582,15 +1494,14 @@ function doPost(e) {
             ? '<span class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded text-[9.5px] font-bold whitespace-nowrap">Corrective</span>'
             : '<span class="bg-teal-50 text-teal-700 border border-teal-200 px-1.5 py-0.5 rounded text-[9.5px] font-bold whitespace-nowrap">Preventive</span>';
 
-          // ENLARGED EVIDENCE PRESENTATION
+          // DYNAMIC RESIZABLE EVIDENCE PRESENTATION
           let evidenceHtmlDesktop = '<span class="text-slate-300 text-[10px] italic">Tidak ada foto</span>';
           let evidenceHtmlMobile = '';
 
           if (item.evidence) {
-            // Generous 72x52px clear visual photo thumbnail for desktop & print
             evidenceHtmlDesktop = `
               <div class="evidence-thumb-container relative inline-block cursor-pointer group" onclick="openLightbox('${item.evidence}', 'Bukti Tindak Lanjut ID ${item.id} - ${item.category}')">
-                <img src="${item.evidence}" alt="Bukti" class="w-20 h-14 object-cover rounded-lg border border-slate-300 shadow-sm transition group-hover:brightness-95 evidence-print-img">
+                <img src="${item.evidence}" alt="Bukti" class="evidence-thumb-img rounded-lg border border-slate-300 shadow-2xs transition group-hover:brightness-95 evidence-print-img">
                 <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center text-white text-[9px] font-bold no-print">
                   Zoom
                 </div>
@@ -1598,7 +1509,6 @@ function doPost(e) {
               </div>
             `;
 
-            // Clear, large banner photo layout for mobile card view
             evidenceHtmlMobile = `
               <div class="mt-2.5 bg-slate-50 border border-slate-200 rounded-xl p-2">
                 <div class="flex items-center justify-between pb-1.5">
@@ -1630,7 +1540,7 @@ function doPost(e) {
             <td class="py-2.5 px-3 text-slate-700 leading-snug">${item.plan}</td>
             <td class="py-2.5 px-2.5 font-medium text-slate-600 text-[10.5px]">${item.pic}</td>
             <td class="py-2.5 px-2 text-center text-slate-500 font-mono text-[10.5px] whitespace-nowrap">${item.dueDate}</td>
-            <td class="py-2.5 px-2 text-center select-none">${evidenceHtmlDesktop}</td>
+            <td class="py-2.5 px-2 text-center select-none td-evidence">${evidenceHtmlDesktop}</td>
             <td class="py-2.5 px-2 text-center select-none">${statusBadge}</td>
             <td class="py-2.5 px-2 text-center no-print whitespace-nowrap">
               <button onclick="editCapa(${realIndex})" class="text-blue-600 hover:text-blue-800 p-1 mr-0.5" title="Edit Aksi">
@@ -1977,7 +1887,6 @@ function doPost(e) {
       showToast("Informasi dokumen proyek berhasil diperbarui.");
     }
 
-    // Signers Management Functions
     function openModalSigners() {
       renderSignersEditor();
       document.getElementById('signersModal').classList.remove('hidden');
@@ -2058,42 +1967,10 @@ function doPost(e) {
     }
 
     function createNewBlankProject() {
-      projectMeta = {
-        title: "PROJECT MANAGEMENT REPORT: [NAMA PROYEK]",
-        subTitle: "Laporan Tindak Lanjut Temuan & Perbaikan Operasional (PDCA & CAPA)",
-        entity: "Divisi / Cabang / Departemen Anda",
-        number: `PMR/${new Date().getFullYear()}/001`,
-        period: `${new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}`,
-        badge: "PROJECT MANAGEMENT REPORT • PDCA & CAPA"
-      };
-
-      signersList = [
-        { role: "Project Lead", name: "[Nama Lead]", date: new Date().toLocaleDateString('id-ID'), approved: true },
-        { role: "Department Head", name: "[Nama Ka. Divisi]", date: new Date().toLocaleDateString('id-ID'), approved: true }
-      ];
-
-      pdcaList = [
-        {
-          step: "Plan",
-          agenda: "Kick-off meeting & identifikasi awal kendala operasional",
-          pic: "Tim Proyek",
-          date: new Date().toLocaleDateString('id-ID'),
-          output: "Sasaran dan parameter perbaikan disepakati"
-        }
-      ];
-
-      capaList = [
-        {
-          id: "1.1",
-          category: "Operasional",
-          type: "Corrective",
-          plan: "Investigasi dan perbaikan kendala berjalan",
-          pic: "PIC Terkait",
-          dueDate: "Segera",
-          status: "Open",
-          evidence: ""
-        }
-      ];
+      projectMeta = JSON.parse(JSON.stringify(defaultProjectMeta));
+      signersList = [];
+      pdcaList = [];
+      capaList = [];
 
       saveAllToStorage();
       renderAll();
@@ -2101,10 +1978,10 @@ function doPost(e) {
     }
 
     function loadSampleCase() {
-      projectMeta = { ...defaultProjectMeta };
-      signersList = [...defaultSigners];
-      pdcaList = [...defaultPdcaList];
-      capaList = [...defaultCapaList];
+      projectMeta = JSON.parse(JSON.stringify(sampleProjectMeta));
+      signersList = JSON.parse(JSON.stringify(sampleSigners));
+      pdcaList = JSON.parse(JSON.stringify(samplePdcaList));
+      capaList = JSON.parse(JSON.stringify(sampleCapaList));
 
       saveAllToStorage();
       renderAll();
@@ -2117,6 +1994,7 @@ function doPost(e) {
         signersList,
         pdcaList,
         capaList,
+        photoSizePx: currentPhotoSizePx,
         exportedAt: new Date().toISOString()
       };
 
@@ -2144,9 +2022,10 @@ function doPost(e) {
           const parsed = JSON.parse(e.target.result);
           if (parsed.projectMeta && parsed.capaList) {
             projectMeta = parsed.projectMeta;
-            signersList = parsed.signersList || defaultSigners;
+            signersList = parsed.signersList || [];
             pdcaList = parsed.pdcaList || [];
             capaList = parsed.capaList || [];
+            if (parsed.photoSizePx) applyPhotoSize(parsed.photoSizePx);
             saveAllToStorage();
             renderAll();
             showToast("Proyek berhasil dipulihkan dari cadangan JSON.");
@@ -2267,7 +2146,6 @@ function doPost(e) {
       }, 350);
     }
 
-    // Responsive Mobile Views
     function setMobileView(view) {
       currentMobileView = view;
       localStorage.setItem('pmr_mobile_view', view);
@@ -2311,6 +2189,7 @@ function doPost(e) {
     }
 
     function renderAll() {
+      applyPhotoSize(currentPhotoSizePx);
       renderProjectHeader();
       renderPDCATable();
       renderCAPATable();
@@ -2318,7 +2197,6 @@ function doPost(e) {
       updateSheetStatusUI();
     }
 
-    // Startup Initialization
     window.onload = function() {
       renderAll();
     };
