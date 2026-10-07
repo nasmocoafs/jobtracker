@@ -926,7 +926,45 @@
     // Revisions List State
     let projectRevisions = JSON.parse(localStorage.getItem('pmr_revisions_history')) || [];
 
+    // Fungsi normalisasi otomatis untuk membaca data lama (tahap/agenda/activity) agar tidak undefined
+    function normalizeAllData() {
+      if (Array.isArray(pdcaList)) {
+        pdcaList.forEach(item => {
+          const stage = item.stage || item.tahap || item.phase || item.pdcaStage || 'Plan';
+          const title = item.title || item.agenda || item.activity || item.aktivitas || item.kegiatan || item.name || item.desc || '';
+          const pic = item.pic || item.dept || item.picDept || '';
+          const date = item.date || item.tanggal || item.dueDate || '';
+          const output = item.output || item.hasil || item.result || '';
+
+          // Sinkronkan ke semua alias agar kompatibel
+          item.stage = stage;
+          item.tahap = stage;
+          item.title = title;
+          item.agenda = title;
+          item.activity = title;
+          item.pic = pic;
+          item.date = date;
+          item.tanggal = date;
+          item.output = output;
+        });
+      }
+
+      if (Array.isArray(capaList)) {
+        capaList.forEach(item => {
+          item.category = item.category || item.kategori || item.topic || 'Umum';
+          item.type = item.type || item.tipe || 'Corrective';
+          item.problem = item.problem || item.masalah || item.problemStatement || item.issue || '';
+          item.solution = item.solution || item.solusi || item.countermeasure || item.action || '';
+          item.evidence = item.evidence || item.foto || item.bukti || item.photo || '';
+          item.pic = item.pic || item.dept || '';
+          item.dueDate = item.dueDate || item.target || item.targetDate || item.date || '';
+          item.status = item.status || item.state || 'Open';
+        });
+      }
+    }
+
     function saveAllToStorage() {
+      normalizeAllData();
       localStorage.setItem('pmr_project_meta', JSON.stringify(projectMeta));
       localStorage.setItem('pmr_signers_list', JSON.stringify(signersList));
       localStorage.setItem('pmr_pdca_list', JSON.stringify(pdcaList));
@@ -1058,6 +1096,7 @@
       pdcaList = JSON.parse(JSON.stringify(selected.pdcaList || []));
       capaList = JSON.parse(JSON.stringify(selected.capaList || []));
 
+      normalizeAllData();
       saveAllToStorage();
       renderAll();
       closeModalRevisions();
@@ -1220,21 +1259,29 @@
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
         
-        let stageBadge = "bg-slate-100 text-slate-700";
-        if (item.stage === 'Plan') stageBadge = "bg-blue-100 text-blue-800 border border-blue-200";
-        if (item.stage === 'Do') stageBadge = "bg-amber-100 text-amber-800 border border-amber-200";
-        if (item.stage === 'Check') stageBadge = "bg-purple-100 text-purple-800 border border-purple-200";
-        if (item.stage === 'Act') stageBadge = "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        // Ekstraksi aman dengan fallback untuk data lama
+        const stage = item.stage || item.tahap || item.phase || item.pdcaStage || 'Plan';
+        const title = item.title || item.agenda || item.activity || item.aktivitas || item.kegiatan || '-';
+        const pic = item.pic || item.dept || '-';
+        const date = item.date || item.tanggal || '-';
+        const output = item.output || item.hasil || '-';
+
+        let stageBadge = "bg-slate-100 text-slate-700 border border-slate-200";
+        const stageNormalized = (stage || '').trim().toLowerCase();
+        if (stageNormalized === 'plan') stageBadge = "bg-blue-100 text-blue-800 border border-blue-200";
+        else if (stageNormalized === 'do') stageBadge = "bg-amber-100 text-amber-800 border border-amber-200";
+        else if (stageNormalized === 'check') stageBadge = "bg-purple-100 text-purple-800 border border-purple-200";
+        else if (stageNormalized === 'act') stageBadge = "bg-emerald-100 text-emerald-800 border border-emerald-200";
 
         tr.innerHTML = `
           <td class="p-2 sm:p-2.5 text-center font-bold text-slate-500">${index + 1}</td>
           <td class="p-2 sm:p-2.5 text-center">
-            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black ${stageBadge}">${item.stage}</span>
+            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black ${stageBadge}">${stage}</span>
           </td>
-          <td class="p-2 sm:p-2.5 font-semibold text-slate-800">${item.title}</td>
-          <td class="p-2 sm:p-2.5 text-slate-600">${item.pic}</td>
-          <td class="p-2 sm:p-2.5 font-mono text-[11px] text-slate-600">${item.date}</td>
-          <td class="p-2 sm:p-2.5 text-slate-600">${item.output || '-'}</td>
+          <td class="p-2 sm:p-2.5 font-semibold text-slate-800">${title}</td>
+          <td class="p-2 sm:p-2.5 text-slate-600">${pic}</td>
+          <td class="p-2 sm:p-2.5 font-mono text-[11px] text-slate-600">${date}</td>
+          <td class="p-2 sm:p-2.5 text-slate-600">${output}</td>
           <td class="p-2 sm:p-2.5 text-center no-print whitespace-nowrap">
             <button onclick="editPdcaItem('${item.id}')" class="p-1 text-blue-600 hover:text-blue-800 mr-1" title="Edit">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -1469,13 +1516,19 @@
       const item = pdcaList.find(x => x.id === id);
       if (!item) return;
 
+      const stage = item.stage || item.tahap || item.phase || item.pdcaStage || "Plan";
+      const title = item.title || item.agenda || item.activity || item.aktivitas || item.kegiatan || "";
+      const date = item.date || item.tanggal || "";
+      const pic = item.pic || item.dept || "";
+      const output = item.output || item.hasil || "";
+
       document.getElementById('pdcaModalTitle').innerText = "Edit Agenda PDCA";
       document.getElementById('pdcaEditId').value = item.id;
-      document.getElementById('pdcaStage').value = item.stage;
-      document.getElementById('pdcaDate').value = item.date;
-      document.getElementById('pdcaTitle').value = item.title;
-      document.getElementById('pdcaPic').value = item.pic;
-      document.getElementById('pdcaOutput').value = item.output || "";
+      document.getElementById('pdcaStage').value = stage;
+      document.getElementById('pdcaDate').value = date;
+      document.getElementById('pdcaTitle').value = title;
+      document.getElementById('pdcaPic').value = pic;
+      document.getElementById('pdcaOutput').value = output;
       document.getElementById('pdcaModal').classList.remove('hidden');
     }
 
@@ -1492,15 +1545,22 @@
         const item = pdcaList.find(x => x.id === editId);
         if (item) {
           item.stage = stage;
+          item.tahap = stage;
           item.date = date;
+          item.tanggal = date;
           item.title = title;
+          item.agenda = title;
+          item.activity = title;
           item.pic = pic;
           item.output = output;
         }
       } else {
         pdcaList.push({
           id: 'pdca_' + Date.now(),
-          stage, date, title, pic, output
+          stage, tahap: stage,
+          date, tanggal: date,
+          title, agenda: title, activity: title,
+          pic, output
         });
       }
 
@@ -1897,6 +1957,7 @@
           if (imported.signersList) signersList = imported.signersList;
           if (imported.photoSizePx) currentPhotoSizePx = imported.photoSizePx;
 
+          normalizeAllData();
           saveAllToStorage();
           renderAll();
           showToast("File JSON berhasil dipulihkan!");
@@ -2016,6 +2077,7 @@
         sheetWebhookUrl = INJECTED_GAS_URL;
         localStorage.setItem('pmr_sheet_webhook_url', sheetWebhookUrl);
       }
+      normalizeAllData();
       renderAll();
       if (window.innerWidth < 640) {
         setMobileView(currentMobileView);
