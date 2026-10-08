@@ -641,7 +641,7 @@
 
   <!-- MODAL: CAPA Item with Sub-tasks Editor & Photo Evidence -->
   <div id="capaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 overflow-y-auto no-print">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs my-6">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs my-6">
       <div class="flex items-center justify-between border-b pb-2">
         <h4 id="capaModalTitle" class="text-sm font-black text-slate-900">Tambah Tindakan CAPA</h4>
         <button onclick="closeModal('capaModal')" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
@@ -2038,25 +2038,32 @@
         return;
       }
 
+      const standardStatuses = ['Done', 'On Trial', 'In Progress', 'Open'];
+
       activeModalSubTasks.forEach((st, idx) => {
-        const isStandard = ['Done', 'On Trial', 'In Progress', 'Open', 'Lain-lain'].includes(st.status);
+        const isCustom = !standardStatuses.includes(st.status);
         const div = document.createElement('div');
-        div.className = "flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-slate-200 text-xs";
+        div.className = "flex flex-wrap sm:flex-nowrap items-center gap-1.5 bg-white p-2 rounded-lg border border-slate-200 text-xs shadow-3xs";
         div.innerHTML = `
-          <span class="font-bold text-slate-400 text-[10px] w-4 text-center">${idx + 1}.</span>
-          <input type="text" value="${escapeHtml(st.text)}" oninput="updateSubTaskText(${idx}, this.value)" class="flex-grow px-2 py-1 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium text-slate-800">
-          <select onchange="handleSubTaskSelectChange(${idx}, this.value)" class="text-[11px] font-bold px-2 py-1 border rounded ${st.status === 'Open' || st.status === 'Lain-lain' || !isStandard ? 'text-rose-700 bg-rose-50 border-rose-300' : 'text-slate-800 bg-slate-50'}">
-            <option value="Done" ${st.status === 'Done' || st.status === 'Closed' ? 'selected' : ''}>Done</option>
-            <option value="On Trial" ${st.status === 'On Trial' ? 'selected' : ''}>On Trial</option>
-            <option value="In Progress" ${st.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-            <option value="Open" ${st.status === 'Open' ? 'selected' : ''}>Open</option>
-            <option value="Lain-lain" ${st.status === 'Lain-lain' ? 'selected' : ''}>Lain-lain</option>
-            <option value="__custom__" ${!isStandard ? 'selected' : ''}>+ Custom Status...</option>
+          <span class="font-bold text-slate-400 text-[10px] w-4 text-center shrink-0">${idx + 1}.</span>
+          <input type="text" value="${escapeHtml(st.text)}" oninput="updateSubTaskText(${idx}, this.value)" class="flex-grow min-w-[150px] px-2 py-1 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium text-slate-800">
+          <select onchange="handleSubTaskSelectChange(${idx}, this.value)" class="text-[11px] font-bold px-2 py-1 border rounded shrink-0 ${st.status === 'Open' || isCustom ? 'text-rose-700 bg-rose-50 border-rose-300' : 'text-slate-800 bg-slate-50'}">
+            <option value="Done" ${st.status === 'Done' || st.status === 'Closed' ? 'selected' : ''}>✓ Done</option>
+            <option value="On Trial" ${st.status === 'On Trial' ? 'selected' : ''}>⏳ On Trial</option>
+            <option value="In Progress" ${st.status === 'In Progress' ? 'selected' : ''}>⚡ In Progress</option>
+            <option value="Open" ${st.status === 'Open' ? 'selected' : ''}>○ Open</option>
+            <option value="__custom__" ${isCustom ? 'selected' : ''}>✏️ Custom / Lain-lain...</option>
           </select>
-          ${!isStandard ? `
-            <input type="text" value="${escapeHtml(st.status)}" placeholder="Ketik status..." oninput="updateSubTaskCustomStatusText(${idx}, this.value)" class="w-28 px-1.5 py-1 text-[11px] font-bold border border-rose-300 bg-rose-50 text-rose-700 rounded focus:ring-1 focus:ring-rose-500" title="Ketik nama status custom">
+          ${isCustom ? `
+            <input type="text"
+                   id="customStatusInput_${idx}"
+                   value="${escapeHtml(st.status || 'Lain-lain')}"
+                   placeholder="Ketik status (mis: On Develop IST)..."
+                   oninput="updateSubTaskCustomStatusText(${idx}, this.value)"
+                   class="w-36 sm:w-44 px-2 py-1 text-[11px] font-bold border-2 border-rose-400 bg-rose-50 text-rose-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 placeholder:text-rose-300 shadow-2xs shrink-0"
+                   title="Ketik nama status bebas (contoh: On Develop IST, Kendala Vendor, dll)">
           ` : ''}
-          <button type="button" onclick="removeSubTaskRow(${idx})" class="text-rose-500 hover:text-rose-700 font-bold px-1 text-sm">&times;</button>
+          <button type="button" onclick="removeSubTaskRow(${idx})" class="text-rose-500 hover:text-rose-700 font-bold px-1 text-sm shrink-0">&times;</button>
         `;
         container.appendChild(div);
       });
@@ -2068,16 +2075,25 @@
 
     function handleSubTaskSelectChange(idx, val) {
       if (val === '__custom__') {
-        activeModalSubTasks[idx].status = 'Lain-lain';
+        if (['Done', 'On Trial', 'In Progress', 'Open'].includes(activeModalSubTasks[idx].status)) {
+          activeModalSubTasks[idx].status = 'Lain-lain';
+        }
         renderSubTasksEditor(activeModalSubTasks, true);
+        setTimeout(() => {
+          const inputEl = document.getElementById(`customStatusInput_${idx}`);
+          if (inputEl) {
+            inputEl.focus();
+            inputEl.select();
+          }
+        }, 50);
       } else {
         updateSubTaskStatusInModal(idx, val);
       }
     }
 
     function updateSubTaskCustomStatusText(idx, customVal) {
-      const cleanVal = customVal.trim() || 'Lain-lain';
-      activeModalSubTasks[idx].status = cleanVal;
+      if (!activeModalSubTasks[idx]) return;
+      activeModalSubTasks[idx].status = customVal;
       document.getElementById('capaSolutionInput').value = serializeSubTasksToText(activeModalSubTasks);
       document.getElementById('capaStatusInput').value = computeOverallStatusFromSubTasks(activeModalSubTasks);
     }
@@ -2143,9 +2159,9 @@
       if (subTaskContainer && activeModalSubTasks.length > 0) {
         const rows = subTaskContainer.children;
         for (let i = 0; i < rows.length && i < activeModalSubTasks.length; i++) {
-          const textInput = rows[i].querySelector('input[type="text"]:not([title*="custom"])');
+          const textInput = rows[i].querySelector('input[type="text"]:not([id^="customStatusInput_"])');
           const select = rows[i].querySelector('select');
-          const customInput = rows[i].querySelector('input[title*="custom"]');
+          const customInput = rows[i].querySelector('input[id^="customStatusInput_"]');
           if (textInput) activeModalSubTasks[i].text = textInput.value.trim();
           if (select) {
             if (select.value === '__custom__' && customInput) {
