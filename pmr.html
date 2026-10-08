@@ -1068,21 +1068,40 @@
       if (lines.length === 0) return [];
 
       return lines.map(line => {
-        let status = parentStatus === "Open" ? "Open" : "Done";
         let cleanText = line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim();
+        let status = parentStatus === "Open" ? "Open" : "Done";
 
-        if (/\b(done|selesai|closed)\b/i.test(line)) {
-          status = "Done";
-          cleanText = cleanText.replace(/\s*[-–—:]\s*(done|selesai|closed)\b.*$/i, '').trim();
-        } else if (/\b(on trial|trial)\b/i.test(line)) {
-          status = "On Trial";
-          cleanText = cleanText.replace(/\s*[-–—:]\s*(on trial|trial)\b.*$/i, '').trim();
-        } else if (/\b(in progress|progress|ongoing|proses)\b/i.test(line)) {
-          status = "In Progress";
-          cleanText = cleanText.replace(/\s*[-–—:]\s*(in progress|progress|ongoing|proses)\b.*$/i, '').trim();
-        } else if (/\b(open|pending|tertunda)\b/i.test(line)) {
-          status = "Open";
-          cleanText = cleanText.replace(/\s*[-–—:]\s*(open|pending|tertunda)\b.*$/i, '').trim();
+        // Deteksi pemisah status di akhir baris (misal: " - On Develop IST", " - In Progress")
+        const sepMatch = cleanText.match(/\s*[-–—:]\s*([A-Za-z0-9\s()\/_.\-+]+)$/);
+        if (sepMatch) {
+          const rawStatus = sepMatch[1].trim();
+          const lower = rawStatus.toLowerCase();
+          cleanText = cleanText.slice(0, sepMatch.index).trim();
+
+          if (['done', 'selesai', 'closed'].includes(lower)) {
+            status = "Done";
+          } else if (['on trial', 'trial'].includes(lower)) {
+            status = "On Trial";
+          } else if (['in progress', 'progress', 'ongoing', 'proses'].includes(lower)) {
+            status = "In Progress";
+          } else if (['open', 'pending', 'tertunda'].includes(lower)) {
+            status = "Open";
+          } else if (lower === 'lain-lain' || lower.includes('lain')) {
+            status = "Lain-lain";
+          } else if (rawStatus.length > 0) {
+            // Status custom seperti "On Develop IST"
+            status = rawStatus;
+          }
+        } else {
+          if (/\b(done|selesai|closed)\b/i.test(line)) {
+            status = "Done";
+          } else if (/\b(on trial|trial)\b/i.test(line)) {
+            status = "On Trial";
+          } else if (/\b(in progress|progress|ongoing|proses)\b/i.test(line)) {
+            status = "In Progress";
+          } else if (/\b(open|pending|tertunda)\b/i.test(line)) {
+            status = "Open";
+          }
         }
 
         return {
@@ -1158,6 +1177,17 @@
           // Sinkronisasi sub-aktivitas
           if (!item.subTasks || !Array.isArray(item.subTasks) || item.subTasks.length === 0) {
             item.subTasks = parseSubTasksFromText(solution, status);
+          } else if (solution) {
+            // Self-healing: jika teks rencana tindakan memuat status custom (misal: "On Develop IST"),
+            // pastikan status subTasks otomatis tersinkronisasi dan tidak keliru menjadi "Open"
+            const reParsed = parseSubTasksFromText(solution, status);
+            if (reParsed.length === item.subTasks.length) {
+              reParsed.forEach((parsedSt, pIdx) => {
+                if (parsedSt.status && !['Done', 'Open', 'In Progress', 'On Trial'].includes(parsedSt.status)) {
+                  item.subTasks[pIdx].status = parsedSt.status;
+                }
+              });
+            }
           }
 
           if (item.subTasks && item.subTasks.length > 1) {
@@ -1523,17 +1553,31 @@
 
           let subListHtml = "";
           subTasks.forEach((st, sIdx) => {
-            let pillClass = "bg-rose-100 text-rose-800 border-rose-300";
+            const rawStatus = (st.status || 'Open').trim();
+            const lowerStatus = rawStatus.toLowerCase();
+
+            let pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
             let pillLabel = "○ Open";
-            if (st.status === 'Done' || st.status === 'Closed') {
+
+            if (lowerStatus === 'done' || lowerStatus === 'closed') {
               pillClass = "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold";
               pillLabel = "✓ Done";
-            } else if (st.status === 'On Trial') {
+            } else if (lowerStatus === 'on trial' || lowerStatus === 'trial') {
               pillClass = "bg-amber-100 text-amber-800 border-amber-300 font-bold";
               pillLabel = "⏳ On Trial";
-            } else if (st.status === 'In Progress') {
+            } else if (lowerStatus === 'in progress' || lowerStatus === 'progress') {
               pillClass = "bg-blue-100 text-blue-800 border-blue-300 font-bold";
               pillLabel = "⚡ In Progress";
+            } else if (lowerStatus === 'open' || lowerStatus === 'pending') {
+              pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+              pillLabel = "○ Open";
+            } else if (lowerStatus === 'lain-lain') {
+              pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+              pillLabel = "⚠️ Lain-lain";
+            } else {
+              // Status custom seperti "On Develop IST" (highlight merah rose senada dengan Open)
+              pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+              pillLabel = "⚠️ " + escapeHtml(rawStatus);
             }
 
             subListHtml += `
@@ -1649,7 +1693,7 @@
       }
       if (!item.subTasks[subIndex]) return;
 
-      const current = item.subTasks[subIndex].status;
+      const current = (item.subTasks[subIndex].status || 'Open').trim();
       let next = "Done";
       if (current === "Done" || current === "Closed") {
         next = "On Trial";
@@ -1657,7 +1701,10 @@
         next = "In Progress";
       } else if (current === "In Progress") {
         next = "Open";
+      } else if (current === "Open") {
+        next = "Lain-lain";
       } else {
+        // Jika status saat ini adalah custom atau Lain-lain, putar ke Done
         next = "Done";
       }
 
@@ -1997,7 +2044,7 @@
         div.className = "flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-slate-200 text-xs";
         div.innerHTML = `
           <span class="font-bold text-slate-400 text-[10px] w-4 text-center">${idx + 1}.</span>
-          <input type="text" value="${escapeHtml(st.text)}" onchange="updateSubTaskText(${idx}, this.value)" class="flex-grow px-2 py-1 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium text-slate-800">
+          <input type="text" value="${escapeHtml(st.text)}" oninput="updateSubTaskText(${idx}, this.value)" class="flex-grow px-2 py-1 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium text-slate-800">
           <select onchange="handleSubTaskSelectChange(${idx}, this.value)" class="text-[11px] font-bold px-2 py-1 border rounded ${st.status === 'Open' || st.status === 'Lain-lain' || !isStandard ? 'text-rose-700 bg-rose-50 border-rose-300' : 'text-slate-800 bg-slate-50'}">
             <option value="Done" ${st.status === 'Done' || st.status === 'Closed' ? 'selected' : ''}>Done</option>
             <option value="On Trial" ${st.status === 'On Trial' ? 'selected' : ''}>On Trial</option>
@@ -2007,7 +2054,7 @@
             <option value="__custom__" ${!isStandard ? 'selected' : ''}>+ Custom Status...</option>
           </select>
           ${!isStandard ? `
-            <input type="text" value="${escapeHtml(st.status)}" placeholder="Ketik status..." onchange="updateSubTaskCustomStatusText(${idx}, this.value)" class="w-24 px-1.5 py-1 text-[11px] font-bold border border-rose-300 bg-rose-50 text-rose-700 rounded focus:ring-1 focus:ring-rose-500" title="Ketik nama status custom">
+            <input type="text" value="${escapeHtml(st.status)}" placeholder="Ketik status..." oninput="updateSubTaskCustomStatusText(${idx}, this.value)" class="w-28 px-1.5 py-1 text-[11px] font-bold border border-rose-300 bg-rose-50 text-rose-700 rounded focus:ring-1 focus:ring-rose-500" title="Ketik nama status custom">
           ` : ''}
           <button type="button" onclick="removeSubTaskRow(${idx})" class="text-rose-500 hover:text-rose-700 font-bold px-1 text-sm">&times;</button>
         `;
@@ -2021,7 +2068,7 @@
 
     function handleSubTaskSelectChange(idx, val) {
       if (val === '__custom__') {
-        activeModalSubTasks[idx].status = 'Lain-lain (Custom)';
+        activeModalSubTasks[idx].status = 'Lain-lain';
         renderSubTasksEditor(activeModalSubTasks, true);
       } else {
         updateSubTaskStatusInModal(idx, val);
@@ -2089,6 +2136,25 @@
       if (!category) {
         showToast("Kategori / Topik tidak boleh kosong!", "⚠️");
         return;
+      }
+
+      // Ambil nilai sub-aktivitas terkini langsung dari elemen input modal (mencegah teks tertinggal)
+      const subTaskContainer = document.getElementById('subTasksList');
+      if (subTaskContainer && activeModalSubTasks.length > 0) {
+        const rows = subTaskContainer.children;
+        for (let i = 0; i < rows.length && i < activeModalSubTasks.length; i++) {
+          const textInput = rows[i].querySelector('input[type="text"]:not([title*="custom"])');
+          const select = rows[i].querySelector('select');
+          const customInput = rows[i].querySelector('input[title*="custom"]');
+          if (textInput) activeModalSubTasks[i].text = textInput.value.trim();
+          if (select) {
+            if (select.value === '__custom__' && customInput) {
+              activeModalSubTasks[i].status = customInput.value.trim() || 'Lain-lain';
+            } else if (select.value !== '__custom__') {
+              activeModalSubTasks[i].status = select.value;
+            }
+          }
+        }
       }
 
       let subTasks = activeModalSubTasks && activeModalSubTasks.length > 0
