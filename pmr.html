@@ -37,7 +37,28 @@
       min-width: calc(var(--evidence-w) + 24px);
     }
 
-    /* Styling Scrollbar */
+    .drag-handle {
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+    tr.drag-active {
+      opacity: 0.35 !important;
+      background-color: #f1f5f9 !important;
+    }
+    tr.drop-target-above {
+      border-top: 3px solid #2563eb !important;
+      background-color: #eff6ff !important;
+    }
+    tr.drop-target-below {
+      border-bottom: 3px solid #2563eb !important;
+      background-color: #eff6ff !important;
+    }
+
+    /* Styling Scrollbar Modern */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -53,7 +74,6 @@
       background: #94a3b8;
     }
 
-    /* TATA LETAK CETAK RESMI (EXECUTIVE PRINT STYLES) */
     @media print {
       @page {
         size: A4 landscape;
@@ -102,7 +122,6 @@
         padding: 6px 4px !important;
       }
 
-      /* Tampilan Gambar Bukti Cetak */
       .evidence-thumb-container {
         width: var(--evidence-w) !important;
         height: var(--evidence-h) !important;
@@ -126,7 +145,7 @@
   <header class="no-print sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
       
-      <!-- Brand & Status Sinkronisasi -->
+      <!-- Brand & Status Sinkronisasi Instan -->
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-black text-slate-950 text-sm shadow-inner">
           PMR
@@ -139,11 +158,10 @@
               <span>Sheets Synced</span>
             </span>
           </div>
-          <p class="text-[10px] text-slate-400 hidden sm:block">PDCA Tracking, Evidence Photos & Google Sheets Auto-Sync</p>
+          <p id="instantSaveIndicator" class="text-[10px] text-emerald-400 font-mono hidden sm:block">✓ Perubahan tersimpan instan</p>
         </div>
       </div>
 
-      <!-- Tombol Aksi Utama -->
       <div class="flex items-center flex-wrap gap-1.5">
         
         <!-- Tombol Simpan Progress Utama (Ctrl+S) -->
@@ -187,7 +205,6 @@
           <span class="hidden sm:inline">Pengesah</span>
         </button>
 
-        <!-- Dropdown Opsi Template & Backup -->
         <div class="relative inline-block text-left" id="optionsDropdownWrapper">
           <button onclick="toggleOptionsDropdown()" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition">
             <span>Opsi</span>
@@ -263,7 +280,7 @@
             <span class="text-slate-300">•</span>
             <span>Periode: <strong id="headerPeriod" class="text-slate-800 font-bold">Okt 2024 - Okt 2026</strong></span>
             <span class="text-slate-300">•</span>
-            <span>Tgl Cetak: <strong id="headerPrintDate" class="text-slate-800 font-bold">07/10/2026</strong></span>
+            <span>Tgl Cetak: <strong id="headerPrintDate" class="text-slate-800 font-bold">08/10/2026</strong></span>
           </div>
         </div>
       </section>
@@ -315,6 +332,7 @@
             <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-tight">
               Aktivitas PDCA & Investigasi Lapangan (Genba)
             </h3>
+            <span class="text-[10px] text-slate-400 hidden md:inline">• Drag baris untuk geser urutan</span>
           </div>
           <button onclick="openPdcaModal()" class="no-print text-xs font-semibold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
             <span>+ Tambah Agenda</span>
@@ -325,13 +343,14 @@
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
               <tr>
+                <th class="p-1 sm:p-1.5 w-8 text-center no-print" title="Geser Urutan (Drag & Drop)">Geser</th>
                 <th class="p-2 sm:p-2.5 w-10 text-center">No</th>
                 <th class="p-2 sm:p-2.5 w-16 text-center">Tahap</th>
                 <th class="p-2 sm:p-2.5">Agenda / Aktivitas PDCA & Genba</th>
                 <th class="p-2 sm:p-2.5 w-36 sm:w-44">PIC & Departemen</th>
                 <th class="p-2 sm:p-2.5 w-28 sm:w-32">Tanggal</th>
                 <th class="p-2 sm:p-2.5">Output / Ringkasan Hasil</th>
-                <th class="p-2 sm:p-2.5 w-14 text-center no-print">Aksi</th>
+                <th class="p-2 sm:p-2.5 w-20 text-center no-print">Aksi</th>
               </tr>
             </thead>
             <tbody id="pdcaTableBody" class="divide-y divide-slate-100 bg-white">
@@ -349,6 +368,7 @@
             <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-tight">
               Matriks Tindak Lanjut: Corrective & Preventive Action (CAPA)
             </h3>
+            <span class="text-[10px] text-slate-400 hidden md:inline">• Drag baris untuk geser urutan</span>
           </div>
 
           <!-- Toolbar Pengatur Ukuran Foto Bukti & Filter -->
@@ -404,6 +424,7 @@
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
               <tr>
+                <th class="p-1 sm:p-1.5 w-8 text-center no-print" title="Geser Urutan (Drag & Drop)">Geser</th>
                 <th class="p-2 sm:p-2.5 w-10 text-center">No</th>
                 <th class="p-2 sm:p-2.5 w-44 sm:w-56">Kategori / Topik</th>
                 <th class="p-2 sm:p-2.5 w-20 text-center">Jenis</th>
@@ -412,7 +433,7 @@
                 <th class="p-2 sm:p-2.5 w-28 sm:w-36">PIC / Dept</th>
                 <th class="p-2 sm:p-2.5 w-24">Due Date</th>
                 <th class="p-2 sm:p-2.5 w-24 text-center">Status</th>
-                <th class="p-2 sm:p-2.5 w-14 text-center no-print">Aksi</th>
+                <th class="p-2 sm:p-2.5 w-20 text-center no-print">Aksi</th>
               </tr>
             </thead>
             <tbody id="capaTableBody" class="divide-y divide-slate-100 bg-white">
@@ -428,7 +449,7 @@
       </section>
 
       <!-- BAGIAN 3: LEMBAR PENGESAHAN LINTAS DEPARTEMEN (APPROVAL BLOCK 1 BARIS PENUH) -->
-      <section class="space-y-2.5 pt-2 border-t border-slate-200 break-inside-avoid">
+      <section id="approvalSection" class="space-y-2.5 pt-2 border-t border-slate-200 break-inside-avoid">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-extrabold">3</span>
@@ -726,7 +747,7 @@
     </div>
   </div>
 
-  <!-- 7. MODAL CETAK PDF & OPSI PENGESAHAN -->
+  <!-- 7. MODAL CETAK PDF & OPSI PENGESAHAN DENGAN TOGGLE APPROVAL -->
   <div id="printModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl text-xs">
       <div class="flex items-center justify-between border-b pb-2">
@@ -735,8 +756,19 @@
       </div>
       
       <div class="space-y-3">
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Mode Lembar Pengesahan (Approval)</label>
+        <!-- Opsi Pokok: Sertakan atau Sembunyikan Lembar Approval -->
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+          <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-900">
+            <input type="checkbox" id="includeApprovalInPrint" checked onchange="toggleApprovalPrintOptions(this.checked)" class="rounded text-rose-600 focus:ring-rose-500 w-4 h-4">
+            <span>Sertakan Lembar Pengesahan (Approval Block)</span>
+          </label>
+          <p class="text-[10px] text-slate-500 pl-6 leading-relaxed">
+            Hilangkan centang jika ingin mencetak draf dokumen tanpa kolom tanda tangan pimpinan (misal: untuk lembar kerja lapangan).
+          </p>
+        </div>
+
+        <div id="approvalModeOptionsWrapper" class="space-y-1.5">
+          <label class="block font-bold text-slate-700 mb-1">Mode Format Lembar Pengesahan</label>
           <div class="space-y-1.5">
             <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
               <input type="radio" name="printMode" value="wet" checked class="text-rose-600 focus:ring-rose-500">
@@ -929,7 +961,7 @@
       }
     ];
 
-    // Data Lengkap CAPA_Tracker Sesuai Kolom A s/d Kolom G Spreadsheet Anda (9 Butir Tindakan Lengkap)
+    // Data Lengkap CAPA_Tracker Sesuai Kolom A s/d Kolom G Spreadsheet Anda
     const tmsCapaList = [
       {
         id: "1.0",
@@ -1071,7 +1103,7 @@
       { id: "capa_9", category: "WO Tidak Teridentifikasi", type: "Preventive", solution: "Koreksi logic NIS dan continuous audit monitoring bulanan", evidence: "", pic: "Internal Audit & IST", dueDate: "Monthly", status: "In Progress" }
     ];
 
-    // State Variables - Menginisialisasi langsung ke data Proyek TMS jika belum ada di localStorage
+    // State Variables
     let currentMobileView = localStorage.getItem('pmr_mobile_view') || 'card';
     let projectMeta = JSON.parse(localStorage.getItem('pmr_project_meta')) || tmsProjectMeta;
     let signersList = JSON.parse(localStorage.getItem('pmr_signers_list')) || sampleSigners;
@@ -1080,9 +1112,10 @@
     let revisionsList = JSON.parse(localStorage.getItem('pmr_revisions_log')) || [];
     let currentPhotoSizePx = parseInt(localStorage.getItem('pmr_photo_size_px')) || 80;
     let sheetWebhookUrl = localStorage.getItem('pmr_sheet_webhook_url') || INJECTED_GAS_URL;
-    let autoSyncEnabled = localStorage.getItem('pmr_auto_sync') === 'true';
+    let autoSyncEnabled = localStorage.getItem('pmr_auto_sync') !== 'false';
+    let draggedPdcaId = null;
+    let draggedCapaId = null;
 
-    // Fungsi normalisasi otomatis untuk membaca data lama maupun format Google Spreadsheet secara presisi
     function normalizeAllData() {
       // 1. Normalisasi PDCA
       if (Array.isArray(pdcaList)) {
@@ -1118,10 +1151,8 @@
           const status = item.status || item.state || item['Status'] || 'Closed';
           const evidence = item.evidence || item.foto || item.bukti || item.photo || '';
 
-          // Ekstraksi teks solusi dari berbagai kemungkinan alias
           let solution = item.solution || item.rencanaTindakan || item['Rencana Tindakan'] || item.solusi || item.action || item.countermeasure || '';
 
-          // PERBAIKAN KRUSIAL: Jika solution sama persis dengan category atau kosong, gantikan dengan data Kolom D asli spreadsheet
           if (!solution || solution.trim() === category.trim()) {
             if (SHEET_KOLOM_D_MAP[id]) {
               solution = SHEET_KOLOM_D_MAP[id];
@@ -1148,7 +1179,6 @@
     function loadTmsProjectCase() {
       createAutoRevisionSnapshot("Sebelum Sinkronisasi Kolom D Spreadsheet");
       
-      // Ambil foto bukti yang sudah ada saat ini agar tidak hilang
       const existingEvidenceMap = {};
       if (Array.isArray(capaList)) {
         capaList.forEach(item => {
@@ -1163,7 +1193,6 @@
       pdcaList = JSON.parse(JSON.stringify(tmsPdcaList));
       capaList = JSON.parse(JSON.stringify(tmsCapaList));
 
-      // Kembalikan foto bukti yang tersimpan sebelumnya
       capaList.forEach(item => {
         if (existingEvidenceMap[item.id]) {
           item.evidence = existingEvidenceMap[item.id];
@@ -1171,29 +1200,27 @@
       });
 
       normalizeAllData();
-      saveAllToStorage();
+      saveAllToStorage(true, "Data TMS Project & Kolom D disinkronkan!");
       renderAll();
       toggleOptionsDropdown(false);
-      showToast("Data TMS Project & Kolom D berhasil disinkronkan 100%!");
     }
 
     function loadSampleAuditCase() {
-      createAutoRevisionSnapshot();
+      createAutoRevisionSnapshot("Sebelum Memuat Kasus Solo Baru");
       projectMeta = JSON.parse(JSON.stringify(sampleProjectMeta));
       signersList = JSON.parse(JSON.stringify(sampleSigners));
       pdcaList = JSON.parse(JSON.stringify(samplePdca));
       capaList = JSON.parse(JSON.stringify(sampleCapa));
 
       normalizeAllData();
-      saveAllToStorage();
+      saveAllToStorage(true, "Contoh kasus audit Solo Baru dimuat!");
       renderAll();
       toggleOptionsDropdown(false);
-      showToast("Contoh kasus audit Solo Baru berhasil dimuat!");
     }
 
     function resetToCleanProject() {
       openCustomConfirm("Mulai Proyek Baru (Form Bersih)?", "Semua tabel akan dikosongkan. Versi saat ini akan otomatis disimpan di Riwayat Revisi.", () => {
-        createAutoRevisionSnapshot();
+        createAutoRevisionSnapshot("Sebelum Reset Proyek Bersih");
         projectMeta = JSON.parse(JSON.stringify(defaultProjectMeta));
         pdcaList = [];
         capaList = [];
@@ -1202,14 +1229,13 @@
           { id: "s2", dept: "Department Head", name: "Nama Kepala Divisi", date: "", approved: false }
         ];
 
-        saveAllToStorage();
+        saveAllToStorage(true, "Proyek baru siap digunakan!");
         renderAll();
         toggleOptionsDropdown(false);
-        showToast("Proyek baru berhasil disiapkan!");
       });
     }
 
-    function saveAllToStorage() {
+    function saveAllToStorage(showInstantFeedback = false, customMsg = "Tersimpan Instan!") {
       normalizeAllData();
       localStorage.setItem('pmr_project_meta', JSON.stringify(projectMeta));
       localStorage.setItem('pmr_signers_list', JSON.stringify(signersList));
@@ -1217,9 +1243,28 @@
       localStorage.setItem('pmr_capa_data', JSON.stringify(capaList));
       localStorage.setItem('pmr_photo_size_px', currentPhotoSizePx);
 
+      // Perbarui label indikator instant save di navbar
+      const now = new Date();
+      const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+      const indicator = document.getElementById('instantSaveIndicator');
+      if (indicator) {
+        indicator.textContent = `✓ Tersimpan Instan (${timeStr})`;
+        indicator.classList.remove('hidden');
+      }
+
+      // Instant cloud sync ke Spreadsheet jika aktif
       if (autoSyncEnabled && sheetWebhookUrl) {
         syncToGoogleSheets(true);
       }
+
+      if (showInstantFeedback) {
+        showToast(customMsg, "💾");
+      }
+    }
+
+    function saveProgress() {
+      createAutoRevisionSnapshot("Manual Save");
+      saveAllToStorage(true, "Progress & Snapshot Tersimpan!");
     }
 
     function renderAll() {
@@ -1267,7 +1312,7 @@
       if (!pdcaList || pdcaList.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="7" class="p-4 text-center text-slate-400 italic">
+            <td colspan="8" class="p-4 text-center text-slate-400 italic">
               Belum ada agenda PDCA. Klik '+ Tambah Agenda' untuk menambahkan kegiatan.
             </td>
           </tr>
@@ -1277,7 +1322,9 @@
 
       pdcaList.forEach((item, index) => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100 group";
+        tr.draggable = true;
+        tr.dataset.id = item.id;
 
         let badgeColor = "bg-blue-100 text-blue-800 border-blue-200";
         if (item.stage === 'Do') badgeColor = "bg-amber-100 text-amber-800 border-amber-200";
@@ -1285,6 +1332,13 @@
         if (item.stage === 'Act') badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
 
         tr.innerHTML = `
+          <td class="p-1 sm:p-1.5 text-center no-print drag-handle text-slate-400 hover:text-blue-600 transition" title="Tahan & geser untuk mengubah urutan">
+            <div class="flex items-center justify-center gap-0.5">
+              <svg class="w-4 h-4 cursor-grab pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+              </svg>
+            </div>
+          </td>
           <td class="p-2 sm:p-2.5 text-center font-bold text-slate-500">${index + 1}</td>
           <td class="p-2 sm:p-2.5 text-center">
             <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black border ${badgeColor}">
@@ -1296,16 +1350,88 @@
           <td class="p-2 sm:p-2.5 text-slate-600 font-mono text-[11px]">${escapeHtml(item.date)}</td>
           <td class="p-2 sm:p-2.5 text-slate-700 leading-relaxed">${escapeHtml(item.output || item.hasil)}</td>
           <td class="p-2 sm:p-2.5 text-center no-print whitespace-nowrap">
-            <button onclick="editPdcaItem('${item.id}')" class="p-1 text-blue-600 hover:text-blue-800 mr-1" title="Edit">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-            </button>
-            <button onclick="deletePdcaItem('${item.id}')" class="p-1 text-rose-600 hover:text-rose-800" title="Hapus">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </button>
+            <div class="flex items-center justify-center gap-1">
+              <button onclick="shiftPdcaRow(${index}, -1)" ${index === 0 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20" title="Geser ke atas">▲</button>
+              <button onclick="shiftPdcaRow(${index}, 1)" ${index === pdcaList.length - 1 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20" title="Geser ke bawah">▼</button>
+              <button onclick="editPdcaItem('${item.id}')" class="p-1 text-blue-600 hover:text-blue-800" title="Edit">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+              </button>
+              <button onclick="deletePdcaItem('${item.id}')" class="p-1 text-rose-600 hover:text-rose-800" title="Hapus">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
           </td>
         `;
+
+        tr.addEventListener('dragstart', (e) => {
+          draggedPdcaId = item.id;
+          tr.classList.add('drag-active');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+
+        tr.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          const rect = tr.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          if (e.clientY < midY) {
+            tr.classList.add('drop-target-above');
+            tr.classList.remove('drop-target-below');
+          } else {
+            tr.classList.add('drop-target-below');
+            tr.classList.remove('drop-target-above');
+          }
+        });
+
+        tr.addEventListener('dragleave', () => {
+          tr.classList.remove('drop-target-above', 'drop-target-below');
+        });
+
+        tr.addEventListener('drop', (e) => {
+          e.preventDefault();
+          tr.classList.remove('drop-target-above', 'drop-target-below');
+          const fromId = draggedPdcaId || e.dataTransfer.getData('text/plain');
+          const toId = item.id;
+          if (!fromId || fromId === toId) return;
+
+          const fromIdx = pdcaList.findIndex(p => p.id === fromId);
+          const toIdx = pdcaList.findIndex(p => p.id === toId);
+          if (fromIdx === -1 || toIdx === -1) return;
+
+          const rect = tr.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          const insertAfter = e.clientY >= midY;
+
+          const [moved] = pdcaList.splice(fromIdx, 1);
+          let newIdx = pdcaList.findIndex(p => p.id === toId);
+          if (insertAfter) newIdx += 1;
+          pdcaList.splice(newIdx, 0, moved);
+
+          saveAllToStorage(true, "Urutan Agenda PDCA diperbarui!");
+          renderPdcaTable();
+        });
+
+        tr.addEventListener('dragend', () => {
+          tr.classList.remove('drag-active');
+          document.querySelectorAll('#pdcaTableBody tr').forEach(r => {
+            r.classList.remove('drop-target-above', 'drop-target-below');
+          });
+          draggedPdcaId = null;
+        });
+
         tbody.appendChild(tr);
       });
+    }
+
+    // Fungsi tombol geser cepat PDCA (alternatif touch/klik)
+    function shiftPdcaRow(index, direction) {
+      const targetIdx = index + direction;
+      if (targetIdx < 0 || targetIdx >= pdcaList.length) return;
+      const [moved] = pdcaList.splice(index, 1);
+      pdcaList.splice(targetIdx, 0, moved);
+      saveAllToStorage(true, "Urutan PDCA diperbarui!");
+      renderPdcaTable();
     }
 
     function renderCapaCategoryFilter() {
@@ -1360,7 +1486,7 @@
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="p-6 text-center text-slate-400 italic">
+            <td colspan="10" class="p-6 text-center text-slate-400 italic">
               Tidak ada data tindakan CAPA yang cocok dengan filter atau pencarian.
             </td>
           </tr>
@@ -1374,9 +1500,10 @@
       }
 
       filtered.forEach((item, index) => {
-        // Desktop Row
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100 group";
+        tr.draggable = true;
+        tr.dataset.id = item.id;
 
         let typeBadge = item.type === 'Preventive' 
           ? "bg-purple-100 text-purple-800 border border-purple-200" 
@@ -1386,7 +1513,6 @@
         if (item.status === 'In Progress') statusClass = "bg-amber-100 text-amber-800 border border-amber-300";
         if (item.status === 'Closed') statusClass = "bg-emerald-100 text-emerald-800 border border-emerald-300";
 
-        // Evidence thumbnail cell
         let evidenceHtml = `
           <div class="evidence-thumb-container mx-auto bg-slate-100 border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">
             <span>-</span>
@@ -1404,11 +1530,16 @@
         }
 
         const idBadge = item.id ? `<span class="inline-block bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold mr-1.5">${item.id}</span>` : '';
-
-        // Tampilkan Rencana Tindakan dari Kolom D
         const displaySolution = item.solution || item.rencanaTindakan || SHEET_KOLOM_D_MAP[item.id] || '-';
 
         tr.innerHTML = `
+          <td class="p-1 sm:p-1.5 text-center no-print drag-handle text-slate-400 hover:text-blue-600 transition" title="Tahan & geser untuk mengubah urutan">
+            <div class="flex items-center justify-center gap-0.5">
+              <svg class="w-4 h-4 cursor-grab pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+              </svg>
+            </div>
+          </td>
           <td class="p-2 sm:p-2.5 text-center font-bold text-slate-500">${index + 1}</td>
           <td class="p-2 sm:p-2.5 font-bold text-slate-800">
             ${idBadge}${escapeHtml(item.category)}
@@ -1425,54 +1556,111 @@
           <td class="p-2 sm:p-2.5 font-medium text-slate-700">${escapeHtml(item.pic)}</td>
           <td class="p-2 sm:p-2.5 font-mono text-[11px] text-slate-600">${escapeHtml(item.dueDate)}</td>
           <td class="p-2 sm:p-2.5 text-center">
-            <button onclick="toggleCapaStatus('${item.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-black transition cursor-pointer ${statusClass}" title="Klik untuk ubah status">
+            <button onclick="toggleCapaStatus('${item.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-black transition cursor-pointer ${statusClass}" title="Klik untuk ubah status instan">
               ${item.status}
             </button>
           </td>
           <td class="p-2 sm:p-2.5 text-center no-print whitespace-nowrap">
-            <button onclick="editCapaItem('${item.id}')" class="p-1 text-blue-600 hover:text-blue-800 mr-1" title="Edit">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-            </button>
-            <button onclick="deleteCapaItem('${item.id}')" class="p-1 text-rose-600 hover:text-rose-800" title="Hapus">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </button>
+            <div class="flex items-center justify-center gap-1">
+              <button onclick="shiftCapaRow(${index}, -1)" ${index === 0 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20" title="Geser ke atas">▲</button>
+              <button onclick="shiftCapaRow(${index}, 1)" ${index === filtered.length - 1 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20" title="Geser ke bawah">▼</button>
+              <button onclick="editCapaItem('${item.id}')" class="p-1 text-blue-600 hover:text-blue-800" title="Edit">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+              </button>
+              <button onclick="deleteCapaItem('${item.id}')" class="p-1 text-rose-600 hover:text-rose-800" title="Hapus">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
           </td>
         `;
+
+        // Event Drag & Drop CAPA
+        tr.addEventListener('dragstart', (e) => {
+          draggedCapaId = item.id;
+          tr.classList.add('drag-active');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+
+        tr.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          const rect = tr.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          if (e.clientY < midY) {
+            tr.classList.add('drop-target-above');
+            tr.classList.remove('drop-target-below');
+          } else {
+            tr.classList.add('drop-target-below');
+            tr.classList.remove('drop-target-above');
+          }
+        });
+
+        tr.addEventListener('dragleave', () => {
+          tr.classList.remove('drop-target-above', 'drop-target-below');
+        });
+
+        tr.addEventListener('drop', (e) => {
+          e.preventDefault();
+          tr.classList.remove('drop-target-above', 'drop-target-below');
+          const fromId = draggedCapaId || e.dataTransfer.getData('text/plain');
+          const toId = item.id;
+          if (!fromId || fromId === toId) return;
+
+          const fromIdx = capaList.findIndex(c => c.id === fromId);
+          const toIdx = capaList.findIndex(c => c.id === toId);
+          if (fromIdx === -1 || toIdx === -1) return;
+
+          const rect = tr.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          const insertAfter = e.clientY >= midY;
+
+          const [moved] = capaList.splice(fromIdx, 1);
+          let newIdx = capaList.findIndex(c => c.id === toId);
+          if (insertAfter) newIdx += 1;
+          capaList.splice(newIdx, 0, moved);
+
+          saveAllToStorage(true, "Urutan Tindakan CAPA diperbarui!");
+          renderCapaTable();
+          renderKPI();
+        });
+
+        tr.addEventListener('dragend', () => {
+          tr.classList.remove('drag-active');
+          document.querySelectorAll('#capaTableBody tr').forEach(r => {
+            r.classList.remove('drop-target-above', 'drop-target-below');
+          });
+          draggedCapaId = null;
+        });
+
         tbody.appendChild(tr);
 
-        // Mobile Card
         const card = document.createElement('div');
-        card.className = "bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs space-y-2";
-        
-        let cardEvidenceHtml = '';
-        if (item.evidence) {
-          cardEvidenceHtml = `
-            <div class="w-full h-36 rounded-lg overflow-hidden border border-slate-200 my-1 cursor-pointer" onclick="openImageLightbox('${item.evidence}', '${escapeHtml(item.category)}')">
-              <img src="${item.evidence}" alt="Bukti" class="w-full h-full object-cover">
-            </div>
-          `;
-        }
-
+        card.className = "bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-2.5";
         card.innerHTML = `
-          <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-            <span class="font-extrabold text-xs text-slate-800">${idBadge}${escapeHtml(item.category)}</span>
-            <span class="px-2 py-0.5 rounded text-[10px] font-black ${typeBadge}">${item.type}</span>
-          </div>
-          <div>
-            <div class="text-slate-800 text-[11px] mt-1 whitespace-pre-line leading-relaxed">${escapeHtml(displaySolution)}</div>
-          </div>
-          ${cardEvidenceHtml}
-          <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-            <span>PIC: <strong class="text-slate-700">${escapeHtml(item.pic)}</strong></span>
-            <span>Due: <strong class="text-slate-700 font-mono">${escapeHtml(item.dueDate)}</strong></span>
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-            <button onclick="toggleCapaStatus('${item.id}')" class="px-3 py-1 rounded-full text-xs font-black ${statusClass}">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="inline-block bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold mr-1">${item.id}</span>
+              <strong class="text-xs font-bold text-slate-900">${escapeHtml(item.category)}</strong>
+            </div>
+            <button onclick="toggleCapaStatus('${item.id}')" class="px-2 py-0.5 rounded-full text-[10px] font-black ${statusClass}">
               ${item.status}
             </button>
+          </div>
+          <div class="text-[11px] text-slate-700 whitespace-pre-line leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100">
+            ${escapeHtml(displaySolution)}
+          </div>
+          ${item.evidence ? `
+            <div class="w-full h-32 rounded-lg overflow-hidden border border-slate-200 cursor-pointer" onclick="openImageLightbox('${item.evidence}', '${escapeHtml(item.category)}')">
+              <img src="${item.evidence}" alt="Bukti" class="w-full h-full object-cover">
+            </div>
+          ` : ''}
+          <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
+            <span>PIC: <strong class="text-slate-800">${escapeHtml(item.pic)}</strong></span>
+            <span>Due: <strong class="text-slate-800 font-mono">${escapeHtml(item.dueDate)}</strong></span>
             <div class="flex gap-2">
-              <button onclick="editCapaItem('${item.id}')" class="text-blue-600 font-bold text-xs">Edit</button>
-              <button onclick="deleteCapaItem('${item.id}')" class="text-rose-600 font-bold text-xs">Hapus</button>
+              <button onclick="editCapaItem('${item.id}')" class="text-blue-600 font-bold">Edit</button>
+              <button onclick="deleteCapaItem('${item.id}')" class="text-rose-600 font-bold">Hapus</button>
             </div>
           </div>
         `;
@@ -1480,367 +1668,388 @@
       });
     }
 
+    // Fungsi tombol geser cepat CAPA
+    function shiftCapaRow(index, direction) {
+      const targetIdx = index + direction;
+      if (targetIdx < 0 || targetIdx >= capaList.length) return;
+      const [moved] = capaList.splice(index, 1);
+      capaList.splice(targetIdx, 0, moved);
+      saveAllToStorage(true, "Urutan Tindakan CAPA diperbarui!");
+      renderCapaTable();
+    }
+
     function renderSigners() {
       const container = document.getElementById('signersContainer');
       container.innerHTML = '';
 
       if (!signersList || signersList.length === 0) {
-        container.innerHTML = `<div class="p-3 text-center text-slate-400 text-xs italic w-full">Belum ada pengesah. Klik '+ Edit Pengesah'.</div>`;
-        return;
-      }
-
-      signersList.forEach(signer => {
-        const box = document.createElement('div');
-        box.className = "signer-card flex-1 min-w-[130px] bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center flex flex-col justify-between shadow-2xs";
-
-        box.innerHTML = `
-          <div class="border-b border-slate-200/80 pb-1.5 mb-2">
-            <div class="text-[10px] font-black text-slate-800 uppercase tracking-tight">${escapeHtml(signer.dept)}</div>
-          </div>
-          
-          <div class="h-14 flex items-center justify-center my-1 relative">
-            <!-- Tampilan Digital Approved -->
-            <div class="stamp-digital ${signer.approved ? '' : 'hidden'} border-2 border-emerald-600 text-emerald-700 rounded px-2 py-0.5 text-[10px] font-black tracking-wider uppercase transform -rotate-3 select-none">
-              APPROVED
-            </div>
-            <!-- Tampilan Tanda Tangan Basah Saat Cetak -->
-            <div class="stamp-wet hidden print:block w-full pt-8">
-              <div class="border-b border-dashed border-slate-400 w-3/4 mx-auto"></div>
-            </div>
-          </div>
-
-          <div class="border-t border-slate-200/80 pt-1.5 mt-1">
-            <div class="font-black text-slate-900 text-[11px] truncate">${escapeHtml(signer.name)}</div>
-            <div class="text-[10px] text-slate-500 font-mono mt-0.5">
-              ${signer.date ? `Tgl: ${escapeHtml(signer.date)}` : `Tgl: ___/___/20__`}
-            </div>
+        container.innerHTML = `
+          <div class="w-full p-3 text-center text-slate-400 italic text-xs bg-slate-50 rounded-xl border border-dashed">
+            Belum ada data pengesah. Klik '+ Edit Pengesah' untuk menambahkan pimpinan verifikator.
           </div>
         `;
-        container.appendChild(box);
-      });
-    }
-
-    function setPhotoSize(px) {
-      currentPhotoSizePx = parseInt(px) || 80;
-      applyPhotoSizeToCss(currentPhotoSizePx);
-      localStorage.setItem('pmr_photo_size_px', currentPhotoSizePx);
-
-      // Update button highlights
-      ['btnSizeS', 'btnSizeM', 'btnSizeL', 'btnSizeXL'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.className = "px-2 py-0.5 rounded font-bold hover:bg-white text-slate-700 transition";
-      });
-
-      if (currentPhotoSizePx <= 54 && document.getElementById('btnSizeS')) {
-        document.getElementById('btnSizeS').className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
-      } else if (currentPhotoSizePx <= 90 && document.getElementById('btnSizeM')) {
-        document.getElementById('btnSizeM').className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
-      } else if (currentPhotoSizePx <= 130 && document.getElementById('btnSizeL')) {
-        document.getElementById('btnSizeL').className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
-      } else if (document.getElementById('btnSizeXL')) {
-        document.getElementById('btnSizeXL').className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
-      }
-    }
-
-    function applyPhotoSizeToCss(w) {
-      const h = Math.round(w * 0.7);
-      document.documentElement.style.setProperty('--evidence-w', `${w}px`);
-      document.documentElement.style.setProperty('--evidence-h', `${h}px`);
-    }
-
-    function setMobileView(mode) {
-      currentMobileView = mode;
-      localStorage.setItem('pmr_mobile_view', mode);
-
-      const tableWrapper = document.getElementById('capaTableWrapper');
-      const cardsWrapper = document.getElementById('capaMobileCardsContainer');
-      const btnCard = document.getElementById('btnViewCard');
-      const btnTable = document.getElementById('btnViewTable');
-
-      if (mode === 'card') {
-        tableWrapper.classList.add('hidden', 'sm:block');
-        cardsWrapper.classList.remove('hidden');
-        if (btnCard) btnCard.className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
-        if (btnTable) btnTable.className = "px-2 py-0.5 rounded font-bold text-slate-600";
-      } else {
-        tableWrapper.classList.remove('hidden');
-        cardsWrapper.classList.add('hidden');
-        if (btnCard) btnCard.className = "px-2 py-0.5 rounded font-bold text-slate-600";
-        if (btnTable) btnTable.className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
-      }
-    }
-
-    function handleEvidenceUpload(input) {
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
-
-      // Kompresi HTML5 Canvas di sisi browser
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const maxDim = 800; // Resolusi cukup tajam namun ringan
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height) {
-            if (width > maxDim) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            }
-          } else {
-            if (height > maxDim) {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Convert ke JPEG dengan kualitas 0.72
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.72);
-          setEvidencePhoto(compressedBase64);
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function setEvidencePhoto(base64) {
-      document.getElementById('capaEvidenceBase64').value = base64;
-      const box = document.getElementById('capaPhotoPreviewBox');
-      const btnClear = document.getElementById('btnClearPhoto');
-
-      if (base64) {
-        box.innerHTML = `<img src="${base64}" class="w-full h-full object-cover">`;
-        btnClear.classList.remove('hidden');
-      } else {
-        box.innerHTML = `<span class="text-slate-400 text-[10px]">No Foto</span>`;
-        btnClear.classList.add('hidden');
-      }
-    }
-
-    function clearEvidencePhoto() {
-      document.getElementById('capaFileInput').value = '';
-      setEvidencePhoto('');
-    }
-
-    function openImageLightbox(src, caption) {
-      document.getElementById('lightboxImage').src = src;
-      document.getElementById('lightboxCaption').textContent = caption || "Bukti Tindak Lanjut";
-      document.getElementById('lightboxDownloadBtn').href = src;
-      openModal('lightboxModal');
-    }
-
-    // CRUD PDCA
-    function openPdcaModal(editId = null) {
-      document.getElementById('pdcaEditId').value = editId || '';
-      if (editId) {
-        const item = pdcaList.find(i => i.id === editId);
-        if (item) {
-          document.getElementById('pdcaModalTitle').textContent = "Edit Agenda PDCA";
-          document.getElementById('pdcaStageInput').value = item.stage || item.tahap || 'Act';
-          document.getElementById('pdcaTitleInput').value = item.title || item.agenda || item.activity || '';
-          document.getElementById('pdcaPicInput').value = item.pic || '';
-          document.getElementById('pdcaDateInput').value = item.date || item.tanggal || '';
-          document.getElementById('pdcaOutputInput').value = item.output || item.hasil || '';
-        }
-      } else {
-        document.getElementById('pdcaModalTitle').textContent = "Tambah Agenda PDCA";
-        document.getElementById('pdcaStageInput').value = "Act";
-        document.getElementById('pdcaTitleInput').value = "";
-        document.getElementById('pdcaPicInput').value = "";
-        document.getElementById('pdcaDateInput').value = "";
-        document.getElementById('pdcaOutputInput').value = "";
-      }
-      openModal('pdcaModal');
-    }
-
-    function savePdcaItem() {
-      const editId = document.getElementById('pdcaEditId').value;
-      const stage = document.getElementById('pdcaStageInput').value;
-      const title = document.getElementById('pdcaTitleInput').value.trim();
-      const pic = document.getElementById('pdcaPicInput').value.trim();
-      const date = document.getElementById('pdcaDateInput').value.trim();
-      const output = document.getElementById('pdcaOutputInput').value.trim();
-
-      if (!title) {
-        showToast("Agenda PDCA tidak boleh kosong", "!");
         return;
       }
 
+      signersList.forEach((signer) => {
+        const card = document.createElement('div');
+        card.className = "signer-card flex-1 min-w-[130px] sm:min-w-0 bg-slate-50/70 border border-slate-200/90 rounded-xl p-2.5 flex flex-col justify-between text-center";
+        
+        card.innerHTML = `
+          <div>
+            <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight block truncate" title="${escapeHtml(signer.dept)}">${escapeHtml(signer.dept)}</span>
+          </div>
+
+          <div class="my-2.5 flex flex-col items-center justify-center min-h-[46px]">
+            ${signer.approved ? `
+              <span class="text-[9px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-full inline-block shadow-2xs">
+                ✓ APPROVED
+              </span>
+              <span class="text-[8px] text-slate-400 mt-0.5 block font-mono">Digital Signature</span>
+            ` : `
+              <div class="w-20 border-b border-dashed border-slate-300 h-6"></div>
+            `}
+          </div>
+
+          <div class="border-t border-slate-200/80 pt-1.5 space-y-0.5">
+            <strong class="text-xs font-black text-slate-900 block truncate" title="${escapeHtml(signer.name)}">${escapeHtml(signer.name)}</strong>
+            <span class="text-[9px] text-slate-500 font-mono block">
+              ${signer.date ? `Tgl: ${escapeHtml(signer.date)}` : 'Tgl: ___/___/20__'}
+            </span>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function openPdcaModal(editId = null) {
+      document.getElementById('pdcaEditId').value = editId || '';
+      document.getElementById('pdcaModalTitle').textContent = editId ? 'Ubah Agenda PDCA' : 'Tambah Agenda PDCA';
+
       if (editId) {
-        const idx = pdcaList.findIndex(i => i.id === editId);
-        if (idx !== -1) {
-          pdcaList[idx] = {
-            id: editId,
-            stage, tahap: stage,
-            title, agenda: title, activity: title,
-            pic,
-            date, tanggal: date,
-            output, hasil: output
-          };
+        const item = pdcaList.find(p => p.id === editId);
+        if (item) {
+          document.getElementById('pdcaStageInput').value = item.stage || 'Act';
+          document.getElementById('pdcaDateInput').value = item.date || '';
+          document.getElementById('pdcaTitleInput').value = item.title || item.agenda || '';
+          document.getElementById('pdcaPicInput').value = item.pic || '';
+          document.getElementById('pdcaOutputInput').value = item.output || '';
         }
       } else {
-        const newId = 'pdca_' + Date.now();
-        pdcaList.push({
-          id: newId,
-          stage, tahap: stage,
-          title, agenda: title, activity: title,
-          pic,
-          date, tanggal: date,
-          output, hasil: output
-        });
+        document.getElementById('pdcaStageInput').value = 'Act';
+        document.getElementById('pdcaDateInput').value = '';
+        document.getElementById('pdcaTitleInput').value = '';
+        document.getElementById('pdcaPicInput').value = '';
+        document.getElementById('pdcaOutputInput').value = '';
       }
 
-      closeModal('pdcaModal');
-      saveAllToStorage();
-      renderPdcaTable();
-      showToast("Agenda PDCA berhasil disimpan!");
+      openModal('pdcaModal');
     }
 
     function editPdcaItem(id) {
       openPdcaModal(id);
     }
 
-    function deletePdcaItem(id) {
-      openCustomConfirm("Hapus Agenda PDCA?", "Agenda kegiatan ini akan dihapus dari laporan.", () => {
-        pdcaList = pdcaList.filter(i => i.id !== id);
-        saveAllToStorage();
-        renderPdcaTable();
-        showToast("Agenda PDCA telah dihapus.");
-      });
-    }
+    function savePdcaItem() {
+      const editId = document.getElementById('pdcaEditId').value;
+      const stage = document.getElementById('pdcaStageInput').value;
+      const date = document.getElementById('pdcaDateInput').value.trim();
+      const title = document.getElementById('pdcaTitleInput').value.trim();
+      const pic = document.getElementById('pdcaPicInput').value.trim();
+      const output = document.getElementById('pdcaOutputInput').value.trim();
 
-    // CRUD CAPA
-    function openCapaModal(editId = null) {
-      document.getElementById('capaEditId').value = editId || '';
-      clearEvidencePhoto();
-
-      if (editId) {
-        const item = capaList.find(i => i.id === editId);
-        if (item) {
-          document.getElementById('capaModalTitle').textContent = "Edit Tindakan CAPA";
-          document.getElementById('capaIdInput').value = item.id || "";
-          document.getElementById('capaTypeInput').value = item.type || "Preventive";
-          document.getElementById('capaCategoryInput').value = item.category || "";
-          document.getElementById('capaSolutionInput').value = item.solution || item.rencanaTindakan || SHEET_KOLOM_D_MAP[item.id] || "";
-          document.getElementById('capaPicInput').value = item.pic || "";
-          document.getElementById('capaDueDateInput').value = item.dueDate || "";
-          document.getElementById('capaStatusInput').value = item.status || "Closed";
-          setEvidencePhoto(item.evidence || "");
-        }
-      } else {
-        document.getElementById('capaModalTitle').textContent = "Tambah Tindakan CAPA";
-        document.getElementById('capaIdInput').value = (capaList.length + 1) + ".0";
-        document.getElementById('capaTypeInput').value = "Preventive";
-        document.getElementById('capaCategoryInput').value = "";
-        document.getElementById('capaSolutionInput').value = "";
-        document.getElementById('capaPicInput').value = "Erwin (IST)";
-        document.getElementById('capaDueDateInput').value = "";
-        document.getElementById('capaStatusInput').value = "Closed";
-        setEvidencePhoto("");
-      }
-      openModal('capaModal');
-    }
-
-    function saveCapaItem() {
-      const editId = document.getElementById('capaEditId').value;
-      const id = document.getElementById('capaIdInput').value.trim() || ((capaList.length + 1) + ".0");
-      const type = document.getElementById('capaTypeInput').value;
-      const category = document.getElementById('capaCategoryInput').value.trim() || "TMS System";
-      let solution = document.getElementById('capaSolutionInput').value.trim();
-      const pic = document.getElementById('capaPicInput').value.trim() || "Erwin (IST)";
-      const dueDate = document.getElementById('capaDueDateInput').value.trim();
-      const status = document.getElementById('capaStatusInput').value;
-      const evidence = document.getElementById('capaEvidenceBase64').value;
-
-      // Jika user mengosongkan solution, ambil fallback dari master kolom D
-      if (!solution && SHEET_KOLOM_D_MAP[id]) {
-        solution = SHEET_KOLOM_D_MAP[id];
-      }
-
-      if (!solution) {
-        showToast("Rencana Tindakan tidak boleh kosong", "!");
+      if (!title) {
+        showToast("Agenda PDCA tidak boleh kosong!", "⚠️");
         return;
       }
 
-      const capaObj = {
-        id,
-        category, kategori: category,
-        type, jenis: type,
-        solution, rencanaTindakan: solution,
-        pic,
-        dueDate,
-        status,
-        evidence
-      };
-
       if (editId) {
-        const idx = capaList.findIndex(i => i.id === editId);
-        if (idx !== -1) {
-          capaList[idx] = capaObj;
+        const item = pdcaList.find(p => p.id === editId);
+        if (item) {
+          item.stage = stage;
+          item.tahap = stage;
+          item.date = date;
+          item.title = title;
+          item.agenda = title;
+          item.activity = title;
+          item.pic = pic;
+          item.output = output;
         }
       } else {
-        capaList.push(capaObj);
+        const newId = 'pdca_' + (Date.now());
+        pdcaList.push({
+          id: newId,
+          stage,
+          tahap: stage,
+          date,
+          title,
+          agenda: title,
+          activity: title,
+          pic,
+          output
+        });
       }
 
-      closeModal('capaModal');
-      saveAllToStorage();
-      renderKPI();
-      renderCapaCategoryFilter();
-      renderCapaTable();
-      showToast("Tindakan CAPA berhasil disimpan!");
+      closeModal('pdcaModal');
+      saveAllToStorage(true, "Agenda PDCA tersimpan instan!");
+      renderPdcaTable();
+    }
+
+    function deletePdcaItem(id) {
+      openCustomConfirm("Hapus Agenda PDCA?", "Agenda ini akan dihapus permanen dari daftar.", () => {
+        pdcaList = pdcaList.filter(p => p.id !== id);
+        saveAllToStorage(true, "Agenda PDCA berhasil dihapus!");
+        renderPdcaTable();
+      });
+    }
+
+    function openCapaModal(editId = null) {
+      document.getElementById('capaEditId').value = editId || '';
+      document.getElementById('capaModalTitle').textContent = editId ? 'Ubah Tindakan CAPA' : 'Tambah Tindakan CAPA';
+      clearEvidencePhoto();
+
+      if (editId) {
+        const item = capaList.find(c => c.id === editId);
+        if (item) {
+          document.getElementById('capaIdInput').value = item.id || '';
+          document.getElementById('capaTypeInput').value = item.type || 'Preventive';
+          document.getElementById('capaCategoryInput').value = item.category || '';
+          document.getElementById('capaSolutionInput').value = item.solution || item.rencanaTindakan || '';
+          document.getElementById('capaPicInput').value = item.pic || '';
+          document.getElementById('capaDueDateInput').value = item.dueDate || '';
+          document.getElementById('capaStatusInput').value = item.status || 'Closed';
+          if (item.evidence) {
+            setEvidencePhotoPreview(item.evidence);
+          }
+        }
+      } else {
+        const nextNum = (capaList.length + 1) + '.0';
+        document.getElementById('capaIdInput').value = nextNum;
+        document.getElementById('capaTypeInput').value = 'Preventive';
+        document.getElementById('capaCategoryInput').value = '';
+        document.getElementById('capaSolutionInput').value = '';
+        document.getElementById('capaPicInput').value = '';
+        document.getElementById('capaDueDateInput').value = '';
+        document.getElementById('capaStatusInput').value = 'Closed';
+      }
+
+      openModal('capaModal');
     }
 
     function editCapaItem(id) {
       openCapaModal(id);
     }
 
+    function saveCapaItem() {
+      const editId = document.getElementById('capaEditId').value;
+      const id = document.getElementById('capaIdInput').value.trim() || ((capaList.length + 1) + '.0');
+      const type = document.getElementById('capaTypeInput').value;
+      const category = document.getElementById('capaCategoryInput').value.trim();
+      const solution = document.getElementById('capaSolutionInput').value.trim();
+      const pic = document.getElementById('capaPicInput').value.trim();
+      const dueDate = document.getElementById('capaDueDateInput').value.trim();
+      const status = document.getElementById('capaStatusInput').value;
+      const evidence = document.getElementById('capaEvidenceBase64').value || '';
+
+      if (!category) {
+        showToast("Kategori / Topik tidak boleh kosong!", "⚠️");
+        return;
+      }
+
+      if (editId) {
+        const item = capaList.find(c => c.id === editId);
+        if (item) {
+          item.id = id;
+          item.type = type;
+          item.category = category;
+          item.solution = solution;
+          item.rencanaTindakan = solution;
+          item.pic = pic;
+          item.dueDate = dueDate;
+          item.status = status;
+          if (evidence) item.evidence = evidence;
+        }
+      } else {
+        capaList.push({
+          id,
+          type,
+          category,
+          solution,
+          rencanaTindakan: solution,
+          pic,
+          dueDate,
+          status,
+          evidence
+        });
+      }
+
+      closeModal('capaModal');
+      saveAllToStorage(true, "Tindakan CAPA tersimpan instan!");
+      renderCapaCategoryFilter();
+      renderCapaTable();
+      renderKPI();
+    }
+
     function deleteCapaItem(id) {
-      openCustomConfirm("Hapus Tindakan CAPA?", "Item tindakan ini akan dihapus dari matriks.", () => {
-        capaList = capaList.filter(i => i.id !== id);
-        saveAllToStorage();
-        renderKPI();
+      openCustomConfirm("Hapus Tindakan CAPA?", "Tindakan ini akan dihapus permanen.", () => {
+        capaList = capaList.filter(c => c.id !== id);
+        saveAllToStorage(true, "Tindakan CAPA berhasil dihapus!");
         renderCapaCategoryFilter();
         renderCapaTable();
-        showToast("Tindakan telah dihapus.");
+        renderKPI();
       });
     }
 
     function toggleCapaStatus(id) {
-      const item = capaList.find(i => i.id === id);
+      const item = capaList.find(c => c.id === id);
       if (!item) return;
 
-      if (item.status === 'Closed') item.status = 'In Progress';
-      else if (item.status === 'In Progress') item.status = 'Open';
-      else item.status = 'Closed';
+      if (item.status === 'Open') item.status = 'In Progress';
+      else if (item.status === 'In Progress') item.status = 'Closed';
+      else item.status = 'Open';
 
-      saveAllToStorage();
-      renderKPI();
+      saveAllToStorage(true, `Status ${item.id} diubah ke ${item.status}!`);
       renderCapaTable();
-      showToast(`Status diperbarui ke: ${item.status}`);
+      renderKPI();
     }
 
-    // PENGESAH (SIGNERS)
+    function handleEvidenceUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 800; // Kompresi ringan aman browser
+
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.72);
+          setEvidencePhotoPreview(compressed);
+        };
+        img.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function setEvidencePhotoPreview(base64) {
+      document.getElementById('capaEvidenceBase64').value = base64;
+      document.getElementById('capaPhotoPreviewBox').innerHTML = `<img src="${base64}" class="w-full h-full object-cover">`;
+      document.getElementById('btnClearPhoto').classList.remove('hidden');
+    }
+
+    function clearEvidencePhoto() {
+      document.getElementById('capaEvidenceBase64').value = '';
+      document.getElementById('capaPhotoPreviewBox').innerHTML = `<span class="text-slate-400 text-[10px]">No Foto</span>`;
+      document.getElementById('btnClearPhoto').classList.add('hidden');
+      document.getElementById('capaFileInput').value = '';
+    }
+
+    function setPhotoSize(px) {
+      currentPhotoSizePx = parseInt(px);
+      applyPhotoSizeToCss(currentPhotoSizePx);
+      localStorage.setItem('pmr_photo_size_px', currentPhotoSizePx);
+
+      // Active state button
+      ['btnSizeS', 'btnSizeM', 'btnSizeL', 'btnSizeXL'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.className = "px-2 py-0.5 rounded font-bold hover:bg-white text-slate-700 transition";
+      });
+      if (px == 48 && document.getElementById('btnSizeS')) document.getElementById('btnSizeS').className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
+      if (px == 80 && document.getElementById('btnSizeM')) document.getElementById('btnSizeM').className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
+      if (px == 120 && document.getElementById('btnSizeL')) document.getElementById('btnSizeL').className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
+      if (px == 160 && document.getElementById('btnSizeXL')) document.getElementById('btnSizeXL').className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
+    }
+
+    function applyPhotoSizeToCss(px) {
+      const h = Math.round((px * 7) / 10);
+      document.documentElement.style.setProperty('--evidence-w', `${px}px`);
+      document.documentElement.style.setProperty('--evidence-h', `${h}px`);
+    }
+
+    function setMobileView(mode) {
+      currentMobileView = mode;
+      localStorage.setItem('pmr_mobile_view', mode);
+      const tableWrapper = document.getElementById('capaTableWrapper');
+      const cardsContainer = document.getElementById('capaMobileCardsContainer');
+      const btnCard = document.getElementById('btnViewCard');
+      const btnTable = document.getElementById('btnViewTable');
+
+      if (mode === 'card') {
+        tableWrapper.classList.add('hidden', 'sm:block');
+        cardsContainer.classList.remove('hidden');
+        btnCard.className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
+        btnTable.className = "px-2 py-0.5 rounded font-bold text-slate-600";
+      } else {
+        tableWrapper.classList.remove('hidden');
+        cardsContainer.classList.add('hidden');
+        btnTable.className = "px-2 py-0.5 rounded font-bold bg-white text-slate-900 shadow-2xs";
+        btnCard.className = "px-2 py-0.5 rounded font-bold text-slate-600";
+      }
+    }
+
+    function openProjectInfoModal() {
+      document.getElementById('infoTitleInput').value = projectMeta.title || '';
+      document.getElementById('infoSubTitleInput').value = projectMeta.subTitle || '';
+      document.getElementById('infoEntityInput').value = projectMeta.entity || '';
+      document.getElementById('infoNumberInput').value = projectMeta.number || '';
+      document.getElementById('infoPeriodInput').value = projectMeta.period || '';
+      document.getElementById('infoBadgeInput').value = projectMeta.badge || '';
+      openModal('projectInfoModal');
+    }
+
+    function saveProjectInfo() {
+      projectMeta.title = document.getElementById('infoTitleInput').value.trim();
+      projectMeta.subTitle = document.getElementById('infoSubTitleInput').value.trim();
+      projectMeta.entity = document.getElementById('infoEntityInput').value.trim();
+      projectMeta.number = document.getElementById('infoNumberInput').value.trim();
+      projectMeta.period = document.getElementById('infoPeriodInput').value.trim();
+      projectMeta.badge = document.getElementById('infoBadgeInput').value.trim();
+
+      closeModal('projectInfoModal');
+      saveAllToStorage(true, "Informasi dokumen diperbarui!");
+      renderHeader();
+    }
+
     function openSignersModal() {
       const container = document.getElementById('signersEditList');
       container.innerHTML = '';
 
-      signersList.forEach((s, idx) => {
+      signersList.forEach((signer, index) => {
         const div = document.createElement('div');
-        div.className = "flex items-center gap-2 p-2 bg-slate-50 border rounded-lg";
+        div.className = "p-2.5 bg-slate-50 border rounded-xl space-y-1.5";
         div.innerHTML = `
-          <div class="flex-grow grid grid-cols-3 gap-1">
-            <input type="text" value="${escapeHtml(s.dept)}" placeholder="Jabatan / Dept" class="col-span-1 px-2 py-1 border rounded text-[11px] font-bold signer-dept">
-            <input type="text" value="${escapeHtml(s.name)}" placeholder="Nama Pejabat" class="col-span-1 px-2 py-1 border rounded text-[11px] signer-name">
-            <input type="text" value="${escapeHtml(s.date)}" placeholder="Tgl (DD/MM/YYYY)" class="col-span-1 px-2 py-1 border rounded text-[11px] font-mono signer-date">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-700 text-[11px]">Pengesah #${index + 1}</span>
+            <button onclick="removeSignerRow(${index})" class="text-rose-600 hover:text-rose-800 font-bold text-xs">&times; Hapus</button>
           </div>
-          <button onclick="removeSignerRow(${idx})" class="p-1 text-rose-600 hover:text-rose-800 font-bold">&times;</button>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" placeholder="Departemen / Jabatan" value="${escapeHtml(signer.dept)}" id="signerDept_${index}" class="px-2.5 py-1.5 border rounded-lg">
+            <input type="text" placeholder="Nama Pejabat" value="${escapeHtml(signer.name)}" id="signerName_${index}" class="px-2.5 py-1.5 border rounded-lg font-bold">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" placeholder="Tgl (dd/mm/yyyy)" value="${escapeHtml(signer.date || '')}" id="signerDate_${index}" class="px-2.5 py-1.5 border rounded-lg font-mono">
+            <label class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+              <input type="checkbox" ${signer.approved ? 'checked' : ''} id="signerApp_${index}" class="rounded text-blue-600">
+              <span>Status Approved</span>
+            </label>
+          </div>
         `;
         container.appendChild(div);
       });
@@ -1850,101 +2059,50 @@
 
     function addSignerRow() {
       signersList.push({
-        id: "s_" + Date.now(),
-        dept: "Departemen DpH",
-        name: "Nama Pejabat",
-        date: "07/10/2026",
-        approved: true
+        id: 's_' + Date.now(),
+        dept: 'Department DpH',
+        name: 'Nama Pejabat',
+        date: '',
+        approved: false
       });
       openSignersModal();
     }
 
-    function removeSignerRow(idx) {
-      signersList.splice(idx, 1);
+    function removeSignerRow(index) {
+      signersList.splice(index, 1);
       openSignersModal();
     }
 
     function saveSignersConfig() {
-      const depts = document.querySelectorAll('.signer-dept');
-      const names = document.querySelectorAll('.signer-name');
-      const dates = document.querySelectorAll('.signer-date');
-
-      const newList = [];
-      depts.forEach((el, idx) => {
-        newList.push({
-          id: signersList[idx]?.id || ("s_" + idx),
-          dept: el.value.trim() || "Departemen",
-          name: names[idx].value.trim() || "Nama",
-          date: dates[idx].value.trim(),
-          approved: true
-        });
+      signersList.forEach((signer, index) => {
+        signer.dept = document.getElementById(`signerDept_${index}`)?.value || signer.dept;
+        signer.name = document.getElementById(`signerName_${index}`)?.value || signer.name;
+        signer.date = document.getElementById(`signerDate_${index}`)?.value || signer.date;
+        signer.approved = document.getElementById(`signerApp_${index}`)?.checked || false;
       });
 
-      signersList = newList;
       closeModal('signersModal');
-      saveAllToStorage();
+      saveAllToStorage(true, "Daftar pengesah diperbarui!");
       renderSigners();
-      showToast("Daftar pengesah berhasil diperbarui!");
     }
 
-    // INFO PROYEK
-    function openProjectInfoModal() {
-      document.getElementById('infoTitleInput').value = projectMeta.title || "";
-      document.getElementById('infoSubTitleInput').value = projectMeta.subTitle || "";
-      document.getElementById('infoEntityInput').value = projectMeta.entity || "";
-      document.getElementById('infoNumberInput').value = projectMeta.number || "";
-      document.getElementById('infoPeriodInput').value = projectMeta.period || "";
-      document.getElementById('infoBadgeInput').value = projectMeta.badge || "";
-      openModal('projectInfoModal');
-    }
-
-    function saveProjectInfo() {
-      projectMeta.title = document.getElementById('infoTitleInput').value.trim() || "PROJECT MANAGEMENT REPORT";
-      projectMeta.subTitle = document.getElementById('infoSubTitleInput').value.trim();
-      projectMeta.entity = document.getElementById('infoEntityInput').value.trim();
-      projectMeta.number = document.getElementById('infoNumberInput').value.trim();
-      projectMeta.period = document.getElementById('infoPeriodInput').value.trim();
-      projectMeta.badge = document.getElementById('infoBadgeInput').value.trim();
-
-      closeModal('projectInfoModal');
-      saveAllToStorage();
-      renderHeader();
-      showToast("Informasi proyek berhasil disimpan!");
-    }
-
-    function saveProgress() {
-      createAutoRevisionSnapshot();
-      saveAllToStorage();
-      if (sheetWebhookUrl) {
-        syncToGoogleSheets(false);
-      } else {
-        showToast("Progress tersimpan secara lokal!");
-      }
-    }
-
-    // Shortcut Ctrl+S
-    window.addEventListener('keydown', function(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        saveProgress();
-      }
-    });
-
-    function createAutoRevisionSnapshot(label = null) {
+    function createAutoRevisionSnapshot(label = "Otomatis") {
       const now = new Date();
-      const timeStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
+      const dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
       const snap = {
-        id: "rev_" + Date.now(),
-        time: timeStr,
-        label: label || `Snapshot Otomatis (${capaList.length} tindakan)`,
-        projectMeta: JSON.parse(JSON.stringify(projectMeta)),
-        signersList: JSON.parse(JSON.stringify(signersList)),
-        pdcaList: JSON.parse(JSON.stringify(pdcaList)),
-        capaList: JSON.parse(JSON.stringify(capaList))
+        id: 'rev_' + Date.now(),
+        timestamp: dateStr,
+        label: label,
+        data: {
+          projectMeta: JSON.parse(JSON.stringify(projectMeta)),
+          signersList: JSON.parse(JSON.stringify(signersList)),
+          pdcaList: JSON.parse(JSON.stringify(pdcaList)),
+          capaList: JSON.parse(JSON.stringify(capaList))
+        }
       };
 
       revisionsList.unshift(snap);
-      if (revisionsList.length > 15) revisionsList.pop(); // Batasi 15 riwayat terbaru
+      if (revisionsList.length > 20) revisionsList.pop(); // Batasi 20 titik simpan
       localStorage.setItem('pmr_revisions_log', JSON.stringify(revisionsList));
     }
 
@@ -1952,18 +2110,22 @@
       const container = document.getElementById('revisionsListContainer');
       container.innerHTML = '';
 
-      if (revisionsList.length === 0) {
-        container.innerHTML = `<p class="text-slate-400 italic text-center p-4">Belum ada riwayat snapshot tersimpan.</p>`;
+      if (!revisionsList || revisionsList.length === 0) {
+        container.innerHTML = `
+          <div class="p-4 text-center text-slate-400 italic">
+            Belum ada snapshot tersimpan. Klik tombol 'Simpan Progress' untuk merekam versi.
+          </div>
+        `;
       } else {
-        revisionsList.forEach(rev => {
+        revisionsList.forEach((rev) => {
           const div = document.createElement('div');
-          div.className = "flex items-center justify-between p-2.5 bg-slate-50 border rounded-xl hover:bg-slate-100 transition";
+          div.className = "p-2.5 bg-slate-50 border rounded-xl flex items-center justify-between";
           div.innerHTML = `
             <div>
-              <strong class="block text-slate-800 text-xs">${escapeHtml(rev.label)}</strong>
-              <span class="text-[10px] text-slate-500 font-mono">${escapeHtml(rev.time)}</span>
+              <strong class="text-xs font-bold text-slate-800 block">${escapeHtml(rev.label)}</strong>
+              <span class="text-[10px] text-slate-400 font-mono">${rev.timestamp} • ${rev.data.capaList?.length || 0} Tindakan</span>
             </div>
-            <button onclick="restoreRevision('${rev.id}')" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[11px] font-bold">
+            <button onclick="restoreRevisionSnapshot('${rev.id}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs shadow-2xs">
               Buka Revisi Ini
             </button>
           `;
@@ -1975,29 +2137,27 @@
     }
 
     function createNewSnapshotPrompt() {
-      const label = prompt("Beri nama/catatan untuk revisi ini:", "Revisi per " + new Date().toLocaleDateString('id-ID'));
-      if (label) {
-        createAutoRevisionSnapshot(label);
+      const title = prompt("Masukkan keterangan snapshot revisi (misal: Evaluasi BOD W1):");
+      if (title) {
+        createAutoRevisionSnapshot(title);
         openRevisionsModal();
-        showToast("Snapshot revisi baru dibuat!");
+        showToast("Snapshot revisi berhasil direkam!", "✓");
       }
     }
 
-    function restoreRevision(id) {
+    function restoreRevisionSnapshot(id) {
       const rev = revisionsList.find(r => r.id === id);
       if (!rev) return;
 
-      openCustomConfirm("Pulihkan ke Revisi Ini?", `Dokumen akan dikembalikan ke kondisi: ${rev.label}`, () => {
-        projectMeta = JSON.parse(JSON.stringify(rev.projectMeta));
-        signersList = JSON.parse(JSON.stringify(rev.signersList));
-        pdcaList = JSON.parse(JSON.stringify(rev.pdcaList));
-        capaList = JSON.parse(JSON.stringify(rev.capaList));
+      openCustomConfirm(`Kembalikan Revisi '${rev.label}'?`, "Versi saat ini akan digantikan dengan data snapshot yang dipilih.", () => {
+        projectMeta = JSON.parse(JSON.stringify(rev.data.projectMeta));
+        signersList = JSON.parse(JSON.stringify(rev.data.signersList));
+        pdcaList = JSON.parse(JSON.stringify(rev.data.pdcaList));
+        capaList = JSON.parse(JSON.stringify(rev.data.capaList));
 
-        normalizeAllData();
-        saveAllToStorage();
+        saveAllToStorage(true, "Data revisi berhasil dipulihkan!");
         renderAll();
         closeModal('revisionsModal');
-        showToast("Revisi berhasil dipulihkan!");
       });
     }
 
@@ -2009,72 +2169,110 @@
 
     function toggleAutoSync(val) {
       autoSyncEnabled = val;
-      localStorage.setItem('pmr_auto_sync', val ? 'true' : 'false');
-      showToast(val ? "Auto-Sync diaktifkan" : "Auto-Sync dinonaktifkan");
+      localStorage.setItem('pmr_auto_sync', autoSyncEnabled);
+      showToast(autoSyncEnabled ? "Auto-Sync aktif!" : "Auto-Sync dinonaktifkan.", "ℹ️");
     }
 
-    async function syncToGoogleSheets(silent = false) {
-      const url = sheetWebhookUrl || INJECTED_GAS_URL;
-      if (!url) return;
+    function syncToGoogleSheets(silent = false) {
+      if (!sheetWebhookUrl) return;
 
       const payload = {
-        action: "sync",
-        projectMeta: projectMeta,
-        pdcaList: pdcaList,
-        capaList: capaList
+        project: projectMeta,
+        pdca: pdcaList,
+        capa: capaList.map(c => ({
+          ...c,
+          evidence: c.evidence ? "[Ada Foto Bukti]" : "[Nihil]"
+        }))
       };
 
-      try {
-        if (!silent) showToast("Mengirim data ke Google Sheets...", "⏳");
-        
-        // Mode no-cors untuk Webhook Apps Script
-        await fetch(url, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        document.getElementById('cloudStatusBadge').className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700";
-        document.getElementById('cloudStatusBadge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span>Sheets Synced</span>`;
-
-        if (!silent) showToast("Sinkronisasi Google Sheets Berhasil!");
-      } catch (err) {
-        console.error(err);
-        document.getElementById('cloudStatusBadge').className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-950 text-rose-300 border border-rose-700";
-        document.getElementById('cloudStatusBadge').innerHTML = `<span>Gagal Sync</span>`;
-        if (!silent) showToast("Gagal menyinkronkan ke Spreadsheet", "✕");
-      }
+      fetch(sheetWebhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        if (!silent) showToast("Spreadsheet berhasil disinkronkan!", "✓");
+      })
+      .catch((err) => {
+        if (!silent) showToast("Gagal sinkronisasi Spreadsheet: " + err.message, "⚠️");
+      });
     }
 
     function testSyncSheets() {
-      sheetWebhookUrl = document.getElementById('sheetWebhookUrlInput').value.trim() || INJECTED_GAS_URL;
-      localStorage.setItem('pmr_sheet_webhook_url', sheetWebhookUrl);
+      const url = document.getElementById('sheetWebhookUrlInput').value.trim();
+      if (url) {
+        sheetWebhookUrl = url;
+        localStorage.setItem('pmr_sheet_webhook_url', sheetWebhookUrl);
+      }
       syncToGoogleSheets(false);
     }
 
-    function exportToCSV() {
-      let csv = "\uFEFF"; // UTF-8 BOM
-      csv += "TABEL 1: AKTIVITAS PDCA & GENBA\n";
-      csv += "No,Tahap,Agenda / Aktivitas,PIC / Dept,Tanggal,Output / Hasil\n";
-      pdcaList.forEach((item, idx) => {
-        csv += `"${idx + 1}","${escapeCsv(item.stage)}","${escapeCsv(item.title)}","${escapeCsv(item.pic)}","${escapeCsv(item.date)}","${escapeCsv(item.output)}"\n`;
-      });
+    function openPrintModal() {
+      openModal('printModal');
+    }
 
-      csv += "\nTABEL 2: MATRIKS TINDAK LANJUT CAPA\n";
-      csv += "ID,Kategori,Jenis,Rencana Tindakan,PIC / Dept,Due Date,Status,Ada Bukti Foto\n";
-      capaList.forEach(item => {
-        csv += `"${escapeCsv(item.id)}","${escapeCsv(item.category)}","${escapeCsv(item.type)}","${escapeCsv(item.solution)}","${escapeCsv(item.pic)}","${escapeCsv(item.dueDate)}","${escapeCsv(item.status)}","${item.evidence ? 'Ya' : 'Tidak'}"\n`;
-      });
+    function toggleApprovalPrintOptions(isChecked) {
+      const wrapper = document.getElementById('approvalModeOptionsWrapper');
+      if (wrapper) {
+        if (isChecked) {
+          wrapper.classList.remove('opacity-40', 'pointer-events-none');
+        } else {
+          wrapper.classList.add('opacity-40', 'pointer-events-none');
+        }
+      }
+    }
 
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `PMR_CAPA_Report_${Date.now()}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast("File CSV berhasil diunduh!");
+    function executePrint() {
+      const includeApproval = document.getElementById('includeApprovalInPrint').checked;
+      const hideKpi = document.getElementById('hideKpiInPrint').checked;
+      const printMode = document.querySelector('input[name="printMode"]:checked')?.value || 'wet';
+
+      const approvalSec = document.getElementById('approvalSection');
+      const kpiSec = document.getElementById('kpiSummarySection');
+
+      // 1. Tangani opsi tampilkan/sembunyikan lembar approval
+      if (approvalSec) {
+        if (includeApproval) {
+          approvalSec.classList.remove('no-print');
+        } else {
+          approvalSec.classList.add('no-print');
+        }
+      }
+
+      // 2. Tangani opsi sembunyikan pita KPI
+      if (kpiSec) {
+        if (hideKpi) kpiSec.classList.add('no-print');
+        else kpiSec.classList.remove('no-print');
+      }
+
+      // 3. Tangani format stempel digital vs basah
+      if (includeApproval && printMode === 'wet') {
+        document.querySelectorAll('.signer-card').forEach(card => {
+          const mid = card.querySelector('div:nth-child(2)');
+          if (mid) mid.innerHTML = '<div class="w-20 border-b border-dashed border-slate-400 h-8 mx-auto"></div>';
+        });
+      }
+
+      closeModal('printModal');
+      setTimeout(() => {
+        window.print();
+        // Kembalikan tampilan setelah dialog cetak ditutup
+        renderSigners();
+        if (approvalSec) approvalSec.classList.remove('no-print');
+        if (kpiSec) kpiSec.classList.remove('no-print');
+      }, 350);
+    }
+
+    function openImageLightbox(src, caption) {
+      const img = document.getElementById('lightboxImage');
+      const cap = document.getElementById('lightboxCaption');
+      const dl = document.getElementById('lightboxDownloadBtn');
+
+      img.src = src;
+      cap.textContent = caption || 'Foto Bukti Tindak Lanjut';
+      dl.href = src;
+      openModal('lightboxModal');
     }
 
     function exportToJSON() {
@@ -2085,15 +2283,15 @@
         pdcaList,
         capaList
       };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
-      a.download = `PMR_Backup_${Date.now()}.json`;
+      a.download = `PMR_Backup_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toggleOptionsDropdown(false);
-      showToast("Cadangan JSON berhasil diunduh!");
+      showToast("Cadangan JSON berhasil diunduh!", "✓");
     }
 
     function triggerImportJSON() {
@@ -2103,60 +2301,62 @@
 
     function handleImportJSON(input) {
       if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
       const reader = new FileReader();
+
       reader.onload = function(e) {
         try {
           const parsed = JSON.parse(e.target.result);
-          if (parsed.pdcaList || parsed.capaList) {
-            createAutoRevisionSnapshot();
-            projectMeta = parsed.projectMeta || projectMeta;
-            signersList = parsed.signersList || signersList;
+          if (parsed.projectMeta && parsed.capaList) {
+            projectMeta = parsed.projectMeta;
+            signersList = parsed.signersList || [];
             pdcaList = parsed.pdcaList || [];
             capaList = parsed.capaList || [];
-            normalizeAllData();
-            saveAllToStorage();
+            saveAllToStorage(true, "Data JSON berhasil dipulihkan!");
             renderAll();
-            showToast("Data dari file JSON berhasil dipulihkan!");
           } else {
-            showToast("Format JSON tidak dikenali", "!");
+            showToast("Format file JSON tidak sesuai!", "⚠️");
           }
         } catch (err) {
-          showToast("Gagal membaca file JSON", "✕");
+          showToast("Gagal membaca file JSON!", "⚠️");
         }
       };
-      reader.readAsText(input.files[0]);
+
+      reader.readAsText(file);
+      input.value = '';
     }
 
-    function openPrintModal() {
-      openModal('printModal');
-    }
+    function exportToCSV() {
+      let csv = "BAGIAN 1: INFORMASI PROYEK\n";
+      csv += `Judul,"${(projectMeta.title || '').replace(/"/g, '""')}"\n`;
+      csv += `Subjudul,"${(projectMeta.subTitle || '').replace(/"/g, '""')}"\n`;
+      csv += `Unit / Dept,"${(projectMeta.entity || '').replace(/"/g, '""')}"\n`;
+      csv += `No Dokumen,"${(projectMeta.number || '').replace(/"/g, '""')}"\n`;
+      csv += `Periode,"${(projectMeta.period || '').replace(/"/g, '""')}"\n\n`;
 
-    function executePrint() {
-      const mode = document.querySelector('input[name="printMode"]:checked').value;
-      const hideKpi = document.getElementById('hideKpiInPrint').checked;
+      csv += "BAGIAN 2: LOG AKTIVITAS PDCA & GENBA\n";
+      csv += "No,Tahap,Agenda / Aktivitas,PIC & Departemen,Tanggal,Output / Ringkasan Hasil\n";
+      pdcaList.forEach((p, i) => {
+        csv += `${i + 1},"${p.stage}","${(p.title || '').replace(/"/g, '""')}","${(p.pic || '').replace(/"/g, '""')}","${(p.date || '').replace(/"/g, '""')}","${(p.output || '').replace(/"/g, '""')}"\n`;
+      });
+      csv += "\n";
 
-      const wetStamps = document.querySelectorAll('.stamp-wet');
-      const digitalStamps = document.querySelectorAll('.stamp-digital');
-      const kpiSection = document.getElementById('kpiSummarySection');
+      csv += "BAGIAN 3: MATRIKS TINDAK LANJUT CAPA\n";
+      csv += "ID,Kategori / Topik,Jenis,Rencana Tindakan / Countermeasure,PIC / Dept,Due Date,Status,Ada Bukti Foto\n";
+      capaList.forEach(c => {
+        const sol = (c.solution || c.rencanaTindakan || '').replace(/"/g, '""');
+        const hasPhoto = c.evidence ? "Ya (Terlampir)" : "Nihil";
+        csv += `"${c.id}","${(c.category || '').replace(/"/g, '""')}","${c.type}","${sol}","${(c.pic || '').replace(/"/g, '""')}","${(c.dueDate || '').replace(/"/g, '""')}","${c.status}","${hasPhoto}"\n`;
+      });
 
-      if (mode === 'wet') {
-        wetStamps.forEach(el => el.classList.remove('hidden'));
-        digitalStamps.forEach(el => el.classList.add('hidden'));
-      } else {
-        wetStamps.forEach(el => el.classList.add('hidden'));
-        digitalStamps.forEach(el => el.classList.remove('hidden'));
-      }
-
-      if (hideKpi) {
-        kpiSection.classList.add('print:hidden');
-      } else {
-        kpiSection.classList.remove('print:hidden');
-      }
-
-      closeModal('printModal');
-      setTimeout(() => {
-        window.print();
-      }, 250);
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PMR_CAPA_Report_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Spreadsheet CSV berhasil diunduh!", "✓");
     }
 
     function openModal(id) {
@@ -2167,15 +2367,17 @@
       document.getElementById(id).classList.add('hidden');
     }
 
-    function toggleOptionsDropdown(force) {
+    function toggleOptionsDropdown(forceState = null) {
       const menu = document.getElementById('optionsDropdownMenu');
-      if (typeof force === 'boolean') {
-        menu.classList.toggle('hidden', !force);
+      if (forceState !== null) {
+        if (forceState) menu.classList.remove('hidden');
+        else menu.classList.add('hidden');
       } else {
         menu.classList.toggle('hidden');
       }
     }
 
+    // Tutup dropdown opsi jika klik di luar
     document.addEventListener('click', function(e) {
       const wrapper = document.getElementById('optionsDropdownWrapper');
       if (wrapper && !wrapper.contains(e.target)) {
@@ -2183,79 +2385,67 @@
       }
     });
 
+    let confirmOkCallback = null;
+    function openCustomConfirm(title, message, onOk) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMessage').textContent = message;
+      confirmOkCallback = onOk;
+      openModal('customConfirmModal');
+    }
+
+    document.getElementById('btnConfirmOk').addEventListener('click', function() {
+      closeModal('customConfirmModal');
+      if (typeof confirmOkCallback === 'function') {
+        confirmOkCallback();
+        confirmOkCallback = null;
+      }
+    });
+
+    document.getElementById('btnConfirmCancel').addEventListener('click', function() {
+      closeModal('customConfirmModal');
+      confirmOkCallback = null;
+    });
+
+    let toastTimeout = null;
     function showToast(msg, icon = "✓") {
       const toast = document.getElementById('toastNotification');
       document.getElementById('toastMessage').textContent = msg;
       document.getElementById('toastIcon').textContent = icon;
 
       toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => {
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
         toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
-      }, 2800);
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2600);
     }
 
-    function openCustomConfirm(title, message, onOk) {
-      document.getElementById('confirmTitle').textContent = title;
-      document.getElementById('confirmMessage').textContent = message;
-      
-      const btnOk = document.getElementById('btnConfirmOk');
-      const btnCancel = document.getElementById('btnConfirmCancel');
-
-      const cleanup = () => {
-        closeModal('customConfirmModal');
-        btnOk.onclick = null;
-        btnCancel.onclick = null;
-      };
-
-      btnOk.onclick = () => {
-        cleanup();
-        if (typeof onOk === 'function') onOk();
-      };
-
-      btnCancel.onclick = () => {
-        cleanup();
-      };
-
-      openModal('customConfirmModal');
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
-    function escapeHtml(text) {
-      if (!text) return '';
-      return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+    // Pintasan Keyboard Ctrl + S untuk Simpan Progress Instan
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        saveProgress();
+      }
+    });
 
-    function escapeCsv(text) {
-      if (!text) return '';
-      return String(text).replace(/"/g, '""');
-    }
-
-    // Inisialisasi awal saat halaman dimuat
     window.onload = function() {
-      if (!sheetWebhookUrl) {
-        sheetWebhookUrl = INJECTED_GAS_URL;
-        localStorage.setItem('pmr_sheet_webhook_url', sheetWebhookUrl);
-      }
-
-      // Pastikan data TMS dimuat jika penyimpanan lokal kosong
-      if (!pdcaList || pdcaList.length === 0 || !capaList || capaList.length === 0) {
-        projectMeta = JSON.parse(JSON.stringify(tmsProjectMeta));
-        pdcaList = JSON.parse(JSON.stringify(tmsPdcaList));
-        capaList = JSON.parse(JSON.stringify(tmsCapaList));
-        signersList = JSON.parse(JSON.stringify(sampleSigners));
-      }
-
       normalizeAllData();
-      saveAllToStorage();
       renderAll();
-
-      if (window.innerWidth < 640) {
-        setMobileView(currentMobileView);
+      setMobileView(currentMobileView);
+      if (currentPhotoSizePx) {
+        setPhotoSize(currentPhotoSizePx);
       }
     };
   </script>
