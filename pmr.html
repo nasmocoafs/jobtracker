@@ -6,7 +6,7 @@
   <title>Universal PMR & CAPA Master - Toyota Mobile Service</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Inter -->
+  <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -83,31 +83,39 @@
     @media print {
       @page {
         size: A4 landscape;
-        margin: 7mm 8mm 7mm 8mm;
+        margin: 6mm 8mm 6mm 8mm;
       }
 
       body {
         background-color: #ffffff !important;
         color: #000000 !important;
-        font-size: 10px !important;
+        font-size: 8.5px !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
 
+      /* SEMBUNYIKAN KARTU MOBILE DAN TOMBOL SAAT CETAK */
       .no-print,
       .floating-fab,
       #appNav,
       #tableTools,
-      #kpiCompactRibbon,
-      .action-col {
+      #capaMobileCardsList,
+      .action-col,
+      .drag-handle {
         display: none !important;
+      }
+
+      /* PAKSA TABEL DESKTOP UTAMA TAMPIL DI CETAK */
+      #capaDesktopTableWrapper {
+        display: block !important;
+        overflow: visible !important;
       }
 
       body.hide-kpi-print #kpiSection {
         display: none !important;
       }
 
-      body.hide-approval-print #signersContainer,
-      body.hide-approval-print #printSignersBlock,
-      body.hide-approval-print .print-signatures {
+      body.hide-approval-print #signersSection {
         display: none !important;
       }
 
@@ -116,35 +124,74 @@
         border: none !important;
         padding: 0 !important;
         max-width: 100% !important;
+        margin: 0 !important;
       }
 
       table {
         border-collapse: collapse !important;
         width: 100% !important;
+        page-break-inside: auto;
+      }
+
+      tr {
+        page-break-inside: avoid !important;
+        page-break-after: auto;
+      }
+
+      thead {
+        display: table-header-group !important;
       }
 
       th, td {
         border: 1px solid #cbd5e1 !important;
-        padding: 4px 6px !important;
-        font-size: 9px !important;
+        padding: 3px 5px !important;
+        font-size: 8.5px !important;
+        line-height: 1.25 !important;
       }
 
       .evidence-thumb-container {
         width: 65px !important;
-        height: 48px !important;
+        height: 46px !important;
         border: 1px solid #cbd5e1 !important;
+      }
+
+      .evidence-thumb-container img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
       }
 
       .subtask-item {
         border: none !important;
-        padding: 1px 0 !important;
+        padding: 0.5px 0 !important;
         background: transparent !important;
+        box-shadow: none !important;
       }
 
       .subtask-pill {
         border: 1px solid #cbd5e1 !important;
-        font-size: 8px !important;
-        padding: 1px 4px !important;
+        font-size: 7.5px !important;
+        padding: 0 3px !important;
+      }
+
+      /* PENGESAHAN TERKUNCI 1 BARIS RAPAT */
+      #signersSection {
+        page-break-inside: avoid !important;
+        margin-top: 8px !important;
+      }
+
+      #signersContainer {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        overflow: visible !important;
+      }
+
+      #signersContainer > div {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        padding: 4px !important;
       }
 
       .page-break-inside-avoid {
@@ -213,9 +260,9 @@
           <span>Opsi</span>
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </button>
-        <div id="optionsDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs">
+        <div id="optionsDropdownMenu" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs">
           <button onclick="loadTmsReferenceData()" class="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-100 flex items-center gap-2">
-            <span>🔄</span> Muat Data TMS (Spreadsheet)
+            <span>🔄</span> Muat 9 Data PDCA & TMS Lengkap
           </button>
           <button onclick="resetToCleanSlate()" class="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-100 flex items-center gap-2">
             <span>📄</span> Proyek Baru (Form Bersih)
@@ -247,7 +294,7 @@
   <main class="main-card max-w-7xl mx-auto bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-6 md:p-8 space-y-6">
 
     <!-- 1-Row Professional Header (No Logo, No Overlap) -->
-    <section class="border-b border-slate-300 pb-4">
+    <section class="border-b border-slate-300 pb-3">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
         <div class="flex flex-wrap items-center gap-2">
           <span class="bg-slate-900 text-white text-[10px] tracking-wider uppercase font-black px-2.5 py-0.5 rounded-full">
@@ -275,7 +322,7 @@
     </section>
 
     <section id="kpiSection" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between">
+      <div class="bg-slate-50 border border-slate-200 p-2.5 sm:p-3 rounded-xl flex items-center justify-between">
         <div>
           <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Total Tindakan</div>
           <div id="kpiTotal" class="text-xl font-black text-slate-900 font-mono mt-0.5">0</div>
@@ -283,7 +330,7 @@
         <span class="text-xs font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">Item</span>
       </div>
 
-      <div class="bg-emerald-50/70 border border-emerald-200 p-3 rounded-xl flex items-center justify-between">
+      <div class="bg-emerald-50/70 border border-emerald-200 p-2.5 sm:p-3 rounded-xl flex items-center justify-between">
         <div>
           <div class="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Selesai (Closed)</div>
           <div id="kpiClosed" class="text-xl font-black text-emerald-800 font-mono mt-0.5">0</div>
@@ -291,7 +338,7 @@
         <span id="kpiClosedPct" class="text-xs font-extrabold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200 font-mono">0%</span>
       </div>
 
-      <div class="bg-amber-50/70 border border-amber-200 p-3 rounded-xl flex items-center justify-between">
+      <div class="bg-amber-50/70 border border-amber-200 p-2.5 sm:p-3 rounded-xl flex items-center justify-between">
         <div>
           <div class="text-[10px] uppercase font-bold text-amber-700 tracking-wider">Sedang Berjalan</div>
           <div id="kpiInProgress" class="text-xl font-black text-amber-800 font-mono mt-0.5">0</div>
@@ -299,7 +346,7 @@
         <span class="text-xs font-bold text-amber-700 bg-white px-2 py-0.5 rounded border border-amber-200">Active</span>
       </div>
 
-      <div class="bg-rose-50/70 border border-rose-200 p-3 rounded-xl flex items-center justify-between">
+      <div class="bg-rose-50/70 border border-rose-200 p-2.5 sm:p-3 rounded-xl flex items-center justify-between">
         <div>
           <div class="text-[10px] uppercase font-bold text-rose-700 tracking-wider">Tertunda (Open)</div>
           <div id="kpiOpen" class="text-xl font-black text-rose-800 font-mono mt-0.5">0</div>
@@ -313,6 +360,7 @@
         <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-tight flex items-center gap-2">
           <span class="w-5 h-5 rounded-md bg-blue-600 text-white inline-flex items-center justify-center text-[10px] font-black">1</span>
           Aktivitas PDCA & Investigasi Lapangan (Genba)
+          <span id="pdcaCountBadge" class="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full text-[10px] font-bold">9 Agenda</span>
         </h3>
         <button onclick="openPdcaModal()" class="no-print text-blue-600 hover:text-blue-800 text-xs font-bold flex items-center gap-1">
           + Tambah Agenda
@@ -334,7 +382,7 @@
             </tr>
           </thead>
           <tbody id="pdcaTableBody" class="divide-y divide-slate-200 bg-white font-medium">
-            <!-- Dynamic Rows -->
+            <!-- Dynamic 9 PDCA Rows -->
           </tbody>
         </table>
       </div>
@@ -385,8 +433,8 @@
         </div>
       </div>
 
-      <!-- Desktop CAPA Table -->
-      <div class="overflow-x-auto rounded-xl border border-slate-200 hidden md:block">
+      <!-- Desktop CAPA Table (Always used for Print and Desktop View) -->
+      <div id="capaDesktopTableWrapper" class="overflow-x-auto rounded-xl border border-slate-200 hidden md:block">
         <table class="w-full text-left text-xs border-collapse">
           <thead class="bg-slate-100/90 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
             <tr>
@@ -408,13 +456,13 @@
         </table>
       </div>
 
-      <!-- Mobile CAPA Cards List -->
-      <div id="capaMobileCardsList" class="md:hidden space-y-3">
-        <!-- Dynamically Rendered on Mobile -->
+      <!-- Mobile CAPA Cards List (Hidden on Print & Desktop) -->
+      <div id="capaMobileCardsList" class="md:hidden space-y-3 no-print">
+        <!-- Dynamically Rendered on Mobile Screen Only -->
       </div>
     </section>
 
-    <section class="page-break-inside-avoid pt-2 border-t border-slate-200">
+    <section id="signersSection" class="page-break-inside-avoid pt-2 border-t border-slate-200">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-tight flex items-center gap-2">
           <span class="w-5 h-5 rounded-md bg-slate-900 text-white inline-flex items-center justify-center text-[10px] font-black">3</span>
@@ -434,7 +482,7 @@
   </main>
 
   <!-- MODAL: Dokumen Metadata -->
-  <div id="docMetaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3">
+  <div id="docMetaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 no-print">
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs">
       <div class="flex items-center justify-between border-b pb-2">
         <h4 class="text-sm font-black text-slate-900">Ubah Informasi Dokumen PMR</h4>
@@ -478,7 +526,7 @@
   </div>
 
   <!-- MODAL: PDCA Item -->
-  <div id="pdcaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3">
+  <div id="pdcaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 no-print">
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs">
       <div class="flex items-center justify-between border-b pb-2">
         <h4 id="pdcaModalTitle" class="text-sm font-black text-slate-900">Tambah Agenda PDCA</h4>
@@ -522,7 +570,7 @@
   </div>
 
   <!-- MODAL: CAPA Item with Sub-tasks Editor & Photo Evidence -->
-  <div id="capaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 overflow-y-auto">
+  <div id="capaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 overflow-y-auto no-print">
     <div class="bg-white rounded-2xl max-w-xl w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs my-6">
       <div class="flex items-center justify-between border-b pb-2">
         <h4 id="capaModalTitle" class="text-sm font-black text-slate-900">Tambah Tindakan CAPA</h4>
@@ -619,7 +667,7 @@
   </div>
 
   <!-- MODAL: Signers Management -->
-  <div id="signersModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3">
+  <div id="signersModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 no-print">
     <div class="bg-white rounded-2xl max-w-xl w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs">
       <div class="flex items-center justify-between border-b pb-2">
         <h4 class="text-sm font-black text-slate-900">Kelola Kolom Pengesah (Approval)</h4>
@@ -639,7 +687,7 @@
   </div>
 
   <!-- MODAL: Revisions / Snapshots -->
-  <div id="snapshotsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3">
+  <div id="snapshotsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 no-print">
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs">
       <div class="flex items-center justify-between border-b pb-2">
         <h4 class="text-sm font-black text-slate-900">Riwayat & Titik Versi Revisi</h4>
@@ -661,7 +709,7 @@
   </div>
 
   <!-- MODAL: Print PDF Options -->
-  <div id="printModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3">
+  <div id="printModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 no-print">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs">
       <div class="flex items-center justify-between border-b pb-2">
         <h4 class="text-sm font-black text-slate-900">Pengaturan Cetak / Simpan PDF</h4>
@@ -696,7 +744,7 @@
   </div>
 
   <!-- LIGHTBOX: Full View Image -->
-  <div id="imageLightbox" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onclick="closeImageLightbox()">
+  <div id="imageLightbox" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 no-print" onclick="closeImageLightbox()">
     <div class="relative max-w-3xl max-h-full flex flex-col items-center" onclick="event.stopPropagation()">
       <button onclick="closeImageLightbox()" class="absolute -top-10 right-0 text-white text-2xl font-bold hover:text-slate-300">&times;</button>
       <img id="lightboxImg" src="" alt="Pratinjau Bukti" class="max-w-full max-h-[80vh] rounded-xl shadow-2xl object-contain border border-white/20">
@@ -705,7 +753,7 @@
   </div>
 
   <!-- TOAST NOTIFICATION -->
-  <div id="toastMessage" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 z-50 transition-all duration-300">
+  <div id="toastMessage" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 z-50 transition-all duration-300 no-print">
     <span id="toastIcon">💾</span>
     <span id="toastText">Tersimpan</span>
   </div>
@@ -737,14 +785,17 @@
       printDate: "08/10/2026"
     };
 
+    // 9 BUTIR LENGKAP AKTIVITAS PDCA & GENBA
     const TMS_DEFAULT_PDCA = [
       { id: "pdca_1", stage: "Act", title: "Approval Proposal TMS", pic: "Balad (Aftersales)", date: "Oktober 2024", output: "Approved by BOD Oktober 2024" },
       { id: "pdca_2", stage: "Act", title: "TMS Technician Advisor Fulfillment", pic: "Rafid (HCM)", date: "Oktober 2024", output: "Paralel Proses Assessment & Done at Januari 2025" },
       { id: "pdca_3", stage: "Act", title: "Launching TMS All Nasmoco", pic: "Zacky (MPCR)", date: "Desember 2024", output: "Done Launching Nasmoco Prima pada Desember 2024 berbarengan dengan opening Holiday Campaign Nataru di Rest Area 429A" },
       { id: "pdca_4", stage: "Act", title: "Sosialisasi & Training TMS TA", pic: "Rika (L&K)", date: "Februari 2025", output: "Done Training TMS TA All Nasmoco pada Februari 2025" },
-      { id: "pdca_5", stage: "Act", title: "Juklak & Draft SOP Registered", pic: "Aris (CSBD)", date: "Juli 2025", output: "Juklak Registered dengan beberapa penyesuaian menyusul setelah proses development TMS System selesai ekspansi" },
-      { id: "pdca_6", stage: "Check", title: "TMS System Development - Stage 1 (Smooth Operation)", pic: "Erwin (IST)", date: "Oktober 2026", output: "Ideal Timeline UR (FM-NRM-IT.01.01 UR NIS TMS) Go Live June 2024" },
-      { id: "pdca_7", stage: "Plan", title: "TMS System Development - Propose Golive Expantion", pic: "Balad & Erwin (Aftersales & IST)", date: "Desember 2026", output: "Propose Golive Expantion Desember 2026" }
+      { id: "pdca_5", stage: "Act", title: "Sosialisasi & Training TMS TA (Batch 2)", pic: "Rika (L&K)", date: "Februari 2025", output: "Done Training TMS TA All Nasmoco pada Februari 2025 (Refreshment & Field Readiness)" },
+      { id: "pdca_6", stage: "Act", title: "Juklak & Draft SOP Registered", pic: "Aris (CSBD)", date: "Juli 2025", output: "Juklak Registered dengan beberapa penyesuaian menyusul setelah proses development TMS System selesai ekspansi" },
+      { id: "pdca_7", stage: "Act", title: "Evaluasi & Penyesuaian Registrasi Juklak", pic: "Aris (CSBD)", date: "Juli 2025", output: "Penyesuaian registrasi SOP setelah proses ekspansi sistem TMS selesai" },
+      { id: "pdca_8", stage: "Check", title: "TMS System Development - Stage 1 (Smooth Operation)", pic: "Erwin (IST)", date: "Oktober 2026", output: "Ideal Timeline UR (FM-NRM-IT.01.01 UR NIS TMS) Go Live June 2024" },
+      { id: "pdca_9", stage: "Plan", title: "TMS System Development - Propose Golive Expantion", pic: "Balad & Erwin (Aftersales & IST)", date: "Desember 2026", output: "Propose Golive Expantion Desember 2026" }
     ];
 
     const TMS_DEFAULT_CAPA = [
@@ -946,7 +997,7 @@
     }
 
     function normalizeAllData() {
-      // 1. Normalisasi PDCA
+      // 1. Normalisasi PDCA (Memastikan seluruh 9 item punya properti valid tanpa undefined)
       if (Array.isArray(pdcaList)) {
         pdcaList.forEach((item, idx) => {
           const stage = item.stage || item.tahap || item.phase || item['Tahap'] || 'Act';
@@ -1019,7 +1070,6 @@
       loadAllFromStorage();
       renderAll();
       setupKeyboardShortcuts();
-      setupDragAndDrop();
     };
 
     function setupKeyboardShortcuts() {
@@ -1037,8 +1087,19 @@
         if (storedMeta) docMeta = JSON.parse(storedMeta);
 
         const storedPdca = localStorage.getItem('pmr_pdca_data');
-        if (storedPdca) pdcaList = JSON.parse(storedPdca);
-        else pdcaList = JSON.parse(JSON.stringify(TMS_DEFAULT_PDCA));
+        if (storedPdca) {
+          pdcaList = JSON.parse(storedPdca);
+          // AUTO-UPGRADE: Jika data di memori peramban pengguna masih 7 butir lama, tingkatkan ke 9 butir lengkap
+          if (Array.isArray(pdcaList) && pdcaList.length < 9) {
+            const hasTmsSample = pdcaList.some(p => (p.title || '').includes('Proposal TMS'));
+            if (hasTmsSample) {
+              pdcaList = JSON.parse(JSON.stringify(TMS_DEFAULT_PDCA));
+              localStorage.setItem('pmr_pdca_data', JSON.stringify(pdcaList));
+            }
+          }
+        } else {
+          pdcaList = JSON.parse(JSON.stringify(TMS_DEFAULT_PDCA));
+        }
 
         const storedCapa = localStorage.getItem('pmr_capa_data');
         if (storedCapa) capaList = JSON.parse(storedCapa);
@@ -1091,7 +1152,6 @@
     }
 
     function handleManualSave() {
-      // Buat snapshot otomatis
       const now = new Date();
       const timeStr = now.toLocaleString('id-ID');
       snapshotsList.unshift({
@@ -1105,7 +1165,7 @@
           signersList: JSON.parse(JSON.stringify(signersList))
         }
       });
-      if (snapshotsList.length > 20) snapshotsList.pop();
+      if (snapshotsList.length > 25) snapshotsList.pop();
 
       saveAllToStorage(true, "Progress & Snapshot tersimpan!");
     }
@@ -1178,7 +1238,9 @@
 
     function renderPdcaTable() {
       const tbody = document.getElementById('pdcaTableBody');
+      const badge = document.getElementById('pdcaCountBadge');
       tbody.innerHTML = '';
+      if (badge) badge.textContent = `${pdcaList.length} Agenda`;
 
       if (pdcaList.length === 0) {
         tbody.innerHTML = `
@@ -1228,7 +1290,6 @@
           </td>
         `;
 
-        // Event drag PDCA
         attachRowDragEvents(tr, 'pdca');
         tbody.appendChild(tr);
       });
@@ -1338,7 +1399,7 @@
         const idBadge = item.id ? `<span class="inline-block bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold mr-1.5">${item.id}</span>` : '';
         const displaySolution = item.solution || item.rencanaTindakan || SHEET_KOLOM_D_MAP[item.id] || '-';
 
-        // Render Kolom Rencana Tindakan: Apakah berbentuk sub-aktivitas mandiri?
+        // Render Kolom Rencana Tindakan: Sub-aktivitas mandiri
         let solutionCellHtml = "";
         const subTasks = item.subTasks && Array.isArray(item.subTasks) ? item.subTasks : [];
 
@@ -1390,7 +1451,6 @@
             </div>
           `;
         } else {
-          // Tindakan tunggal biasa
           solutionCellHtml = `<div class="text-slate-800 leading-relaxed whitespace-pre-line text-[11px]">${escapeHtml(displaySolution)}</div>`;
         }
 
@@ -1429,7 +1489,7 @@
         attachRowDragEvents(tr, 'capa');
         tbody.appendChild(tr);
 
-        // Render Kartu Mobile
+        // Render Kartu Mobile (khusus mobile screen, hidden on print)
         const card = document.createElement('div');
         card.className = "bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-2.5";
         card.innerHTML = `
@@ -1616,10 +1676,6 @@
       renderCapaTable();
     }
 
-    function setupDragAndDrop() {
-      // Listener global jika diperlukan
-    }
-
     function renderSigners() {
       const container = document.getElementById('signersContainer');
       container.innerHTML = '';
@@ -1631,12 +1687,12 @@
 
       signersList.forEach(s => {
         const div = document.createElement('div');
-        div.className = "flex-1 min-w-[130px] sm:min-w-[150px] bg-slate-50/70 border border-slate-300 rounded-xl p-2.5 text-center flex flex-col justify-between";
+        div.className = "flex-1 min-w-[120px] sm:min-w-[140px] bg-slate-50/70 border border-slate-300 rounded-xl p-2.5 text-center flex flex-col justify-between";
         div.innerHTML = `
           <div class="border-b border-slate-200 pb-1 mb-2">
             <span class="text-[10px] font-black text-slate-800 uppercase tracking-tight line-clamp-1">${escapeHtml(s.role)}</span>
           </div>
-          <div class="h-12 flex flex-col items-center justify-center">
+          <div class="h-10 sm:h-12 flex flex-col items-center justify-center">
             ${s.approved ? `
               <div class="w-full flex items-center justify-center">
                 <span class="border border-emerald-600 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[9px] font-black tracking-widest uppercase -rotate-2">
@@ -1945,7 +2001,6 @@
       renderKPI();
     }
 
-    // Evidence Photo Handlers with Client-Side Canvas Compression
     function handleEvidenceFileUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -2009,7 +2064,6 @@
       document.getElementById('imageLightbox').classList.add('hidden');
     }
 
-    // Photo Size Controller
     function setPhotoPreset(w, h) {
       document.documentElement.style.setProperty('--evidence-w', w + 'px');
       document.documentElement.style.setProperty('--evidence-h', h + 'px');
@@ -2028,7 +2082,6 @@
       localStorage.setItem('pmr_photo_height', h);
     }
 
-    // Signers Config Modal Handlers
     let activeSignersModalList = [];
 
     function openSignersModal() {
@@ -2142,7 +2195,7 @@
       renderAll();
     }
 
-    // Print PDF Handlers
+    // PRINT PDF HANDLER: Executive landscape layout
     function openPrintModal() {
       openModal('printModal');
     }
@@ -2152,7 +2205,6 @@
       const hideKpi = document.getElementById('printHideKpiCards').checked;
       const includeApproval = document.getElementById('printIncludeApproval').checked;
 
-      // Atur tanda tangan basah vs digital
       if (mode === 'wet') {
         signersList.forEach(s => s.approved = false);
       } else {
@@ -2190,7 +2242,7 @@
       signersList = JSON.parse(JSON.stringify(TMS_DEFAULT_SIGNERS));
 
       normalizeAllData();
-      saveAllToStorage(true, "Data TMS berhasil disinkronkan!");
+      saveAllToStorage(true, "9 Data PDCA & TMS berhasil dimuat!");
       renderAll();
     }
 
