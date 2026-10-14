@@ -296,6 +296,12 @@
         <span>Simpan Progress</span>
       </button>
 
+      <!-- Restore Combined Stage 1&2 + Images Button -->
+      <button onclick="restoreCombinedStage1And2WithImages()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition" title="Kembalikan ke versi Project Management TMS - Combined Stage 1&2 lengkap beserta seluruh 11 gambar bukti">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        <span>⏪ Versi Combined Stage 1&2 (+ Gambar)</span>
+      </button>
+
       <!-- Snapshot Revisions Button -->
       <button onclick="openSnapshotsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-2.5 py-2 rounded-xl flex items-center gap-1.5 transition" title="Riwayat Versi Revisi">
         <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -330,9 +336,12 @@
           <span>Opsi</span>
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </button>
-        <div id="optionsDropdownMenu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs">
+        <div id="optionsDropdownMenu" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs">
+          <button onclick="restoreCombinedStage1And2WithImages()" class="w-full text-left px-3 py-2 text-amber-800 bg-amber-50/70 hover:bg-amber-100 flex items-center gap-2 font-extrabold">
+            <span>⏪</span> Pulihkan Combined Stage 1&2 (+ 11 Gambar)
+          </button>
           <button onclick="loadTmsReferenceData()" class="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-100 flex items-center gap-2 font-semibold">
-            <span>🔄</span> Muat Data TMS (As of Oct 2026)
+            <span>🔄</span> Muat Data TMS (Stage 1&2 Default)
           </button>
           <button onclick="resetToCleanSlate()" class="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-100 flex items-center gap-2">
             <span>📄</span> Proyek Baru (Form Bersih)
@@ -859,8 +868,8 @@
     // URL Google Apps Script yang diinjeksi langsung ke program
     const INJECTED_GAS_URL = "https://script.google.com/macros/s/AKfycbyVDOAc_AxPdfH_KpO7aiGXdIvOiLW3da-uvLG59-fDyPjUrjt8LKy0yRsWY1zS5cJXSQ/exec";
 
-    // Versi Skema Data (Auto-Upgrade ke Struktur Detail Countermeasure Lengkap + Bukti Visual)
-    const CURRENT_DATA_RELEASE = "tms_oct_2026_v4_detail_cols";
+    // Versi Skema Data (Auto-Upgrade ke Combined Stage 1&2 + 11 Gambar JPEG Canvas)
+    const CURRENT_DATA_RELEASE = "tms_combined_stage1_2_v6_jpeg";
 
     // Pemetaan ID Lama ke ID Baru agar foto lama di localStorage tetap terbaca
     const LEGACY_ID_TO_STAGE_MAP = {
@@ -875,122 +884,536 @@
       "11.0": "STAGE1.9"
     };
 
-    function escapeXmlSvg(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&apos;');
+    // Generator Gambar Screenshot Realistis (Format JPEG Base64 via HTML5 Canvas - 100% Tampil di Layar & Cetak PDF)
+    function generateRealisticScreenJpeg(stageId) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 520;
+      canvas.height = 320;
+      const ctx = canvas.getContext('2d');
+
+      // Background dasar putih
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 520, 320);
+
+      if (stageId === 'STAGE1.1' || stageId === 'STAGE2.2') {
+        // Tampilan Form NIS Service (Data Customer & Kendaraan + Flagging TMS / Prediagnose NEA)
+        ctx.fillStyle = '#dbeafe';
+        ctx.fillRect(0, 0, 520, 22);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText(stageId === 'STAGE1.1' ? 'NIS Service - Order & Flagging TMS' : 'NIS Service - Warranty Prediagnose & Flagging NEA', 10, 15);
+
+        // Bar Hitam Kiri: Data Customer & Kendaraan
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(10, 30, 325, 18);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText('Data Customer & Kendaraan', 85, 43);
+
+        // Form Fields Kiri dengan border oranye khas NIS
+        const labelsLeft = ['Kode Cust', 'Nama', 'Alamat', 'Kota', 'Telp / HP', 'No. Polisi', 'Model Unit'];
+        labelsLeft.forEach((lbl, i) => {
+          const y = 55 + i * 18;
+          ctx.fillStyle = '#334155';
+          ctx.font = '9px Arial';
+          ctx.fillText(lbl, 14, y + 10);
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(75, y, 115, 13);
+          ctx.fillStyle = '#fef3c7';
+          ctx.fillRect(76, y + 1, 113, 11);
+          ctx.fillStyle = '#0f172a';
+          ctx.font = '8px monospace';
+          ctx.fillText(i === 5 ? 'H 1112 AA' : (i === 6 ? 'HI ACE PREMIO' : 'NASMOCO-TMS'), 80, y + 10);
+
+          // Kolom ke-2 di panel kiri
+          ctx.strokeStyle = '#f59e0b';
+          ctx.strokeRect(215, y, 115, 13);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(216, y + 1, 113, 11);
+        });
+
+        // Highlight Box Kanan Atas (Flagging TMS & Opsi Technician Advisor)
+        ctx.fillStyle = '#fce7f3';
+        ctx.fillRect(345, 28, 165, 42);
+        ctx.strokeStyle = '#ec4899';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(345, 28, 165, 42);
+        ctx.fillStyle = '#9d174d';
+        ctx.font = 'bold 9px Arial';
+        ctx.fillText(stageId === 'STAGE1.1' ? '[v] Flagging Order: TMS' : '[v] Flagging Order: NEA / ERA', 352, 43);
+        ctx.fillText(stageId === 'STAGE1.1' ? 'TA: [ Dropdown TA TMS v ]' : 'Teknisi: [ Pilih Teknisi NEA v ]', 352, 60);
+
+        // Bar Hitam Kanan: Data Servis
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(345, 78, 165, 18);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText('Data Servis & Estimasi', 375, 91);
+
+        for (let i = 0; i < 4; i++) {
+          const y = 102 + i * 18;
+          ctx.strokeStyle = '#f59e0b';
+          ctx.strokeRect(395, y, 110, 13);
+        }
+
+        // Panel Bawah: Tabel Pekerjaan & Order
+        ctx.strokeStyle = '#94a3b8';
+        ctx.strokeRect(10, 190, 500, 118);
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(11, 191, 498, 18);
+        ctx.fillStyle = '#1e293b';
+        ctx.font = 'bold 9px Arial';
+        ctx.fillText('Daftar Keluhan, Pekerjaan Servis & Alokasi Part TMS', 18, 203);
+
+        const jobLines = [
+          '1. SERVIS BERKALA 40.000 KM VIA TOYOTA MOBILE SERVICE (TMS)',
+          '2. PENGECEKAN REM, OLI MESIN TMO & FILTER OLI',
+          '3. SINKRONISASI DATA WO NIS KE TMS SYSTEM - STATUS: VERIFIED'
+        ];
+        jobLines.forEach((jl, idx) => {
+          ctx.fillStyle = '#334155';
+          ctx.font = '9px monospace';
+          ctx.fillText(jl, 20, 228 + idx * 22);
+        });
+      } else if (stageId === 'STAGE1.2') {
+        // Tampilan TMS System - Part Management (Sidebar Gelap + Tabel Sparepart)
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, 115, 320);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('TMS SYSTEM', 14, 24);
+
+        const menus = ['TMS Performance', 'Part Management', 'Request Part', 'Retur Part'];
+        menus.forEach((m, idx) => {
+          const y = 45 + idx * 28;
+          if (idx === 1) {
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(8, y, 99, 22);
+          }
+          ctx.fillStyle = idx === 1 ? '#ffffff' : '#94a3b8';
+          ctx.font = 'bold 9px Arial';
+          ctx.fillText(m, 16, y + 14);
+        });
+
+        // Header Tabel Kanan
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(125, 15, 385, 26);
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.strokeRect(125, 15, 385, 290);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 9px Arial';
+        ctx.fillText('#Detail', 132, 31);
+        ctx.fillText('Kode Part', 180, 31);
+        ctx.fillText('Nama Sparepart', 280, 31);
+        ctx.fillText('Satuan', 385, 31);
+        ctx.fillText('Harga Jual', 428, 31);
+        ctx.fillText('Stock', 482, 31);
+
+        const parts = [
+          ['TMS1-A-0888-0001', 'BRAKE FLUID', 'BTL', '56.000', '2'],
+          ['TMS1-C-0888-0008', 'TMO 10W-40 API SN', 'LTR', '91.500', '4'],
+          ['TMS1-C-0888-0001', 'TMO 5W-30 C2 A5/B5', 'LTR', '135.000', '4'],
+          ['TMS1-F-0888-0004', 'OIL FILTER ELEMENT', 'PCS', '48.000', '6'],
+          ['TMS1-G-0888-0012', 'GASKET DRAIN PLUG', 'PCS', '11.000', '10']
+        ];
+        parts.forEach((p, idx) => {
+          const y = 45 + idx * 42;
+          ctx.strokeStyle = '#f1f5f9';
+          ctx.beginPath();
+          ctx.moveTo(125, y + 32);
+          ctx.lineTo(510, y + 32);
+          ctx.stroke();
+
+          // Tombol Biru Detail
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(136, y + 6, 22, 16);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 8px Arial';
+          ctx.fillText('O', 144, y + 17);
+
+          ctx.fillStyle = '#334155';
+          ctx.font = '8.5px monospace';
+          ctx.fillText(p[0], 175, y + 17);
+          ctx.font = 'bold 8.5px Arial';
+          ctx.fillText(p[1], 280, y + 17);
+          ctx.font = '8.5px Arial';
+          ctx.fillText(p[2], 390, y + 17);
+          ctx.fillText(p[3], 435, y + 17);
+          ctx.font = 'bold 9px Arial';
+          ctx.fillText(p[4], 490, y + 17);
+        });
+      } else if (stageId === 'STAGE1.3') {
+        // Tampilan TMS Schedule Calendar & Popup Modal Unit
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(0, 0, 520, 320);
+
+        // Kolom Kalender Belakang
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(12, 20, 150, 280);
+        ctx.fillRect(358, 20, 150, 280);
+
+        // Pill Jadwal Hijau & Biru
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(28, 120, 118, 24);
+        ctx.fillStyle = '#059669';
+        ctx.fillRect(28, 150, 118, 24);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(374, 115, 118, 24);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8.5px monospace';
+        ctx.fillText('261000001 - H 1112 AA', 34, 135);
+        ctx.fillText('261000001 - H 1112 AA', 34, 165);
+        ctx.fillText('261000002 - H 1924 KA', 380, 130);
+
+        // Card Modal Tengah (Detail Schedule & Surat Tugas)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(168, 15, 184, 290);
+        ctx.strokeStyle = '#64748b';
+        ctx.strokeRect(168, 15, 184, 290);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText('Detail Jadwal Servis TMS', 180, 38);
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '9px Arial';
+        ctx.fillText('No. Polisi:', 180, 68);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('H 1112 AA', 180, 82);
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '9px Arial';
+        ctx.fillText('Unit Kendaraan:', 180, 110);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 9.5px Arial';
+        ctx.fillText('TOYOTA HI ACE PREMIO', 180, 125);
+        ctx.fillText('2.8 M/T', 180, 138);
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '9px Arial';
+        ctx.fillText('Opsi Tindakan:', 180, 175);
+
+        // Tombol Hijau Proses WO & Biru Surat Tugas
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(180, 188, 160, 26);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(180, 222, 160, 26);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9.5px Arial';
+        ctx.fillText('Proses Work Order (WO)', 205, 205);
+        ctx.fillText('Cetak Surat Tugas TA', 210, 239);
+      } else if (stageId === 'STAGE1.5') {
+        // Tampilan Validasi Order (Banner Oranye Atas + 2 Kartu Putih di Bawah)
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(0, 0, 520, 88);
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath();
+        ctx.moveTo(180, 0);
+        ctx.lineTo(360, 0);
+        ctx.lineTo(290, 88);
+        ctx.lineTo(110, 88);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('TMS System - Validasi Order & Input CRT', 20, 48);
+
+        // Latar Bawah Biru Muda
+        ctx.fillStyle = '#eff6ff';
+        ctx.fillRect(0, 88, 520, 232);
+
+        // Kartu Kiri: Data Pelanggan
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(16, 105, 236, 195);
+        ctx.strokeStyle = '#bfdbfe';
+        ctx.strokeRect(16, 105, 236, 195);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('Data Pelanggan', 28, 130);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '9.5px Arial';
+        ctx.fillText('Kode Pelanggan', 28, 160);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.strokeRect(28, 168, 210, 24);
+        ctx.fillText('Status Validasi CRT: Verified (Done)', 28, 220);
+
+        // Kartu Kanan: Data Kendaraan
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(268, 105, 236, 195);
+        ctx.strokeStyle = '#bfdbfe';
+        ctx.strokeRect(268, 105, 236, 195);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('Data Kendaraan', 280, 130);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '9.5px Arial';
+        ctx.fillText('No. Polisi', 280, 160);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.strokeRect(280, 168, 210, 24);
+        ctx.fillText('Sinkronisasi Unit TMS: Verified (Done)', 280, 220);
+      } else if (stageId === 'STAGE1.9') {
+        // Tampilan NIS Kasir - Mekanisme Cash (Sidebar Kuning/Oranye Kiri + Tabel Hitam Bawah)
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(0, 0, 52, 320);
+        ctx.fillStyle = '#78350f';
+        ctx.font = 'bold 9px Arial';
+        ctx.fillText('NIS', 15, 22);
+        ctx.fillText('KASIR', 10, 34);
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(52, 0, 468, 320);
+
+        // Form Putih Atas
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(65, 14, 440, 165);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.strokeRect(65, 14, 440, 165);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText('Mekanisme Serah Terima Cash Pusat <-> Kas Operasional TMS', 78, 32);
+
+        for (let r = 0; r < 5; r++) {
+          const y = 46 + r * 24;
+          ctx.fillStyle = '#475569';
+          ctx.font = '8.5px Arial';
+          ctx.fillText(r === 0 ? 'No. Bukti Kas' : (r === 1 ? 'Cabang / Pos' : (r === 2 ? 'Kasir Pengirim' : (r === 3 ? 'Kasir Penerima' : 'Status Setoran'))), 78, y + 11);
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.strokeRect(150, y, 115, 16);
+          ctx.strokeRect(350, y, 135, 16);
+        }
+
+        // Tabel Bawah Header Hitam
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(65, 192, 440, 110);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(65, 192, 440, 20);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8.5px Arial';
+        ctx.fillText('No Transaksi        Tgl Serah Terima        Keterangan Mutasi Kas TMS                Nominal (Rp)        Status', 75, 205);
+
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '8.5px monospace';
+        ctx.fillText('KAS/TMS/2609/01     15/09/2026              Pindah Cash Pusat ke Kas TMS             Rp 2.500.000        DONE', 75, 230);
+        ctx.fillText('KAS/TMS/2609/02     30/09/2026              Serah Terima Cash TMS ke Pusat           Rp 2.500.000        DONE', 75, 252);
+      } else if (stageId === 'STAGE1.6') {
+        // Tampilan Invoicing (Rp 258.750 + 4 Tombol Berwarna di Bawah)
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, 520, 320);
+
+        // Tombol Oranye Pojok Kanan Atas
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(425, 14, 80, 20);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8.5px Arial';
+        ctx.fillText('CETAK LUNAS', 435, 27);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('TMS System - Invoicing & Multiple Payment (VA / Cash / QRIS)', 16, 28);
+
+        // Tabel Tengah
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(16, 95, 488, 65);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.strokeRect(16, 95, 488, 65);
+        ctx.beginPath();
+        ctx.moveTo(16, 120);
+        ctx.lineTo(504, 120);
+        ctx.stroke();
+
+        ctx.fillStyle = '#334155';
+        ctx.font = 'bold 8.5px Arial';
+        ctx.fillText('No. Invoice          No. WO              Pelanggan              Metode Bayar         Status Lunas', 28, 111);
+        ctx.font = '8.5px monospace';
+        ctx.fillText('INV/TMS/2026/001     WO-TMS-261001       PT NASMOCO PRIMA       QRIS / VA / CASH     LUNAS (VERIFIED)', 28, 142);
+
+        // Nominal Besar di Tengah
+        ctx.fillStyle = '#2563eb';
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText('Rp 258.750', 215, 215);
+
+        // 4 Tombol Berwarna di Bawah
+        const btns = [
+          { label: 'E-Sign by TA', color: '#2563eb', x: 85 },
+          { label: 'Multiple Payment', color: '#16a34a', x: 178 },
+          { label: 'PDF Stempel Lunas', color: '#e11d48', x: 278 },
+          { label: 'QRIS Settlement', color: '#f59e0b', x: 378 }
+        ];
+        btns.forEach(b => {
+          ctx.fillStyle = b.color;
+          ctx.fillRect(b.x, 282, 86, 22);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 8px Arial';
+          ctx.fillText(b.label, b.x + 6, 296);
+        });
+      } else if (stageId === 'STAGE1.4') {
+        // Tampilan Work Order (Form Putih + Tombol Biru Kanan Atas)
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, 520, 320);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(14, 14, 492, 292);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.strokeRect(14, 14, 492, 292);
+
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(425, 24, 68, 22);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8.5px Arial';
+        ctx.fillText('E-Sign PDF', 436, 38);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('WORK ORDER (WO) - TOYOTA MOBILE SERVICE', 28, 40);
+
+        const woFields = [
+          ['Tipe Order:', 'Booking & Walk-In Customer', 'DIDX Flagging:', 'Active / Synced'],
+          ['No. Work Order:', 'WO/TMS/2026/10001 (No Lompat: OK)', 'Status E-Sign:', 'Signed by Customer & TA'],
+          ['No. Polisi / Unit:', 'H 1112 AA - HI ACE PREMIO', 'Teknisi (TA):', 'TA Nasmoco Mobile Service']
+        ];
+        woFields.forEach((wf, i) => {
+          const y = 78 + i * 34;
+          ctx.fillStyle = '#64748b';
+          ctx.font = '9px Arial';
+          ctx.fillText(wf[0], 28, y);
+          ctx.fillText(wf[2], 275, y);
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 9.5px Arial';
+          ctx.fillText(wf[1], 28, y + 14);
+          ctx.fillText(wf[3], 275, y + 14);
+        });
+
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(28, 195, 464, 22);
+        ctx.fillStyle = '#1e293b';
+        ctx.font = 'bold 9px Arial';
+        ctx.fillText('Item Pekerjaan WO & Suku Cadang TMS                                        Status', 36, 209);
+        ctx.font = '9px monospace';
+        ctx.fillText('1. Servis Berkala & Pengecekan Standar TMS                                 DONE', 36, 236);
+        ctx.fillText('2. Penggantian Oli Mesin TMO & Gasket                                      DONE', 36, 258);
+      } else if (stageId === 'STAGE2.1') {
+        // Tampilan Tabel Matriks COA Performance Cabang
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 520, 320);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('TMS System - Pencatatan TMS Performance & Biaya by COA Cabang', 16, 24);
+
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(465, 10, 40, 18);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8px Arial';
+        ctx.fillText('COA', 475, 22);
+
+        // Grid Matriks Spreadsheet COA
+        const startX = 16, startY = 38, colW = 61, rowH = 24;
+        for (let r = 0; r < 10; r++) {
+          for (let c = 0; c < 8; c++) {
+            const x = startX + c * colW;
+            const y = startY + r * rowH;
+            ctx.fillStyle = r === 0 ? '#f1f5f9' : '#ffffff';
+            ctx.fillRect(x, y, colW, rowH);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.strokeRect(x, y, colW, rowH);
+            ctx.fillStyle = r === 0 ? '#0f172a' : '#475569';
+            ctx.font = r === 0 ? 'bold 8px Arial' : '8px monospace';
+            const cellText = r === 0
+              ? (c === 0 ? 'COA TMS' : `CAB-${c}`)
+              : (c === 0 ? `4101.0${r}` : `${(r * 12 + c * 5)} jt`);
+            ctx.fillText(cellText, x + 6, y + 15);
+          }
+        }
+      } else {
+        // STAGE1.7 (Post Service Follow Up) & STAGE1.8 (Dashboard KAS TMS)
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, 110, 320);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText('TMS SYSTEM', 14, 24);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(8, 42, 94, 22);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8.5px Arial';
+        ctx.fillText(stageId === 'STAGE1.7' ? 'Follow Up Servis' : 'Dashboard KAS', 14, 56);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText(
+          stageId === 'STAGE1.7'
+            ? 'TMS System - Post Service Follow Up (WA & Call)'
+            : 'TMS System - Dashboard KAS TMS & Mutasi Cash',
+          125,
+          28
+        );
+
+        // 3 Kartu Ringkasan di Atas
+        const cards = stageId === 'STAGE1.7'
+          ? [['Total Follow Up', '128 Unit'], ['Via WhatsApp (WA)', '96 Selesai'], ['Via Direct Call', '32 Selesai']]
+          : [['Saldo Kas TMS', 'Rp 4.500.000'], ['Mutasi Cash In', 'Rp 8.250.000'], ['Serah Terima Pusat', 'Rp 3.750.000']];
+
+        cards.forEach((cd, idx) => {
+          const x = 125 + idx * 128;
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(x, 42, 120, 52);
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.strokeRect(x, 42, 120, 52);
+          ctx.fillStyle = '#64748b';
+          ctx.font = '8.5px Arial';
+          ctx.fillText(cd[0], x + 10, 60);
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 11px Arial';
+          ctx.fillText(cd[1], x + 10, 80);
+        });
+
+        // Tabel Log di Bawah
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(125, 108, 380, 24);
+        ctx.fillStyle = '#1e293b';
+        ctx.font = 'bold 9px Arial';
+        ctx.fillText(
+          stageId === 'STAGE1.7'
+            ? 'No. Pol          Pelanggan                Metode Kontak          Status Follow Up'
+            : 'No. Mutasi       Tanggal                  Keterangan Kas         Status Rekonsiliasi',
+          135,
+          123
+        );
+
+        for (let i = 0; i < 4; i++) {
+          const y = 138 + i * 38;
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.strokeRect(125, y, 380, 32);
+          ctx.fillStyle = '#334155';
+          ctx.font = '8.5px monospace';
+          ctx.fillText(
+            stageId === 'STAGE1.7'
+              ? `H 111${i + 2} AA      CUST-TMS-0${i + 1}             WhatsApp & Call        DONE`
+              : `KAS-2610-0${i + 1}    0${i + 2}/10/2026              Mutasi & Serah Terima  DONE`,
+            135,
+            y + 20
+          );
+        }
+      }
+
+      return canvas.toDataURL('image/jpeg', 0.88);
     }
 
-    // Generator Gambar Bukti Default (SVG Base64 Jernih & Bebas Error XML) Sesuai Tangkapan Layar Modul TMS
-    function generateModuleEvidenceSvg(stageId, title, accentColor, rowsText) {
-      const safeStageId = escapeXmlSvg(stageId);
-      const safeTitle = escapeXmlSvg(title);
-      const lines = rowsText.map((r, i) => `
-        <rect x="78" y="${38 + i * 22}" width="228" height="17" rx="3" fill="${i % 2 === 0 ? '#f8fafc' : '#ffffff'}" stroke="#e2e8f0" stroke-width="0.8"/>
-        <text x="84" y="${49 + i * 22}" font-family="Inter, Arial, sans-serif" font-size="7.2" font-weight="600" fill="#1e293b">${escapeXmlSvg(r)}</text>
-        <rect x="268" y="${41 + i * 22}" width="32" height="11" rx="2" fill="#dcfce7"/>
-        <text x="274" y="${49 + i * 22}" font-family="Inter, Arial, sans-serif" font-size="6.2" font-weight="700" fill="#15803d">ACTIVE</text>
-      `).join('');
+    const DEFAULT_EVIDENCE_BY_STAGE = {};
+    [
+      'STAGE1.1', 'STAGE1.2', 'STAGE1.3', 'STAGE1.4', 'STAGE1.5',
+      'STAGE1.6', 'STAGE1.7', 'STAGE1.8', 'STAGE1.9', 'STAGE2.1', 'STAGE2.2'
+    ].forEach(id => {
+      DEFAULT_EVIDENCE_BY_STAGE[id] = generateRealisticScreenJpeg(id);
+    });
 
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" width="640" height="280">
-        <rect width="320" height="140" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-        <rect x="2" y="2" width="68" height="136" rx="4" fill="#0f172a"/>
-        <text x="10" y="16" font-family="Inter, Arial, sans-serif" font-size="8" font-weight="800" fill="#ffffff">TMS SYSTEM</text>
-        <rect x="8" y="24" width="56" height="10" rx="2" fill="${accentColor}"/>
-        <text x="12" y="31" font-family="Inter, Arial, sans-serif" font-size="6" font-weight="700" fill="#ffffff">${safeStageId}</text>
-        <rect x="8" y="40" width="52" height="6" rx="1.5" fill="#334155"/>
-        <rect x="8" y="52" width="46" height="6" rx="1.5" fill="#334155"/>
-        <rect x="8" y="64" width="54" height="6" rx="1.5" fill="#334155"/>
-        <rect x="8" y="76" width="40" height="6" rx="1.5" fill="#334155"/>
-        <rect x="72" y="2" width="246" height="26" fill="${accentColor}" fill-opacity="0.12"/>
-        <text x="80" y="14" font-family="Inter, Arial, sans-serif" font-size="8.2" font-weight="800" fill="#0f172a">${safeTitle}</text>
-        <text x="80" y="23" font-family="Inter, Arial, sans-serif" font-size="6.5" font-weight="600" fill="#475569">Toyota Mobile Service • Verified System Screen</text>
-        ${lines}
-      </svg>`;
-      return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
-    }
-
-    const DEFAULT_EVIDENCE_BY_STAGE = {
-      "STAGE1.1": generateModuleEvidenceSvg("STAGE 1.1", "NIS Service - Flagging TMS & TA", "#2563eb", [
-        "Flagging Order: [v] Toyota Mobile Service (TMS)",
-        "Technician Advisor: [ Dropdown TA TMS Terpilih ]",
-        "Sinkronisasi Order ke TMS System: OK / Verified",
-        "Status Modul: Live Operation"
-      ]),
-      "STAGE1.2": generateModuleEvidenceSvg("STAGE 1.2", "TMS System - Part Management", "#0284c7", [
-        "TMS1-A-0888-0001 | BRAKE FLUID | Stock: 2",
-        "TMS1-C-0888-0008 | TMO 10W-40 API SN | Stock: 4",
-        "TMS1-C-0888-0001 | TMO 5W-30 C2 A5/B5 | Stock: 4",
-        "Alokasi, Pemakaian WO & Retur Gudang: Verified"
-      ]),
-      "STAGE1.3": generateModuleEvidenceSvg("STAGE 1.3", "TMS Schedule Calendar & Surat Tugas", "#059669", [
-        "Jadwal: 261000001 | No. Pol: H 1112 AA",
-        "Unit: TOYOTA HI ACE PREMIO 2.8 M/T",
-        "Proses Work Order (WO) & Penugasan TA",
-        "Cetak Surat Tugas Digital: Done"
-      ]),
-      "STAGE1.5": generateModuleEvidenceSvg("STAGE 1.5", "TMS System - Validasi Order & CRT", "#ea580c", [
-        "Data Pelanggan & Kode Pelanggan: Tervalidasi",
-        "Data Kendaraan & Nomor Polisi: Tervalidasi",
-        "Proses Validasi Order Servis: Done",
-        "Input CRT (Customer Relation): Done"
-      ]),
-      "STAGE1.7": generateModuleEvidenceSvg("STAGE 1.7", "TMS System - Post Service Follow Up", "#16a34a", [
-        "Daftar Follow Up Paska Servis oleh TA",
-        "Integrasi Kontak Metode WhatsApp (WA): Aktif",
-        "Integrasi Kontak Metode Direct Call: Aktif",
-        "Rekap Status Kepuasan Pelanggan: Done"
-      ]),
-      "STAGE1.8": generateModuleEvidenceSvg("STAGE 1.8", "TMS System - Dashboard KAS TMS", "#4f46e5", [
-        "Dashboard Saldo Kas Operasional TMS",
-        "Mutasi Kas TMS (Cash In & Cash Out)",
-        "Log History Transaksi Tunai (Cash)",
-        "Berita Acara Serah Terima Cash: Done"
-      ]),
-      "STAGE1.9": generateModuleEvidenceSvg("STAGE 1.9", "NIS Kasir - Mekanisme Serah Terima Cash", "#d97706", [
-        "Transfer Kas dari Kasir Pusat ke Kas TMS",
-        "Verifikasi Nominal & Bukti Penerimaan Kas",
-        "Proses Setoran / Serah Terima Cash TMS ke Pusat",
-        "Rekonsiliasi Saldo Kasir NIS: Balance"
-      ]),
-      "STAGE1.6": generateModuleEvidenceSvg("STAGE 1.6", "TMS System - Invoicing & Payment", "#7c3aed", [
-        "Total Tagihan Servis: Rp 258.750 (E-Sign TA)",
-        "Multiple Payment: VA / Cash / QRIS",
-        "Cetakan PDF Invoice + Stempel LUNAS Otomatis",
-        "Auto Settlement Mechanism QRIS: On Trial"
-      ]),
-      "STAGE1.4": generateModuleEvidenceSvg("STAGE 1.4", "TMS System - Work Order (WO)", "#0d9488", [
-        "Penerimaan Order: Booking & Walk-In Customer",
-        "DIDX Flagging & Integrasi Data Servis",
-        "Digital E-Signature & Dokumen WO PDF",
-        "Monitoring Penomoran WO Lompat: On Trial"
-      ]),
-      "STAGE2.1": generateModuleEvidenceSvg("STAGE 2.1", "TMS Performance by COA Cabang", "#e11d48", [
-        "Distribusi Master COA TMS ke Seluruh Cabang",
-        "Capture Revenue & Cost di Menu TMS Performance",
-        "Pemisahan Laporan Laba Rugi / Financial Report TMS",
-        "Koordinasi IST & Accounting Department"
-      ]),
-      "STAGE2.2": generateModuleEvidenceSvg("STAGE 2.2", "TMS System - Warranty & ERA (NEA)", "#be123c", [
-        "Alur Prediagnose Warranty di TMS & NIS Service",
-        "Penambahan Flagging NEA (Emergency Roadside)",
-        "Opsi Pemilihan Teknisi NEA pada Sistem TMS",
-        "User Requirement (UR) oleh Aftersales Dept"
-      ])
-    };
-
-    // Master Pemetaan Rencana Tindakan Sesuai Kolom D Sheet CAPA_Tracker & PDF Oct 2026
+    // Master Pemetaan Rencana Tindakan Sesuai Dokumen Combined Stage 1&2
     const SHEET_KOLOM_D_MAP = {
       "STAGE1.1": "1. Menambahkan Flagging TMS - Done\n2. Drop down Technician Advisor TMS untuk dikirimkan ke TMS System - Done",
       "STAGE1.2": "1. Alokasi & pengambilan part TMS - Done\n2. Pemakaian part pada WO TMS - Done\n3. Retur part sisa servis ke gudang - Done",
       "STAGE1.3": "1. TMS Schedule Calender View - Done\n2. Proses WO - Done\n3. Surat Tugas - Done",
-      "STAGE1.4": "1. Booking - Done\n2. Walk In - Done\n3. DIDX Flagging - Done\n4. E-Sign & PDF - Done\n5. No WO Lompat - On Trial",
+      "STAGE1.4": "1. Booking - Done\n2. Walk In - Done\n3. DIDX Flagging - Done\n4. E-Sign & PDF - Done\n5. No WO Lompat - Done",
       "STAGE1.5": "1. Proses Validasi - Done\n2. Input CRT - Done",
-      "STAGE1.6": "1. Esign by TA - Done\n2. Multiple Option Payment - Done\n3. Pdf Stempel Lunas - Done\n4. Auto Settlement Mechanism - QRIS - QRIS - On Trial",
+      "STAGE1.6": "1. Esign by TA - Done\n2. Multiple Option Payment - Done\n3. Pdf Stempel Lunas - Done\n4. Auto Settlement Mechanism - QRIS - Done",
       "STAGE1.7": "1. Aktivitas follow up paska servis oleh TA - Done\n2. Menambahkan metode WA dan Call - Done",
       "STAGE1.8": "1. Dashboard KAS TMS - Done\n2. Mutasi Kas TMS in out - Done\n3. History Transaksi Cash - Done\n4. Proses Serah Terima Cash - Done",
       "STAGE1.9": "1. Memindah uang cash dari Pusat ke TMS - Done\n2. Proses serah terima cash TMS ke Pusat - Done",
@@ -1129,33 +1552,33 @@
         id: "STAGE1.6",
         category: "TMS System - Invoicing",
         type: "Preventive",
-        solution: "1. Esign by TA - Done\n2. Multiple Option Payment - Done\n3. Pdf Stempel Lunas - Done\n4. Auto Settlement Mechanism - QRIS - QRIS - On Trial",
+        solution: "1. Esign by TA - Done\n2. Multiple Option Payment - Done\n3. Pdf Stempel Lunas - Done\n4. Auto Settlement Mechanism - QRIS - Done",
         pic: "Erwin (IST)",
         dueDate: "Oktober 2026",
-        status: "In Progress",
+        status: "Closed",
         evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.6"],
         subTasks: [
           { text: "Esign by TA", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
           { text: "Multiple Option Payment", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
           { text: "Pdf Stempel Lunas", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
-          { text: "Auto Settlement Mechanism - QRIS", status: "QRIS - On Trial", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "W3 Oktober 2026" }
+          { text: "Auto Settlement Mechanism - QRIS", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "W3 Oktober 2026" }
         ]
       },
       {
         id: "STAGE1.4",
         category: "TMS System - Work Order",
         type: "Preventive",
-        solution: "1. Booking - Done\n2. Walk In - Done\n3. DIDX Flagging - Done\n4. E-Sign & PDF - Done\n5. No WO Lompat - On Trial",
+        solution: "1. Booking - Done\n2. Walk In - Done\n3. DIDX Flagging - Done\n4. E-Sign & PDF - Done\n5. No WO Lompat - Done",
         pic: "Erwin (IST)",
         dueDate: "Juli 2026",
-        status: "In Progress",
+        status: "Closed",
         evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.4"],
         subTasks: [
           { text: "Booking", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
           { text: "Walk In", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
           { text: "DIDX Flagging", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
           { text: "E-Sign & PDF", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
-          { text: "No WO Lompat", status: "On Trial", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "W3 Oktober 2026" }
+          { text: "No WO Lompat", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" }
         ]
       },
       {
@@ -1278,8 +1701,8 @@
     function isBrokenSvgEvidence(str) {
       if (!str || typeof str !== 'string') return true;
       if (str === '__HAS_ATTACHED_EVIDENCE__') return true;
-      // Deteksi SVG lama yang belum di-escape karakter '&' (penyebab gambar pecah)
-      if (str.startsWith('data:image/svg+xml;utf8,')) return true;
+      // Ganti semua SVG lama dengan gambar JPEG Canvas yang 100% kompatibel cetak PDF
+      if (str.startsWith('data:image/svg+xml')) return true;
       return false;
     }
 
@@ -2962,21 +3385,42 @@
     function loadTmsReferenceData() {
       const existingPhotosMap = {};
       capaList.forEach(c => {
-        if (c.id && c.evidence) existingPhotosMap[c.id] = c.evidence;
+        if (c.id && c.evidence && !isBrokenSvgEvidence(c.evidence)) {
+          existingPhotosMap[c.id] = c.evidence;
+        }
       });
 
       docMeta = JSON.parse(JSON.stringify(TMS_DEFAULT_META));
       pdcaList = JSON.parse(JSON.stringify(TMS_DEFAULT_PDCA));
       capaList = JSON.parse(JSON.stringify(TMS_DEFAULT_CAPA)).map(item => {
-        if (existingPhotosMap[item.id]) {
-          item.evidence = existingPhotosMap[item.id];
-        }
+        item.evidence = existingPhotosMap[item.id] || DEFAULT_EVIDENCE_BY_STAGE[item.id] || '';
         return item;
       });
       signersList = JSON.parse(JSON.stringify(TMS_DEFAULT_SIGNERS));
 
       normalizeAllData();
-      saveAllToStorage(true, "Data TMS (As of Oct 2026) berhasil dimuat!");
+      saveAllToStorage(true, "Data TMS Combined Stage 1&2 berhasil dimuat!");
+      renderAll();
+    }
+
+    // Fungsi Khusus Tombol: Kembalikan ke Versi Project Management TMS - Combined Stage 1&2 Beserta Seluruh 11 Gambarnya
+    function restoreCombinedStage1And2WithImages() {
+      docMeta = JSON.parse(JSON.stringify(TMS_DEFAULT_META));
+      pdcaList = JSON.parse(JSON.stringify(TMS_DEFAULT_PDCA));
+      capaList = JSON.parse(JSON.stringify(TMS_DEFAULT_CAPA)).map(item => {
+        item.evidence = DEFAULT_EVIDENCE_BY_STAGE[item.id] || generateRealisticScreenJpeg(item.id);
+        savePhotoToVault(item.id, item.evidence);
+        return item;
+      });
+      signersList = JSON.parse(JSON.stringify(TMS_DEFAULT_SIGNERS));
+
+      normalizeAllData();
+
+      const snap = createLeanSnapshotObject('Versi Combined Stage 1&2 (Lengkap + 11 Gambar)');
+      snapshotsList.unshift(snap);
+      if (snapshotsList.length > 25) snapshotsList.pop();
+
+      saveAllToStorage(true, "Versi Combined Stage 1&2 beserta 11 gambar bukti berhasil dipulihkan!");
       renderAll();
     }
 
