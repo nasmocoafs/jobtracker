@@ -875,34 +875,43 @@
       "11.0": "STAGE1.9"
     };
 
-    // Generator Gambar Bukti Default (SVG Data URI Jernih) Sesuai Tangkapan Layar Modul TMS
-    function generateModuleEvidenceSvg(stageId, title,accentColor, rowsText) {
+    function escapeXmlSvg(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+
+    // Generator Gambar Bukti Default (SVG Base64 Jernih & Bebas Error XML) Sesuai Tangkapan Layar Modul TMS
+    function generateModuleEvidenceSvg(stageId, title, accentColor, rowsText) {
+      const safeStageId = escapeXmlSvg(stageId);
+      const safeTitle = escapeXmlSvg(title);
       const lines = rowsText.map((r, i) => `
         <rect x="78" y="${38 + i * 22}" width="228" height="17" rx="3" fill="${i % 2 === 0 ? '#f8fafc' : '#ffffff'}" stroke="#e2e8f0" stroke-width="0.8"/>
-        <text x="84" y="${49 + i * 22}" font-family="Inter, sans-serif" font-size="7.5" font-weight="600" fill="#1e293b">${r}</text>
+        <text x="84" y="${49 + i * 22}" font-family="Inter, Arial, sans-serif" font-size="7.2" font-weight="600" fill="#1e293b">${escapeXmlSvg(r)}</text>
         <rect x="268" y="${41 + i * 22}" width="32" height="11" rx="2" fill="#dcfce7"/>
-        <text x="274" y="${49 + i * 22}" font-family="Inter, sans-serif" font-size="6.5" font-weight="700" fill="#15803d">ACTIVE</text>
+        <text x="274" y="${49 + i * 22}" font-family="Inter, Arial, sans-serif" font-size="6.2" font-weight="700" fill="#15803d">ACTIVE</text>
       `).join('');
 
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" width="640" height="280">
         <rect width="320" height="140" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-        <!-- Left Sidebar -->
         <rect x="2" y="2" width="68" height="136" rx="4" fill="#0f172a"/>
-        <text x="10" y="16" font-family="Inter, sans-serif" font-size="8" font-weight="800" fill="#ffffff">TMS SYSTEM</text>
+        <text x="10" y="16" font-family="Inter, Arial, sans-serif" font-size="8" font-weight="800" fill="#ffffff">TMS SYSTEM</text>
         <rect x="8" y="24" width="56" height="10" rx="2" fill="${accentColor}"/>
-        <text x="12" y="31" font-family="Inter, sans-serif" font-size="6" font-weight="700" fill="#ffffff">${stageId}</text>
+        <text x="12" y="31" font-family="Inter, Arial, sans-serif" font-size="6" font-weight="700" fill="#ffffff">${safeStageId}</text>
         <rect x="8" y="40" width="52" height="6" rx="1.5" fill="#334155"/>
         <rect x="8" y="52" width="46" height="6" rx="1.5" fill="#334155"/>
         <rect x="8" y="64" width="54" height="6" rx="1.5" fill="#334155"/>
         <rect x="8" y="76" width="40" height="6" rx="1.5" fill="#334155"/>
-        <!-- Top Bar -->
-        <rect x="72" y="2" width="246" height="26" fill="${accentColor}" opacity="0.12"/>
-        <text x="80" y="14" font-family="Inter, sans-serif" font-size="8.5" font-weight="800" fill="#0f172a">${title}</text>
-        <text x="80" y="23" font-family="Inter, sans-serif" font-size="6.5" font-weight="600" fill="#475569">Toyota Mobile Service • Verified System Screen</text>
-        <!-- Content Rows -->
+        <rect x="72" y="2" width="246" height="26" fill="${accentColor}" fill-opacity="0.12"/>
+        <text x="80" y="14" font-family="Inter, Arial, sans-serif" font-size="8.2" font-weight="800" fill="#0f172a">${safeTitle}</text>
+        <text x="80" y="23" font-family="Inter, Arial, sans-serif" font-size="6.5" font-weight="600" fill="#475569">Toyota Mobile Service • Verified System Screen</text>
         ${lines}
       </svg>`;
-      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+      return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
     }
 
     const DEFAULT_EVIDENCE_BY_STAGE = {
@@ -1196,6 +1205,83 @@
     let signersList = [];
     let snapshotsList = [];
     let quickUploadTargetId = null;
+    let hoveredCapaPhotoId = null;
+
+    // ============================================================================
+    // BRANKAS PENYIMPANAN FOTO PERMANEN (IndexedDB - Kapasitas >100MB, Anti Hilang)
+    // ============================================================================
+    const PHOTO_DB_NAME = 'PMR_Evidence_Photo_Vault';
+    const PHOTO_STORE_NAME = 'photos_by_stage';
+
+    function openPhotoVaultDb() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+          resolve(null);
+          return;
+        }
+        const req = indexedDB.open(PHOTO_DB_NAME, 1);
+        req.onupgradeneeded = function(e) {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(PHOTO_STORE_NAME)) {
+            db.createObjectStore(PHOTO_STORE_NAME);
+          }
+        };
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function savePhotoToVault(stageId, base64Data) {
+      if (!stageId || !base64Data) return;
+      try {
+        const db = await openPhotoVaultDb();
+        if (!db) return;
+        const tx = db.transaction(PHOTO_STORE_NAME, 'readwrite');
+        tx.objectStore(PHOTO_STORE_NAME).put(base64Data, stageId);
+      } catch (e) {
+        console.warn("Vault save warning:", e);
+      }
+    }
+
+    async function restoreAllPhotosFromVault() {
+      try {
+        const db = await openPhotoVaultDb();
+        if (!db) return;
+        const tx = db.transaction(PHOTO_STORE_NAME, 'readonly');
+        const store = tx.objectStore(PHOTO_STORE_NAME);
+        const req = store.openCursor();
+        let updated = false;
+
+        req.onsuccess = function(e) {
+          const cursor = e.target.result;
+          if (cursor) {
+            const stageId = cursor.key;
+            const photoData = cursor.value;
+            const item = capaList.find(c => c.id === stageId);
+            if (item && photoData && photoData.startsWith('data:image/')) {
+              if (!item.evidence || item.evidence.startsWith('data:image/svg+xml')) {
+                item.evidence = photoData;
+                updated = true;
+              }
+            }
+            cursor.continue();
+          } else if (updated) {
+            saveAllToStorage(false, "Foto bukti berhasil dipulihkan dari brankas perangkat!");
+            renderCapaTable();
+          }
+        };
+      } catch (e) {
+        console.warn("Vault restore warning:", e);
+      }
+    }
+
+    function isBrokenSvgEvidence(str) {
+      if (!str || typeof str !== 'string') return true;
+      if (str === '__HAS_ATTACHED_EVIDENCE__') return true;
+      // Deteksi SVG lama yang belum di-escape karakter '&' (penyebab gambar pecah)
+      if (str.startsWith('data:image/svg+xml;utf8,')) return true;
+      return false;
+    }
 
     function parseSubTasksFromText(text, parentStatus = "Closed", defaultDueDate = "-", defaultPic = "Erwin (IST)") {
       if (!text || typeof text !== 'string') return [];
@@ -1309,9 +1395,9 @@
           const dueDate = item.dueDate || item.target || item.date || item['Due Date'] || 'Oktober 2026';
           let status = item.status || item.state || item['Status'] || 'Closed';
 
-          // Pastikan Foto Bukti Selalu Muncul (ambil dari item, atau default modul TMS jika kosong)
+          // Pastikan Foto Bukti Selalu Muncul & Perbaiki SVG lama yang pecah karena simbol '&'
           let evidence = item.evidence || item.foto || item.bukti || '';
-          if (!evidence || evidence === '__HAS_ATTACHED_EVIDENCE__') {
+          if (isBrokenSvgEvidence(evidence)) {
             evidence = DEFAULT_EVIDENCE_BY_STAGE[id] || '';
           }
 
@@ -1367,6 +1453,7 @@
       loadAllFromStorage();
       renderAll();
       setupKeyboardShortcuts();
+      restoreAllPhotosFromVault();
     };
 
     function setupKeyboardShortcuts() {
@@ -1374,6 +1461,28 @@
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
           e.preventDefault();
           handleManualSave();
+        }
+      });
+
+      // Fitur Paste Screenshot Langsung (Ctrl+V) ke Baris Foto yang Sedang Ditunjuk Kursor atau Modal
+      window.addEventListener('paste', function(e) {
+        const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+        if (!items) return;
+
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            const blob = items[i].getAsFile();
+            if (!blob) continue;
+
+            const capaModalOpen = !document.getElementById('capaModal').classList.contains('hidden');
+            const targetId = capaModalOpen ? 'MODAL' : hoveredCapaPhotoId;
+
+            if (targetId) {
+              e.preventDefault();
+              compressAndApplyImageFile(blob, targetId);
+              break;
+            }
+          }
         }
       });
     }
@@ -1768,21 +1877,35 @@
         if (item.status === 'In Progress') statusClass = "bg-amber-100 text-amber-800 border-amber-300";
         if (item.status === 'Closed') statusClass = "bg-emerald-100 text-emerald-800 border-emerald-300";
 
-        const imgSrc = item.evidence || DEFAULT_EVIDENCE_BY_STAGE[item.id] || '';
+        const imgSrc = (!isBrokenSvgEvidence(item.evidence) ? item.evidence : '') || DEFAULT_EVIDENCE_BY_STAGE[item.id] || '';
+        if (imgSrc && !item.evidence) item.evidence = imgSrc;
 
-        // Foto bukti thumbnail + tombol ganti foto instan 1-klik
+        // Foto bukti thumbnail + tombol ganti foto instan 1-klik + Drag & Drop + Paste (Ctrl+V)
         let evidenceHtml = `
-          <div class="evidence-thumb-container mx-auto bg-slate-100 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 text-[10px] gap-1 cursor-pointer hover:bg-slate-200/70 transition" onclick="triggerQuickRowPhotoUpload('${item.id}', event)">
-            <span>📷 Upload Bukti</span>
+          <div class="evidence-thumb-container mx-auto bg-slate-100 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 text-[10px] gap-1 cursor-pointer hover:bg-slate-200/70 transition"
+               onmouseenter="hoveredCapaPhotoId='${item.id}'"
+               onmouseleave="if(hoveredCapaPhotoId==='${item.id}') hoveredCapaPhotoId=null"
+               ondragover="event.preventDefault(); this.classList.add('ring-2','ring-blue-500')"
+               ondragleave="this.classList.remove('ring-2','ring-blue-500')"
+               ondrop="handleDirectPhotoDrop(event, '${item.id}')"
+               onclick="triggerQuickRowPhotoUpload('${item.id}', event)"
+               title="Klik untuk pilih foto, Tarik file gambar ke sini, atau arahkan kursor lalu tekan Ctrl+V untuk Paste Screenshot">
+            <span>📷 Upload / Ctrl+V</span>
           </div>
         `;
         if (imgSrc) {
           evidenceHtml = `
-            <div class="evidence-thumb-container mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-2xs relative group bg-white">
+            <div class="evidence-thumb-container mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-2xs relative group bg-white"
+                 onmouseenter="hoveredCapaPhotoId='${item.id}'"
+                 onmouseleave="if(hoveredCapaPhotoId==='${item.id}') hoveredCapaPhotoId=null"
+                 ondragover="event.preventDefault(); this.classList.add('ring-2','ring-blue-500')"
+                 ondragleave="this.classList.remove('ring-2','ring-blue-500')"
+                 ondrop="handleDirectPhotoDrop(event, '${item.id}')"
+                 title="Arahkan kursor ke sini lalu tekan Ctrl+V untuk langsung menempelkan (Paste) Screenshot asli Anda">
               <img src="${imgSrc}" alt="Bukti ${escapeHtml(item.id)}" class="w-full h-full object-contain bg-white cursor-pointer" onclick="openImageLightboxById('${item.id}')">
               <div class="no-print absolute inset-x-0 bottom-0 bg-slate-900/80 opacity-0 group-hover:opacity-100 transition flex items-center justify-between px-1.5 py-1 text-[9px] text-white font-bold">
                 <button type="button" onclick="openImageLightboxById('${item.id}')" class="hover:text-blue-300">🔍 Zoom</button>
-                <button type="button" onclick="triggerQuickRowPhotoUpload('${item.id}', event)" class="hover:text-emerald-300">📷 Ganti</button>
+                <button type="button" onclick="triggerQuickRowPhotoUpload('${item.id}', event)" class="hover:text-emerald-300">📷 Ganti / Ctrl+V</button>
               </div>
             </div>
           `;
@@ -2350,6 +2473,37 @@
       }
     }
 
+    function handleSubTaskSelectChange(idx, val) {
+      if (!activeModalSubTasks[idx]) return;
+      if (val === '__custom__') {
+        if (['Done', 'On Trial', 'In Progress', 'Open'].includes(activeModalSubTasks[idx].status)) {
+          activeModalSubTasks[idx].status = 'Lain-lain';
+        }
+        renderSubTasksEditor(activeModalSubTasks, true);
+        setTimeout(() => {
+          const inputEl = document.getElementById(`customStatusInput_${idx}`);
+          if (inputEl) {
+            inputEl.focus();
+            inputEl.select();
+          }
+        }, 50);
+      } else {
+        activeModalSubTasks[idx].status = val;
+        if (val === 'Done' || val === 'Closed') {
+          activeModalSubTasks[idx].nextPdca = 'Done (Closed)';
+        }
+        renderSubTasksEditor(activeModalSubTasks, true);
+        document.getElementById('capaStatusInput').value = computeOverallStatusFromSubTasks(activeModalSubTasks);
+      }
+    }
+
+    function updateSubTaskCustomStatusText(idx, customVal) {
+      if (!activeModalSubTasks[idx]) return;
+      activeModalSubTasks[idx].status = customVal;
+      document.getElementById('capaSolutionInput').value = serializeSubTasksToText(activeModalSubTasks);
+      document.getElementById('capaStatusInput').value = computeOverallStatusFromSubTasks(activeModalSubTasks);
+    }
+
     function addSubTaskRow() {
       const defaultDue = document.getElementById('capaDueDateInput').value || 'Desember 2026';
       const defaultPic = document.getElementById('capaPicInput').value || 'Erwin (IST)';
@@ -2459,8 +2613,12 @@
           item.status = status;
           item.subTasks = subTasks;
           item.evidence = evidence || DEFAULT_EVIDENCE_BY_STAGE[id] || item.evidence;
+          if (evidence && !evidence.startsWith('data:image/svg+xml')) {
+            savePhotoToVault(id, evidence);
+          }
         }
       } else {
+        const finalEvidence = evidence || DEFAULT_EVIDENCE_BY_STAGE[id] || '';
         capaList.push({
           id,
           type,
@@ -2470,9 +2628,12 @@
           pic: summaryPic,
           dueDate: summaryDue,
           status,
-          evidence: evidence || DEFAULT_EVIDENCE_BY_STAGE[id] || '',
+          evidence: finalEvidence,
           subTasks
         });
+        if (evidence && !evidence.startsWith('data:image/svg+xml')) {
+          savePhotoToVault(id, evidence);
+        }
       }
 
       closeModal('capaModal');
@@ -2480,6 +2641,71 @@
       renderCapaCategoryFilter();
       renderCapaTable();
       renderKPI();
+    }
+
+    // Fungsi Kompresi Gambar Terpadu untuk Upload File, Drag & Drop, maupun Paste (Ctrl+V)
+    function compressAndApplyImageFile(file, targetId) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxDim = 850;
+          let w = img.width;
+          let h = img.height;
+
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.80);
+
+          if (targetId === 'MODAL') {
+            setEvidencePhotoPreview(compressedBase64);
+            showToast("Screenshot berhasil ditempel ke form!", "📷");
+          } else {
+            const item = capaList.find(c => c.id === targetId);
+            if (item) {
+              item.evidence = compressedBase64;
+              savePhotoToVault(item.id, compressedBase64);
+              saveAllToStorage(true, `Foto bukti ${item.id} tersimpan permanen!`);
+              renderCapaTable();
+            }
+          }
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleEvidenceFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      compressAndApplyImageFile(file, 'MODAL');
+    }
+
+    function handleDirectPhotoDrop(e, capaId) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.currentTarget) e.currentTarget.classList.remove('ring-2', 'ring-blue-500');
+      const file = e.dataTransfer?.files?.[0];
+      if (file && file.type.startsWith('image/')) {
+        compressAndApplyImageFile(file, capaId);
+      }
     }
 
     // Fungsi Upload / Ganti Foto Langsung dari Baris Tabel (1-Klik)
@@ -2499,43 +2725,8 @@
     function handleQuickRowPhotoSelected(e) {
       const file = e.target.files[0];
       if (!file || !quickUploadTargetId) return;
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const maxDim = 800;
-          let w = img.width;
-          let h = img.height;
-
-          if (w > maxDim || h > maxDim) {
-            if (w > h) {
-              h = Math.round((h * maxDim) / w);
-              w = maxDim;
-            } else {
-              w = Math.round((w * maxDim) / h);
-              h = maxDim;
-            }
-          }
-
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.78);
-          const item = capaList.find(c => c.id === quickUploadTargetId);
-          if (item) {
-            item.evidence = compressedBase64;
-            saveAllToStorage(true, `Foto bukti ${item.id} diperbarui!`);
-            renderCapaTable();
-          }
-          quickUploadTargetId = null;
-        };
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
+      compressAndApplyImageFile(file, quickUploadTargetId);
+      quickUploadTargetId = null;
     }
 
     function setEvidencePhotoPreview(base64) {
