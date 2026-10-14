@@ -676,28 +676,31 @@
 
   <!-- MODAL: CAPA Item with Sub-tasks Editor & Photo Evidence -->
   <div id="capaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 overflow-y-auto no-print">
-    <div class="bg-white rounded-2xl max-w-4xl w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs my-6">
-      <div class="flex items-center justify-between border-b pb-2">
-        <h4 id="capaModalTitle" class="text-sm font-black text-slate-900">Tambah Tindakan CAPA</h4>
-        <button onclick="closeModal('capaModal')" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
+    <div class="bg-white rounded-2xl max-w-5xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-200 text-xs my-6">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div>
+          <h4 id="capaModalTitle" class="text-sm sm:text-base font-black text-slate-900">Tambah Tindakan CAPA</h4>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Kelola topik masalah, rincian countermeasure per poin, dan lampiran foto bukti.</p>
+        </div>
+        <button onclick="closeModal('capaModal')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-base font-bold transition">&times;</button>
       </div>
       <input type="hidden" id="capaEditId">
-      <div class="space-y-3">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div>
+      <div class="space-y-3.5">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div class="sm:col-span-3">
             <label class="block font-bold text-slate-700 mb-1">ID Tindakan (Sheet Kolom A)</label>
-            <input type="text" id="capaIdInput" placeholder="Contoh: STAGE1.1, STAGE2.1" class="w-full px-3 py-2 border rounded-lg font-mono font-bold">
+            <input type="text" id="capaIdInput" placeholder="Contoh: STAGE1.1, STAGE2.1" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
           </div>
-          <div>
+          <div class="sm:col-span-5">
             <label class="block font-bold text-slate-700 mb-1">Jenis Tindakan</label>
-            <select id="capaTypeInput" class="w-full px-3 py-2 border rounded-lg font-bold">
+            <select id="capaTypeInput" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
               <option value="Preventive">Preventive (Pencegahan)</option>
               <option value="Corrective">Corrective (Perbaikan Langsung)</option>
             </select>
           </div>
-          <div>
+          <div class="sm:col-span-4">
             <label class="block font-bold text-slate-700 mb-1">Status Total Topik</label>
-            <select id="capaStatusInput" class="w-full px-3 py-2 border rounded-lg font-bold">
+            <select id="capaStatusInput" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
               <option value="Closed">Closed</option>
               <option value="In Progress">In Progress</option>
               <option value="Open">Open</option>
@@ -707,7 +710,7 @@
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Kategori / Topik Masalah (Sheet Kolom B)</label>
-          <input type="text" id="capaCategoryInput" list="categoryDatalist" placeholder="Contoh: NIS Service - Flagging TMS & Opsi Technician Advisor" class="w-full px-3 py-2 border rounded-lg font-semibold">
+          <input type="text" id="capaCategoryInput" list="categoryDatalist" placeholder="Contoh: NIS Service - Flagging TMS & Opsi Technician Advisor" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
           <datalist id="categoryDatalist"></datalist>
         </div>
 
@@ -716,50 +719,55 @@
         <input type="hidden" id="capaPicInput">
         <input type="hidden" id="capaDueDateInput">
 
-        <!-- Editor Detail Countermeasure per Sub-Aktivitas (No, Countermeasure, Status, Due Date, PIC, Jadwal Next PDCA) -->
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-800 text-[11px] flex items-center gap-1.5">
-              <span>🎯 Detail Rencana Tindak Lanjut / Countermeasure (No, Countermeasure, Status, Due Date, PIC, Jadwal Next PDCA):</span>
-              <span id="subTaskCountBadge" class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">0 Poin</span>
-            </span>
-            <button type="button" onclick="addSubTaskRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold shadow-2xs">
-              + Tambah Baris Countermeasure
+        <!-- Editor Detail Countermeasure per Sub-Aktivitas -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/90 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200/80">
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-slate-800 text-xs">🎯 Detail Rencana Tindak Lanjut (Countermeasure)</span>
+              <span id="subTaskCountBadge" class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold whitespace-nowrap">0 Poin</span>
+            </div>
+            <button type="button" onclick="addSubTaskRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-[11px] font-bold shadow-xs whitespace-nowrap flex items-center gap-1 transition active:scale-95">
+              <span>+ Tambah Baris Countermeasure</span>
             </button>
           </div>
-          <div class="hidden sm:grid sm:grid-cols-12 gap-1.5 px-2 pt-1 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-            <div class="col-span-4">No & Countermeasure</div>
-            <div class="col-span-3">Status Progres</div>
-            <div class="col-span-2">Due Date</div>
-            <div class="col-span-1">PIC / Dept</div>
-            <div class="col-span-2">Jadwal Next PDCA</div>
+
+          <!-- Header Kolom Tabel Sub-Task -->
+          <div class="hidden sm:grid sm:grid-cols-[28px_2.3fr_1.5fr_1.1fr_1.2fr_1.2fr_28px] gap-2 px-2.5 pt-0.5 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider items-center">
+            <div class="text-center">No</div>
+            <div>Countermeasure</div>
+            <div>Status Progres</div>
+            <div>Due Date</div>
+            <div>PIC / Dept</div>
+            <div>Jadwal Next PDCA</div>
+            <div class="text-center"></div>
           </div>
+
           <div id="subTasksList" class="space-y-2 max-h-64 overflow-y-auto pr-1">
             <!-- Rendered by JS -->
           </div>
         </div>
 
         <!-- Modul Foto Bukti -->
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-          <label class="block font-bold text-slate-700">Foto Bukti Tindak Lanjut (Evidence)</label>
-          <div class="flex items-center gap-3">
-            <div id="modalEvidencePreview" class="w-24 h-16 bg-slate-200 rounded-lg border border-slate-300 flex items-center justify-center text-slate-400 text-xs overflow-hidden shrink-0">
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3.5">
+            <div id="modalEvidencePreview" class="w-24 h-16 bg-white rounded-xl border border-slate-300 flex items-center justify-center text-slate-400 text-[11px] font-medium overflow-hidden shrink-0 shadow-2xs">
               <span>Tanpa Foto</span>
             </div>
-            <div class="space-y-1 flex-grow">
-              <input type="file" id="capaEvidenceFileInput" accept="image/*" capture="environment" onchange="handleEvidenceFileUpload(event)" class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-              <p class="text-[10px] text-slate-500">Foto dikompresi otomatis di sisi browser agar hemat memori.</p>
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-800 text-xs">Foto Bukti Tindak Lanjut (Evidence)</label>
+              <input type="file" id="capaEvidenceFileInput" accept="image/*" capture="environment" onchange="handleEvidenceFileUpload(event)" class="text-xs text-slate-600 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+              <p class="text-[10px] text-slate-500">Pilih file gambar atau tekan <strong>Ctrl+V</strong> untuk menempel screenshot langsung.</p>
             </div>
-            <button type="button" onclick="clearEvidencePhoto()" id="clearPhotoBtn" class="hidden text-rose-600 hover:text-rose-800 text-xs font-bold px-2 py-1 border border-rose-200 rounded-lg">
-              Reset ke Default
-            </button>
           </div>
+          <button type="button" onclick="clearEvidencePhoto()" id="clearPhotoBtn" class="hidden self-end sm:self-center text-rose-600 hover:bg-rose-50 text-xs font-bold px-3 py-1.5 border border-rose-200 rounded-xl whitespace-nowrap transition">
+            Hapus Foto
+          </button>
           <input type="hidden" id="capaEvidenceBase64">
         </div>
       </div>
-      <div class="flex justify-end gap-2 pt-2 border-t">
-        <button onclick="closeModal('capaModal')" class="px-4 py-2 border rounded-lg text-slate-700 font-bold">Batal</button>
-        <button onclick="saveCapaItem()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold">Simpan</button>
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+        <button onclick="closeModal('capaModal')" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 rounded-xl text-slate-700 font-bold transition">Batal</button>
+        <button onclick="saveCapaItem()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-sm transition">Simpan</button>
       </div>
     </div>
   </div>
@@ -2850,7 +2858,7 @@
 
       if (activeModalSubTasks.length === 0) {
         container.innerHTML = `
-          <div class="text-[11px] text-slate-400 italic py-2 text-center">
+          <div class="text-[11px] text-slate-400 italic py-3 text-center bg-white rounded-xl border border-dashed border-slate-200">
             Belum ada baris countermeasure. Klik '+ Tambah Baris Countermeasure'.
           </div>
         `;
@@ -2862,14 +2870,14 @@
       activeModalSubTasks.forEach((st, idx) => {
         const isCustom = !standardStatuses.includes(st.status);
         const div = document.createElement('div');
-        div.className = "grid grid-cols-1 sm:grid-cols-12 gap-1.5 items-center bg-white p-2 rounded-lg border border-slate-200 text-xs shadow-3xs";
+        div.className = "grid grid-cols-1 sm:grid-cols-[28px_2.3fr_1.5fr_1.1fr_1.2fr_1.2fr_28px] gap-2 items-center bg-white p-2.5 rounded-xl border border-slate-200/90 text-xs shadow-2xs hover:border-slate-300 transition";
         div.innerHTML = `
-          <div class="sm:col-span-4 flex items-center gap-1.5">
-            <span class="font-bold text-slate-400 text-[10px] w-4 text-center shrink-0">${idx + 1}.</span>
-            <input type="text" data-field="text" value="${escapeHtml(st.text)}" placeholder="Uraian countermeasure..." oninput="activeModalSubTasks[${idx}].text = this.value" class="w-full px-2 py-1 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium text-slate-800">
+          <div class="text-center font-mono font-bold text-slate-400 text-[11px]">${idx + 1}.</div>
+          <div>
+            <input type="text" data-field="text" value="${escapeHtml(st.text)}" placeholder="Uraian countermeasure..." oninput="activeModalSubTasks[${idx}].text = this.value" class="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-800">
           </div>
-          <div class="sm:col-span-3 flex items-center gap-1">
-            <select data-field="statusSelect" onchange="handleSubTaskSelectChange(${idx}, this.value)" class="w-full text-[11px] font-bold px-1.5 py-1 border rounded ${st.status === 'Open' || isCustom ? 'text-rose-700 bg-rose-50 border-rose-300' : 'text-slate-800 bg-slate-50'}">
+          <div class="flex items-center gap-1.5">
+            <select data-field="statusSelect" onchange="handleSubTaskSelectChange(${idx}, this.value)" class="w-full text-[11px] font-bold px-2 py-1.5 border rounded-lg focus:outline-none ${st.status === 'Open' || isCustom ? 'text-rose-700 bg-rose-50 border-rose-300' : (st.status === 'Done' || st.status === 'Closed' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-slate-800 bg-slate-50 border-slate-200')}">
               <option value="Done" ${st.status === 'Done' || st.status === 'Closed' ? 'selected' : ''}>✓ Done</option>
               <option value="On Trial" ${st.status === 'On Trial' ? 'selected' : ''}>⏳ On Trial</option>
               <option value="In Progress" ${st.status === 'In Progress' ? 'selected' : ''}>⚡ In Progress</option>
@@ -2883,19 +2891,21 @@
                      value="${escapeHtml(st.status || 'Lain-lain')}"
                      placeholder="Ketik status..."
                      oninput="updateSubTaskCustomStatusText(${idx}, this.value)"
-                     class="w-28 px-1.5 py-1 text-[11px] font-bold border-2 border-rose-400 bg-rose-50 text-rose-800 rounded focus:outline-none focus:ring-1 focus:ring-rose-500 shrink-0"
+                     class="w-full min-w-[95px] px-2 py-1.5 text-[11px] font-bold border-2 border-rose-400 bg-rose-50 text-rose-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-500"
                      title="Ketik status custom (contoh: Copy by IST, Develop IST, Discuss ACC, UR by AFS)">
             ` : ''}
           </div>
-          <div class="sm:col-span-2">
-            <input type="text" data-field="dueDate" value="${escapeHtml(st.dueDate || '')}" placeholder="Due Date..." oninput="activeModalSubTasks[${idx}].dueDate = this.value" class="w-full px-2 py-1 text-[11px] font-mono border border-slate-200 rounded text-slate-700">
+          <div>
+            <input type="text" data-field="dueDate" value="${escapeHtml(st.dueDate || '')}" placeholder="Contoh: Okt 2026" oninput="activeModalSubTasks[${idx}].dueDate = this.value" class="w-full px-2.5 py-1.5 text-[11px] font-mono border border-slate-200 rounded-lg text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
           </div>
-          <div class="sm:col-span-1">
-            <input type="text" data-field="pic" value="${escapeHtml(st.pic || '')}" placeholder="PIC / Dept..." oninput="activeModalSubTasks[${idx}].pic = this.value" class="w-full px-2 py-1 text-[11px] font-semibold border border-slate-200 rounded text-slate-800">
+          <div>
+            <input type="text" data-field="pic" value="${escapeHtml(st.pic || '')}" placeholder="Nama (Dept)" oninput="activeModalSubTasks[${idx}].pic = this.value" class="w-full px-2.5 py-1.5 text-[11px] font-semibold border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
           </div>
-          <div class="sm:col-span-2 flex items-center gap-1">
-            <input type="text" data-field="nextPdca" value="${escapeHtml(st.nextPdca || '')}" placeholder="Jadwal Next PDCA..." oninput="activeModalSubTasks[${idx}].nextPdca = this.value" class="w-full px-2 py-1 text-[11px] font-mono border border-slate-200 rounded text-indigo-700 font-semibold">
-            <button type="button" onclick="removeSubTaskRow(${idx})" class="text-rose-500 hover:text-rose-700 font-bold px-1 text-sm shrink-0" title="Hapus baris">&times;</button>
+          <div>
+            <input type="text" data-field="nextPdca" value="${escapeHtml(st.nextPdca || '')}" placeholder="Jadwal Next PDCA" oninput="activeModalSubTasks[${idx}].nextPdca = this.value" class="w-full px-2.5 py-1.5 text-[11px] font-mono border border-slate-200 rounded-lg text-indigo-700 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+          <div class="flex items-center justify-center">
+            <button type="button" onclick="removeSubTaskRow(${idx})" class="w-6 h-6 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 font-bold flex items-center justify-center text-sm transition" title="Hapus baris">&times;</button>
           </div>
         `;
         container.appendChild(div);
