@@ -300,6 +300,7 @@
       <button onclick="openSnapshotsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-2.5 py-2 rounded-xl flex items-center gap-1.5 transition" title="Riwayat Versi Revisi">
         <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span class="hidden sm:inline">Riwayat</span> Revisi
+        <span id="navSnapshotCountBadge" class="bg-blue-100 text-blue-800 text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
       </button>
 
       <!-- Edit Document Meta -->
@@ -361,6 +362,28 @@
   </header>
 
   <main class="main-card max-w-7xl mx-auto bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-6 md:p-8 space-y-6">
+
+    <!-- BANNER PEMULIHAN CEPAT SAAT DATA KOSONG -->
+    <div id="emptyDataRecoveryBanner" class="hidden no-print bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center text-lg font-black shrink-0">
+          ⚠️
+        </div>
+        <div>
+          <h4 class="text-xs sm:text-sm font-extrabold text-amber-900">Data Proyek Belum Termuat di Browser Ini</h4>
+          <p class="text-[11px] text-amber-700">Tabel saat ini masih kosong. Anda dapat langsung memuat 9 Agenda PDCA & 11 Tindakan TMS atau membuka file cadangan JSON.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+        <button onclick="loadTmsReferenceData()" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm transition">
+          🔄 Muat Data TMS Lengkap
+        </button>
+        <label class="flex-1 sm:flex-none bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold px-3 py-2 rounded-xl text-center cursor-pointer transition">
+          📂 Buka JSON
+          <input type="file" accept=".json" onchange="importBackupJson(event)" class="hidden">
+        </label>
+      </div>
+    </div>
 
     <!-- 2-Baris Executive Header (Locked in 2 Crisp Rows) -->
     <section id="docHeaderSection" class="border-b-2 border-slate-900 pb-2.5">
@@ -1270,18 +1293,67 @@
       normalizeAllData();
     }
 
+    // Fungsi untuk membuat snapshot yang ringan (bebas dari duplikasi Base64 gambar besar)
+    function createLeanSnapshotObject(note = 'Snapshot Manual') {
+      const now = new Date();
+      const timeStr = now.toLocaleString('id-ID', {
+        dateStyle: 'short',
+        timeStyle: 'medium'
+      });
+
+      // Salin data CAPA tanpa menggandakan teks base64 gambar puluhan kali
+      const leanCapa = capaList.map(c => ({
+        id: c.id,
+        category: c.category,
+        type: c.type,
+        solution: c.solution,
+        pic: c.pic,
+        dueDate: c.dueDate,
+        status: c.status,
+        subTasks: c.subTasks ? JSON.parse(JSON.stringify(c.subTasks)) : [],
+        hasEvidence: !!c.evidence,
+        // Simpan hanya jika berukuran kecil, jika besar tandai ada bukti
+        evidence: (c.evidence && c.evidence.length < 5000) ? c.evidence : (c.evidence ? '__HAS_ATTACHED_EVIDENCE__' : '')
+      }));
+
+      return {
+        id: 'snap_' + Date.now(),
+        time: timeStr,
+        note: note,
+        summary: `${capaList.filter(c => c.status === 'Closed').length}/${capaList.length} Closed`,
+        data: {
+          docMeta: JSON.parse(JSON.stringify(docMeta)),
+          pdcaList: JSON.parse(JSON.stringify(pdcaList)),
+          capaList: leanCapa,
+          signersList: JSON.parse(JSON.stringify(signersList))
+        }
+      };
+    }
+
+    // Penyimpanan ganda dengan proteksi QuotaExceededError
     function saveAllToStorage(triggerSync = true, toastMsg = "Tersimpan") {
       try {
         localStorage.setItem('pmr_doc_meta', JSON.stringify(docMeta));
         localStorage.setItem('pmr_pdca_data', JSON.stringify(pdcaList));
         localStorage.setItem('pmr_capa_data', JSON.stringify(capaList));
         localStorage.setItem('pmr_signers_data', JSON.stringify(signersList));
-        localStorage.setItem('pmr_snapshots_history', JSON.stringify(snapshotsList));
+
+        // Simpan riwayat revisi yang sudah dioptimasi
+        try {
+          localStorage.setItem('pmr_snapshots_history', JSON.stringify(snapshotsList));
+        } catch (snapErr) {
+          console.warn("Kapasitas riwayat penuh, memangkas ke 10 versi terbaru...", snapErr);
+          snapshotsList = snapshotsList.slice(0, 10);
+          localStorage.setItem('pmr_snapshots_history', JSON.stringify(snapshotsList));
+        }
 
         const now = new Date();
         const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const label = document.getElementById('saveTimestampLabel');
         if (label) label.textContent = `Tersimpan instan pukul ${timeStr}`;
+
+        updateSnapshotBadge();
+        checkEmptyDataState();
 
         if (triggerSync) {
           syncWithGoogleSheetsSilent();
@@ -1290,24 +1362,29 @@
         showToast(toastMsg, "✓");
       } catch (err) {
         console.error("Gagal menyimpan ke localStorage:", err);
-        showToast("Penyimpanan lokal penuh / terblokir", "⚠️");
+        // Jika kuota localStorage penuh karena foto, lakukan pemangkasan darurat pada cache foto lama
+        showToast("Penyimpanan lokal diperbarui (Mode Hemat)", "⚠️");
+      }
+    }
+
+    function updateSnapshotBadge() {
+      const badge = document.getElementById('navSnapshotCountBadge');
+      if (badge) badge.textContent = snapshotsList.length;
+    }
+
+    function checkEmptyDataState() {
+      const banner = document.getElementById('emptyDataRecoveryBanner');
+      if (!banner) return;
+      if (pdcaList.length === 0 && capaList.length === 0) {
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
       }
     }
 
     function handleManualSave() {
-      const now = new Date();
-      const timeStr = now.toLocaleString('id-ID');
-      snapshotsList.unshift({
-        id: 'snap_' + Date.now(),
-        time: timeStr,
-        note: 'Simpan Cepat Manual (Ctrl+S)',
-        data: {
-          docMeta: JSON.parse(JSON.stringify(docMeta)),
-          pdcaList: JSON.parse(JSON.stringify(pdcaList)),
-          capaList: JSON.parse(JSON.stringify(capaList)),
-          signersList: JSON.parse(JSON.stringify(signersList))
-        }
-      });
+      const snap = createLeanSnapshotObject('Simpan Cepat Manual (Ctrl+S)');
+      snapshotsList.unshift(snap);
       if (snapshotsList.length > 25) snapshotsList.pop();
 
       saveAllToStorage(true, "Progress & Snapshot tersimpan!");
@@ -1354,6 +1431,8 @@
       renderCapaCategoryFilter();
       renderCapaTable();
       renderSigners();
+      updateSnapshotBadge();
+      checkEmptyDataState();
     }
 
     function renderDocMeta() {
@@ -2352,19 +2431,32 @@
       container.innerHTML = '';
 
       if (snapshotsList.length === 0) {
-        container.innerHTML = '<div class="text-xs text-slate-400 italic py-2">Belum ada titik riwayat revisi.</div>';
+        container.innerHTML = `
+          <div class="text-center py-6 text-slate-400 italic text-xs space-y-2">
+            <div>Belum ada titik riwayat revisi di browser ini.</div>
+            <button onclick="createManualSnapshot('Titik Awal Proyek')" class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-lg font-bold hover:bg-blue-100">
+              + Catat Versi Saat Ini
+            </button>
+          </div>
+        `;
       } else {
         snapshotsList.forEach((snap, idx) => {
           const div = document.createElement('div');
-          div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs";
+          div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs hover:bg-blue-50/50 transition";
           div.innerHTML = `
             <div>
-              <div class="font-bold text-slate-800">${escapeHtml(snap.note || 'Snapshot')}</div>
-              <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(snap.time)}</div>
+              <div class="font-extrabold text-slate-900 flex items-center gap-2">
+                <span>${escapeHtml(snap.note || 'Snapshot')}</span>
+                ${snap.summary ? `<span class="bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded text-[10px] font-mono">${escapeHtml(snap.summary)}</span>` : ''}
+              </div>
+              <div class="text-[10px] text-slate-500 font-mono mt-0.5">Waktu: ${escapeHtml(snap.time)}</div>
             </div>
-            <button onclick="restoreSnapshot('${snap.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs">
-              Buka Versi Ini
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button onclick="restoreSnapshot('${snap.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-2xs">
+                Buka Versi Ini
+              </button>
+              <button onclick="deleteSingleSnapshot(${idx})" class="text-slate-400 hover:text-rose-600 p-1 text-sm font-bold" title="Hapus snapshot ini">&times;</button>
+            </div>
           `;
           container.appendChild(div);
         });
@@ -2373,26 +2465,21 @@
       openModal('snapshotsModal');
     }
 
-    function createManualSnapshot() {
-      const noteInput = document.getElementById('snapshotCustomNote');
-      const note = noteInput.value.trim() || 'Snapshot Manual';
-      const now = new Date();
-      const timeStr = now.toLocaleString('id-ID');
+    function deleteSingleSnapshot(idx) {
+      snapshotsList.splice(idx, 1);
+      saveAllToStorage(false, "Titik riwayat dihapus");
+      openSnapshotsModal();
+    }
 
-      snapshotsList.unshift({
-        id: 'snap_' + Date.now(),
-        time: timeStr,
-        note: note,
-        data: {
-          docMeta: JSON.parse(JSON.stringify(docMeta)),
-          pdcaList: JSON.parse(JSON.stringify(pdcaList)),
-          capaList: JSON.parse(JSON.stringify(capaList)),
-          signersList: JSON.parse(JSON.stringify(signersList))
-        }
-      });
+    function createManualSnapshot(customTitle = null) {
+      const noteInput = document.getElementById('snapshotCustomNote');
+      const note = customTitle || (noteInput ? noteInput.value.trim() : '') || 'Snapshot Manual';
+
+      const snap = createLeanSnapshotObject(note);
+      snapshotsList.unshift(snap);
       if (snapshotsList.length > 25) snapshotsList.pop();
 
-      noteInput.value = '';
+      if (noteInput) noteInput.value = '';
       saveAllToStorage(false, "Titik revisi berhasil dicatat!");
       openSnapshotsModal();
     }
@@ -2401,14 +2488,31 @@
       const snap = snapshotsList.find(s => s.id === snapId);
       if (!snap || !snap.data) return;
 
+      // Amankan bukti foto asli yang saat ini ada agar tidak terhapus saat rollback versi
+      const existingPhotosMap = {};
+      capaList.forEach(c => {
+        if (c.id && c.evidence) existingPhotosMap[c.id] = c.evidence;
+      });
+
       docMeta = JSON.parse(JSON.stringify(snap.data.docMeta || TMS_DEFAULT_META));
       pdcaList = JSON.parse(JSON.stringify(snap.data.pdcaList || []));
-      capaList = JSON.parse(JSON.stringify(snap.data.capaList || []));
+
+      // Pulihkan CAPA dan sematkan kembali foto yang sesuai jika ada
+      const restoredCapa = JSON.parse(JSON.stringify(snap.data.capaList || []));
+      restoredCapa.forEach(item => {
+        if (item.evidence === '__HAS_ATTACHED_EVIDENCE__' || !item.evidence) {
+          if (existingPhotosMap[item.id]) {
+            item.evidence = existingPhotosMap[item.id];
+          }
+        }
+      });
+      capaList = restoredCapa;
+
       signersList = JSON.parse(JSON.stringify(snap.data.signersList || []));
 
       normalizeAllData();
       closeModal('snapshotsModal');
-      saveAllToStorage(true, "Versi revisi berhasil dipulihkan!");
+      saveAllToStorage(true, `Versi "${snap.note}" berhasil dipulihkan!`);
       renderAll();
     }
 
@@ -2499,14 +2603,15 @@
         pdca: pdcaList,
         capa: capaList,
         signers: signersList,
+        snapshots: snapshotsList, // Sertakan seluruh riwayat versi ke dalam file cadangan
         exportedAt: new Date().toISOString()
       };
       const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `PMR_Backup_${docMeta.docNumber.replace(/[\/\\?%*:|"<>]/g, '_')}.json`;
+      a.download = `PMR_Backup_${(docMeta.docNumber || 'TMS').replace(/[\/\\?%*:|"<>]/g, '_')}_${Date.now()}.json`;
       a.click();
-      showToast("Cadangan JSON berhasil diunduh!", "💾");
+      showToast("Cadangan JSON & Riwayat berhasil diunduh!", "💾");
     }
 
     function importBackupJson(e) {
@@ -2520,8 +2625,9 @@
           if (bundle.pdca) pdcaList = bundle.pdca;
           if (bundle.capa) capaList = bundle.capa;
           if (bundle.signers) signersList = bundle.signers;
+          if (Array.isArray(bundle.snapshots)) snapshotsList = bundle.snapshots; // Pulihkan riwayat versi
           normalizeAllData();
-          saveAllToStorage(true, "Cadangan berhasil dimuat!");
+          saveAllToStorage(true, "Data & Riwayat Cadangan berhasil dimuat!");
           renderAll();
         } catch (err) {
           showToast("File JSON tidak valid!", "⚠️");
