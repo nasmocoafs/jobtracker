@@ -533,13 +533,11 @@
             <tr>
               <th class="p-2 text-center w-8 no-print">Geser</th>
               <th class="p-2 text-center w-10">No</th>
-              <th class="p-2.5 min-w-[200px]">Kategori / Topik</th>
-              <th class="p-2 text-center w-24">Jenis</th>
-              <th class="p-2.5 min-w-[300px]">Rencana Tindakan / Countermeasure (Sheet Kolom D)</th>
+              <th class="p-2.5 w-48 min-w-[175px]">Kategori / Topik</th>
+              <th class="p-2 text-center w-20">Jenis</th>
+              <th class="p-2.5 min-w-[540px]">Detail Rencana Tindak Lanjut / Countermeasure (No • Countermeasure • Status • Due Date • PIC • Jadwal Next PDCA)</th>
               <th class="p-2 text-center th-evidence">Foto Bukti</th>
-              <th class="p-2.5 min-w-[130px]">PIC / Dept</th>
-              <th class="p-2.5 min-w-[110px]">Due Date</th>
-              <th class="p-2 text-center w-24">Status</th>
+              <th class="p-2 text-center w-24">Status Total</th>
               <th class="p-2 text-center w-16 no-print action-col">Aksi</th>
             </tr>
           </thead>
@@ -664,14 +662,14 @@
 
   <!-- MODAL: CAPA Item with Sub-tasks Editor & Photo Evidence -->
   <div id="capaModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 overflow-y-auto no-print">
-    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs my-6">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-xs my-6">
       <div class="flex items-center justify-between border-b pb-2">
         <h4 id="capaModalTitle" class="text-sm font-black text-slate-900">Tambah Tindakan CAPA</h4>
         <button onclick="closeModal('capaModal')" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
       </div>
       <input type="hidden" id="capaEditId">
       <div class="space-y-3">
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div>
             <label class="block font-bold text-slate-700 mb-1">ID Tindakan (Sheet Kolom A)</label>
             <input type="text" id="capaIdInput" placeholder="Contoh: STAGE1.1, STAGE2.1" class="w-full px-3 py-2 border rounded-lg font-mono font-bold">
@@ -683,6 +681,14 @@
               <option value="Corrective">Corrective (Perbaikan Langsung)</option>
             </select>
           </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Status Total Topik</label>
+            <select id="capaStatusInput" class="w-full px-3 py-2 border rounded-lg font-bold">
+              <option value="Closed">Closed</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Open">Open</option>
+            </select>
+          </div>
         </div>
 
         <div>
@@ -691,26 +697,30 @@
           <datalist id="categoryDatalist"></datalist>
         </div>
 
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block font-bold text-slate-700">Rencana Tindakan / Countermeasure (Sheet Kolom D)</label>
-            <span class="text-[10px] text-blue-600 font-semibold">Poin (1, 2, 3...) otomatis menjadi progress mandiri</span>
-          </div>
-          <textarea id="capaSolutionInput" rows="3" placeholder="Masukkan rincian rencana tindakan atau poin langkah penyelesaian (1, 2, 3...)" oninput="syncSubTasksFromTextarea()" class="w-full px-3 py-2 border rounded-lg font-sans"></textarea>
-        </div>
+        <!-- Hidden raw textarea for sync compatibility -->
+        <textarea id="capaSolutionInput" class="hidden"></textarea>
+        <input type="hidden" id="capaPicInput">
+        <input type="hidden" id="capaDueDateInput">
 
-        <!-- Editor Progress Mandiri per Sub-Aktivitas -->
+        <!-- Editor Detail Countermeasure per Sub-Aktivitas (No, Countermeasure, Status, Due Date, PIC, Jadwal Next PDCA) -->
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-800 text-[11px] flex items-center gap-1.5">
-              <span>🎯 Progress Mandiri Tiap Poin Sub-Aktivitas:</span>
+              <span>🎯 Detail Rencana Tindak Lanjut / Countermeasure (No, Countermeasure, Status, Due Date, PIC, Jadwal Next PDCA):</span>
               <span id="subTaskCountBadge" class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">0 Poin</span>
             </span>
-            <button type="button" onclick="addSubTaskRow()" class="text-blue-600 hover:text-blue-800 text-[11px] font-bold">
-              + Tambah Poin
+            <button type="button" onclick="addSubTaskRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold shadow-2xs">
+              + Tambah Baris Countermeasure
             </button>
           </div>
-          <div id="subTasksList" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+          <div class="hidden sm:grid sm:grid-cols-12 gap-1.5 px-2 pt-1 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+            <div class="col-span-4">No & Countermeasure</div>
+            <div class="col-span-3">Status Progres</div>
+            <div class="col-span-2">Due Date</div>
+            <div class="col-span-1">PIC / Dept</div>
+            <div class="col-span-2">Jadwal Next PDCA</div>
+          </div>
+          <div id="subTasksList" class="space-y-2 max-h-64 overflow-y-auto pr-1">
             <!-- Rendered by JS -->
           </div>
         </div>
@@ -719,7 +729,7 @@
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
           <label class="block font-bold text-slate-700">Foto Bukti Tindak Lanjut (Evidence)</label>
           <div class="flex items-center gap-3">
-            <div id="modalEvidencePreview" class="w-20 h-14 bg-slate-200 rounded-lg border border-slate-300 flex items-center justify-center text-slate-400 text-xs overflow-hidden shrink-0">
+            <div id="modalEvidencePreview" class="w-24 h-16 bg-slate-200 rounded-lg border border-slate-300 flex items-center justify-center text-slate-400 text-xs overflow-hidden shrink-0">
               <span>Tanpa Foto</span>
             </div>
             <div class="space-y-1 flex-grow">
@@ -727,29 +737,10 @@
               <p class="text-[10px] text-slate-500">Foto dikompresi otomatis di sisi browser agar hemat memori.</p>
             </div>
             <button type="button" onclick="clearEvidencePhoto()" id="clearPhotoBtn" class="hidden text-rose-600 hover:text-rose-800 text-xs font-bold px-2 py-1 border border-rose-200 rounded-lg">
-              Hapus
+              Reset ke Default
             </button>
           </div>
           <input type="hidden" id="capaEvidenceBase64">
-        </div>
-
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">PIC / Dept</label>
-            <input type="text" id="capaPicInput" placeholder="Contoh: Erwin (IST)" class="w-full px-3 py-2 border rounded-lg font-medium">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Due Date</label>
-            <input type="text" id="capaDueDateInput" placeholder="Contoh: Oktober 2026" class="w-full px-3 py-2 border rounded-lg font-medium">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Status Total</label>
-            <select id="capaStatusInput" class="w-full px-3 py-2 border rounded-lg font-bold">
-              <option value="Closed">Closed</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Open">Open</option>
-            </select>
-          </div>
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t">
@@ -758,6 +749,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Hidden Quick File Input for Direct Table Thumbnail Upload -->
+  <input type="file" id="quickRowPhotoInput" accept="image/*" class="hidden" onchange="handleQuickRowPhotoSelected(event)">
 
   <!-- MODAL: Signers Management -->
   <div id="signersModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 no-print">
@@ -865,20 +859,123 @@
     // URL Google Apps Script yang diinjeksi langsung ke program
     const INJECTED_GAS_URL = "https://script.google.com/macros/s/AKfycbyVDOAc_AxPdfH_KpO7aiGXdIvOiLW3da-uvLG59-fDyPjUrjt8LKy0yRsWY1zS5cJXSQ/exec";
 
-    // Versi Skema Data (Untuk Auto-Upgrade Data Browser ke Versi PDF "As of Oct 2026")
-    const CURRENT_DATA_RELEASE = "tms_oct_2026_v3";
+    // Versi Skema Data (Auto-Upgrade ke Struktur Detail Countermeasure Lengkap + Bukti Visual)
+    const CURRENT_DATA_RELEASE = "tms_oct_2026_v4_detail_cols";
+
+    // Pemetaan ID Lama ke ID Baru agar foto lama di localStorage tetap terbaca
+    const LEGACY_ID_TO_STAGE_MAP = {
+      "1.0": "STAGE1.1",
+      "2.0": "STAGE1.2",
+      "3.0": "STAGE1.3",
+      "4.0": "STAGE1.4",
+      "5.0": "STAGE1.5",
+      "6.0": "STAGE1.6",
+      "7.0": "STAGE1.7",
+      "8.0": "STAGE1.8",
+      "11.0": "STAGE1.9"
+    };
+
+    // Generator Gambar Bukti Default (SVG Data URI Jernih) Sesuai Tangkapan Layar Modul TMS
+    function generateModuleEvidenceSvg(stageId, title,accentColor, rowsText) {
+      const lines = rowsText.map((r, i) => `
+        <rect x="78" y="${38 + i * 22}" width="228" height="17" rx="3" fill="${i % 2 === 0 ? '#f8fafc' : '#ffffff'}" stroke="#e2e8f0" stroke-width="0.8"/>
+        <text x="84" y="${49 + i * 22}" font-family="Inter, sans-serif" font-size="7.5" font-weight="600" fill="#1e293b">${r}</text>
+        <rect x="268" y="${41 + i * 22}" width="32" height="11" rx="2" fill="#dcfce7"/>
+        <text x="274" y="${49 + i * 22}" font-family="Inter, sans-serif" font-size="6.5" font-weight="700" fill="#15803d">ACTIVE</text>
+      `).join('');
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" width="640" height="280">
+        <rect width="320" height="140" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- Left Sidebar -->
+        <rect x="2" y="2" width="68" height="136" rx="4" fill="#0f172a"/>
+        <text x="10" y="16" font-family="Inter, sans-serif" font-size="8" font-weight="800" fill="#ffffff">TMS SYSTEM</text>
+        <rect x="8" y="24" width="56" height="10" rx="2" fill="${accentColor}"/>
+        <text x="12" y="31" font-family="Inter, sans-serif" font-size="6" font-weight="700" fill="#ffffff">${stageId}</text>
+        <rect x="8" y="40" width="52" height="6" rx="1.5" fill="#334155"/>
+        <rect x="8" y="52" width="46" height="6" rx="1.5" fill="#334155"/>
+        <rect x="8" y="64" width="54" height="6" rx="1.5" fill="#334155"/>
+        <rect x="8" y="76" width="40" height="6" rx="1.5" fill="#334155"/>
+        <!-- Top Bar -->
+        <rect x="72" y="2" width="246" height="26" fill="${accentColor}" opacity="0.12"/>
+        <text x="80" y="14" font-family="Inter, sans-serif" font-size="8.5" font-weight="800" fill="#0f172a">${title}</text>
+        <text x="80" y="23" font-family="Inter, sans-serif" font-size="6.5" font-weight="600" fill="#475569">Toyota Mobile Service • Verified System Screen</text>
+        <!-- Content Rows -->
+        ${lines}
+      </svg>`;
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
+    const DEFAULT_EVIDENCE_BY_STAGE = {
+      "STAGE1.1": generateModuleEvidenceSvg("STAGE 1.1", "NIS Service - Flagging TMS & TA", "#2563eb", [
+        "Flagging Order: [v] Toyota Mobile Service (TMS)",
+        "Technician Advisor: [ Dropdown TA TMS Terpilih ]",
+        "Sinkronisasi Order ke TMS System: OK / Verified",
+        "Status Modul: Live Operation"
+      ]),
+      "STAGE1.2": generateModuleEvidenceSvg("STAGE 1.2", "TMS System - Part Management", "#0284c7", [
+        "TMS1-A-0888-0001 | BRAKE FLUID | Stock: 2",
+        "TMS1-C-0888-0008 | TMO 10W-40 API SN | Stock: 4",
+        "TMS1-C-0888-0001 | TMO 5W-30 C2 A5/B5 | Stock: 4",
+        "Alokasi, Pemakaian WO & Retur Gudang: Verified"
+      ]),
+      "STAGE1.3": generateModuleEvidenceSvg("STAGE 1.3", "TMS Schedule Calendar & Surat Tugas", "#059669", [
+        "Jadwal: 261000001 | No. Pol: H 1112 AA",
+        "Unit: TOYOTA HI ACE PREMIO 2.8 M/T",
+        "Proses Work Order (WO) & Penugasan TA",
+        "Cetak Surat Tugas Digital: Done"
+      ]),
+      "STAGE1.5": generateModuleEvidenceSvg("STAGE 1.5", "TMS System - Validasi Order & CRT", "#ea580c", [
+        "Data Pelanggan & Kode Pelanggan: Tervalidasi",
+        "Data Kendaraan & Nomor Polisi: Tervalidasi",
+        "Proses Validasi Order Servis: Done",
+        "Input CRT (Customer Relation): Done"
+      ]),
+      "STAGE1.7": generateModuleEvidenceSvg("STAGE 1.7", "TMS System - Post Service Follow Up", "#16a34a", [
+        "Daftar Follow Up Paska Servis oleh TA",
+        "Integrasi Kontak Metode WhatsApp (WA): Aktif",
+        "Integrasi Kontak Metode Direct Call: Aktif",
+        "Rekap Status Kepuasan Pelanggan: Done"
+      ]),
+      "STAGE1.8": generateModuleEvidenceSvg("STAGE 1.8", "TMS System - Dashboard KAS TMS", "#4f46e5", [
+        "Dashboard Saldo Kas Operasional TMS",
+        "Mutasi Kas TMS (Cash In & Cash Out)",
+        "Log History Transaksi Tunai (Cash)",
+        "Berita Acara Serah Terima Cash: Done"
+      ]),
+      "STAGE1.9": generateModuleEvidenceSvg("STAGE 1.9", "NIS Kasir - Mekanisme Serah Terima Cash", "#d97706", [
+        "Transfer Kas dari Kasir Pusat ke Kas TMS",
+        "Verifikasi Nominal & Bukti Penerimaan Kas",
+        "Proses Setoran / Serah Terima Cash TMS ke Pusat",
+        "Rekonsiliasi Saldo Kasir NIS: Balance"
+      ]),
+      "STAGE1.6": generateModuleEvidenceSvg("STAGE 1.6", "TMS System - Invoicing & Payment", "#7c3aed", [
+        "Total Tagihan Servis: Rp 258.750 (E-Sign TA)",
+        "Multiple Payment: VA / Cash / QRIS",
+        "Cetakan PDF Invoice + Stempel LUNAS Otomatis",
+        "Auto Settlement Mechanism QRIS: On Trial"
+      ]),
+      "STAGE1.4": generateModuleEvidenceSvg("STAGE 1.4", "TMS System - Work Order (WO)", "#0d9488", [
+        "Penerimaan Order: Booking & Walk-In Customer",
+        "DIDX Flagging & Integrasi Data Servis",
+        "Digital E-Signature & Dokumen WO PDF",
+        "Monitoring Penomoran WO Lompat: On Trial"
+      ]),
+      "STAGE2.1": generateModuleEvidenceSvg("STAGE 2.1", "TMS Performance by COA Cabang", "#e11d48", [
+        "Distribusi Master COA TMS ke Seluruh Cabang",
+        "Capture Revenue & Cost di Menu TMS Performance",
+        "Pemisahan Laporan Laba Rugi / Financial Report TMS",
+        "Koordinasi IST & Accounting Department"
+      ]),
+      "STAGE2.2": generateModuleEvidenceSvg("STAGE 2.2", "TMS System - Warranty & ERA (NEA)", "#be123c", [
+        "Alur Prediagnose Warranty di TMS & NIS Service",
+        "Penambahan Flagging NEA (Emergency Roadside)",
+        "Opsi Pemilihan Teknisi NEA pada Sistem TMS",
+        "User Requirement (UR) oleh Aftersales Dept"
+      ])
+    };
 
     // Master Pemetaan Rencana Tindakan Sesuai Kolom D Sheet CAPA_Tracker & PDF Oct 2026
     const SHEET_KOLOM_D_MAP = {
-      "1.0": "1. Menambahkan Flagging TMS - Done\n2. Drop down Technician Advisor TMS untuk dikirimkan ke TMS System - Done",
-      "2.0": "1. Alokasi & pengambilan part TMS - Done\n2. Pemakaian part pada WO TMS - Done\n3. Retur part sisa servis ke gudang - Done",
-      "3.0": "1. TMS Schedule Calender View - Done\n2. Proses WO - Done\n3. Surat Tugas - Done",
-      "4.0": "1. Booking - Done\n2. Walk In - Done\n3. DIDX Flagging - Done\n4. E-Sign & PDF - Done\n5. No WO Lompat - On Trial",
-      "5.0": "1. Proses Validasi - Done\n2. Input CRT - Done",
-      "6.0": "1. Esign by TA - Done\n2. Multiple Option Payment - Done\n3. Pdf Stempel Lunas - Done\n4. Auto Settlement Mechanism - QRIS - QRIS - On Trial",
-      "7.0": "1. Aktivitas follow up paska servis oleh TA - Done\n2. Menambahkan metode WA dan Call - Done",
-      "8.0": "1. Dashboard KAS TMS - Done\n2. Mutasi Kas TMS in out - Done\n3. History Transaksi Cash - Done\n4. Proses Serah Terima Cash - Done",
-      "11.0": "1. Memindah uang cash dari Pusat ke TMS - Done\n2. Proses serah terima cash TMS ke Pusat - Done",
       "STAGE1.1": "1. Menambahkan Flagging TMS - Done\n2. Drop down Technician Advisor TMS untuk dikirimkan ke TMS System - Done",
       "STAGE1.2": "1. Alokasi & pengambilan part TMS - Done\n2. Pemakaian part pada WO TMS - Done\n3. Retur part sisa servis ke gudang - Done",
       "STAGE1.3": "1. TMS Schedule Calender View - Done\n2. Proses WO - Done\n3. Surat Tugas - Done",
@@ -915,7 +1012,7 @@
       { id: "pdca_9", stage: "Do", title: "STAGE 2 - TMS System Advance Feature", pic: "Balad & Erwin (Aftersales & IST)", date: "Desember 2026", output: "Propose Golive Expantion Desember 2026" }
     ];
 
-    // 11 BUTIR LENGKAP MATRIKS TINDAK LANJUT CAPA SESUAI PDF "Project Management TMS as of Oct 2026.pdf"
+    // 11 BUTIR LENGKAP MATRIKS TINDAK LANJUT CAPA BESERTA DETAIL COUNTERMEASURE (No, Countermeasure, Status, Due Date, PIC, Jadwal Next PDCA)
     const TMS_DEFAULT_CAPA = [
       {
         id: "STAGE1.1",
@@ -925,10 +1022,10 @@
         pic: "Erwin (IST)",
         dueDate: "November 2025",
         status: "Closed",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.1"],
         subTasks: [
-          { text: "Menambahkan Flagging TMS", status: "Done" },
-          { text: "Drop down Technician Advisor TMS untuk dikirimkan ke TMS System", status: "Done" }
+          { text: "Menambahkan Flagging TMS", status: "Done", dueDate: "November 2025", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Drop down Technician Advisor TMS untuk dikirimkan ke TMS System", status: "Done", dueDate: "November 2025", pic: "Erwin (IST)", nextPdca: "Done (Closed)" }
         ]
       },
       {
@@ -939,11 +1036,11 @@
         pic: "Erwin (IST)",
         dueDate: "Januari 2026",
         status: "Closed",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.2"],
         subTasks: [
-          { text: "Alokasi & pengambilan part TMS", status: "Done" },
-          { text: "Pemakaian part pada WO TMS", status: "Done" },
-          { text: "Retur part sisa servis ke gudang", status: "Done" }
+          { text: "Alokasi & pengambilan part TMS", status: "Done", dueDate: "Januari 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Pemakaian part pada WO TMS", status: "Done", dueDate: "Januari 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Retur part sisa servis ke gudang", status: "Done", dueDate: "Januari 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" }
         ]
       },
       {
@@ -954,11 +1051,11 @@
         pic: "Erwin (IST)",
         dueDate: "November 2025",
         status: "Closed",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.3"],
         subTasks: [
-          { text: "TMS Schedule Calender View", status: "Done" },
-          { text: "Proses WO", status: "Done" },
-          { text: "Surat Tugas", status: "Done" }
+          { text: "TMS Schedule Calender View", status: "Done", dueDate: "November 2025", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Proses WO", status: "Done", dueDate: "November 2025", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Surat Tugas", status: "Done", dueDate: "November 2025", pic: "Erwin (IST)", nextPdca: "Done (Closed)" }
         ]
       },
       {
@@ -969,10 +1066,10 @@
         pic: "Erwin (IST)",
         dueDate: "Juli 2026",
         status: "Closed",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.5"],
         subTasks: [
-          { text: "Proses Validasi", status: "Done" },
-          { text: "Input CRT", status: "Done" }
+          { text: "Proses Validasi", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Input CRT", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" }
         ]
       },
       {
@@ -983,10 +1080,10 @@
         pic: "Erwin (IST)",
         dueDate: "Januari 2026",
         status: "Closed",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.7"],
         subTasks: [
-          { text: "Aktivitas follow up paska servis oleh TA", status: "Done" },
-          { text: "Menambahkan metode WA dan Call", status: "Done" }
+          { text: "Aktivitas follow up paska servis oleh TA", status: "Done", dueDate: "Januari 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Menambahkan metode WA dan Call", status: "Done", dueDate: "Januari 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" }
         ]
       },
       {
@@ -997,12 +1094,12 @@
         pic: "Erwin (IST)",
         dueDate: "Oktober 2026",
         status: "Closed",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.8"],
         subTasks: [
-          { text: "Dashboard KAS TMS", status: "Done" },
-          { text: "Mutasi Kas TMS in out", status: "Done" },
-          { text: "History Transaksi Cash", status: "Done" },
-          { text: "Proses Serah Terima Cash", status: "Done" }
+          { text: "Dashboard KAS TMS", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Mutasi Kas TMS in out", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "History Transaksi Cash", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Proses Serah Terima Cash", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" }
         ]
       },
       {
@@ -1013,10 +1110,10 @@
         pic: "Erwin (IST)",
         dueDate: "September 2026",
         status: "Closed",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.9"],
         subTasks: [
-          { text: "Memindah uang cash dari Pusat ke TMS", status: "Done" },
-          { text: "Proses serah terima cash TMS ke Pusat", status: "Done" }
+          { text: "Memindah uang cash dari Pusat ke TMS", status: "Done", dueDate: "September 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Proses serah terima cash TMS ke Pusat", status: "Done", dueDate: "September 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" }
         ]
       },
       {
@@ -1027,12 +1124,12 @@
         pic: "Erwin (IST)",
         dueDate: "Oktober 2026",
         status: "In Progress",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.6"],
         subTasks: [
-          { text: "Esign by TA", status: "Done" },
-          { text: "Multiple Option Payment", status: "Done" },
-          { text: "Pdf Stempel Lunas", status: "Done" },
-          { text: "Auto Settlement Mechanism - QRIS", status: "QRIS - On Trial" }
+          { text: "Esign by TA", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Multiple Option Payment", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Pdf Stempel Lunas", status: "Done", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Auto Settlement Mechanism - QRIS", status: "QRIS - On Trial", dueDate: "Oktober 2026", pic: "Erwin (IST)", nextPdca: "W3 Oktober 2026" }
         ]
       },
       {
@@ -1043,13 +1140,13 @@
         pic: "Erwin (IST)",
         dueDate: "Juli 2026",
         status: "In Progress",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE1.4"],
         subTasks: [
-          { text: "Booking", status: "Done" },
-          { text: "Walk In", status: "Done" },
-          { text: "DIDX Flagging", status: "Done" },
-          { text: "E-Sign & PDF", status: "Done" },
-          { text: "No WO Lompat", status: "On Trial" }
+          { text: "Booking", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "Walk In", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "DIDX Flagging", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "E-Sign & PDF", status: "Done", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "Done (Closed)" },
+          { text: "No WO Lompat", status: "On Trial", dueDate: "Juli 2026", pic: "Erwin (IST)", nextPdca: "W3 Oktober 2026" }
         ]
       },
       {
@@ -1060,11 +1157,11 @@
         pic: "Erwin (IST)",
         dueDate: "Desember 2026",
         status: "In Progress",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE2.1"],
         subTasks: [
-          { text: "Memastikan COA TMS ter-copy ke All Cabang", status: "Copy by IST" },
-          { text: "Pencatatan atas performance hingga biaya tercapture di menu TMS Performance", status: "Develop IST" },
-          { text: "Financial Report TMS Terpisah", status: "Discuss ACC" }
+          { text: "Memastikan COA TMS ter-copy ke All Cabang", status: "Copy by IST", dueDate: "Desember 2026", pic: "Erwin (IST)", nextPdca: "November 2026" },
+          { text: "Pencatatan atas performance hingga biaya tercapture di menu TMS Performance", status: "Develop IST", dueDate: "Desember 2026", pic: "Erwin (IST)", nextPdca: "November 2026" },
+          { text: "Financial Report TMS Terpisah", status: "Discuss ACC", dueDate: "Desember 2026", pic: "Novita (ACC)", nextPdca: "November 2026" }
         ]
       },
       {
@@ -1075,11 +1172,11 @@
         pic: "Erwin (IST)",
         dueDate: "Desember 2026",
         status: "In Progress",
-        evidence: "",
+        evidence: DEFAULT_EVIDENCE_BY_STAGE["STAGE2.2"],
         subTasks: [
-          { text: "Pencatatan Warranty by TMS System dengan duplikasi alur Prediagnose di NIS Service", status: "UR by AFS" },
-          { text: "Penambahan Flagging NEA di TMS System", status: "UR by AFS" },
-          { text: "Opsi pilih Teknisi NEA", status: "UR by AFS" }
+          { text: "Pencatatan Warranty by TMS System dengan duplikasi alur Prediagnose di NIS Service", status: "UR by AFS", dueDate: "Desember 2026", pic: "Balad (AFS)", nextPdca: "November 2026" },
+          { text: "Penambahan Flagging NEA di TMS System", status: "UR by AFS", dueDate: "Desember 2026", pic: "Balad (AFS)", nextPdca: "November 2026" },
+          { text: "Opsi pilih Teknisi NEA", status: "UR by AFS", dueDate: "Desember 2026", pic: "Balad (AFS)", nextPdca: "November 2026" }
         ]
       }
     ];
@@ -1098,8 +1195,9 @@
     let capaList = [];
     let signersList = [];
     let snapshotsList = [];
+    let quickUploadTargetId = null;
 
-    function parseSubTasksFromText(text, parentStatus = "Closed") {
+    function parseSubTasksFromText(text, parentStatus = "Closed", defaultDueDate = "-", defaultPic = "Erwin (IST)") {
       if (!text || typeof text !== 'string') return [];
       const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
       if (lines.length === 0) return [];
@@ -1108,13 +1206,11 @@
         let cleanText = line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim();
         let status = parentStatus === "Open" ? "Open" : "Done";
 
-        // Pisahkan berdasarkan pemisah " - " terakhir agar teks dengan tanda hubung (mis: QRIS - On Trial) tidak terpotong salah
         const lastDashIdx = cleanText.lastIndexOf(' - ');
         if (lastDashIdx !== -1) {
           let rawStatus = cleanText.slice(lastDashIdx + 3).trim();
           let candidateText = cleanText.slice(0, lastDashIdx).trim();
 
-          // Kasus khusus jika status menggunakan "QRIS - On Trial"
           if (rawStatus.toLowerCase() === 'on trial' && candidateText.endsWith(' - QRIS') && candidateText.toLowerCase().includes('auto settlement')) {
             const prevDash = candidateText.lastIndexOf(' - ');
             if (prevDash !== -1 && candidateText.slice(0, prevDash).toLowerCase().includes('qris')) {
@@ -1151,18 +1247,19 @@
           }
         }
 
+        const isDone = status === "Done" || status === "Closed";
         return {
           text: cleanText || line,
-          status: status
+          status: status,
+          dueDate: defaultDueDate || "-",
+          pic: defaultPic || "Erwin (IST)",
+          nextPdca: isDone ? "Done (Closed)" : "November 2026"
         };
       });
     }
 
     function serializeSubTasksToText(subTasks) {
       if (!subTasks || !Array.isArray(subTasks) || subTasks.length === 0) return "";
-      if (subTasks.length === 1 && subTasks[0].status === "Done") {
-        return subTasks[0].text;
-      }
       return subTasks.map((st, i) => `${i + 1}. ${st.text} - ${st.status}`).join('\n');
     }
 
@@ -1176,7 +1273,7 @@
     }
 
     function normalizeAllData() {
-      // 1. Normalisasi PDCA (Memastikan seluruh 9 item punya properti valid tanpa undefined)
+      // 1. Normalisasi PDCA
       if (Array.isArray(pdcaList)) {
         pdcaList.forEach((item, idx) => {
           const stage = item.stage || item.tahap || item.phase || item['Tahap'] || 'Act';
@@ -1199,35 +1296,57 @@
         });
       }
 
-      // 2. Normalisasi CAPA
+      // 2. Normalisasi CAPA & Sub-Tasks Lengkap (No, Countermeasure, Status, Due Date, PIC, Jadwal Next PDCA)
       if (Array.isArray(capaList)) {
         capaList.forEach((item, idx) => {
-          const id = item.id || ((idx + 1) + '.0');
+          let id = item.id || ('STAGE1.' + (idx + 1));
+          if (LEGACY_ID_TO_STAGE_MAP[id]) {
+            id = LEGACY_ID_TO_STAGE_MAP[id];
+          }
           const category = item.category || item.kategori || item['Kategori'] || 'TMS System';
           const type = item.type || item.tipe || item.jenis || item['Jenis'] || 'Preventive';
           const pic = item.pic || item.dept || item.picDept || item['PIC / Dept'] || 'Erwin (IST)';
-          const dueDate = item.dueDate || item.target || item.date || item['Due Date'] || '';
+          const dueDate = item.dueDate || item.target || item.date || item['Due Date'] || 'Oktober 2026';
           let status = item.status || item.state || item['Status'] || 'Closed';
-          const evidence = item.evidence || item.foto || item.bukti || '';
+
+          // Pastikan Foto Bukti Selalu Muncul (ambil dari item, atau default modul TMS jika kosong)
+          let evidence = item.evidence || item.foto || item.bukti || '';
+          if (!evidence || evidence === '__HAS_ATTACHED_EVIDENCE__') {
+            evidence = DEFAULT_EVIDENCE_BY_STAGE[id] || '';
+          }
 
           let solution = item.solution || item.rencanaTindakan || item['Rencana Tindakan'] || '';
-
           if (!solution || solution.trim() === category.trim()) {
             if (SHEET_KOLOM_D_MAP[id]) {
               solution = SHEET_KOLOM_D_MAP[id];
-            } else if (SHEET_KOLOM_D_MAP[parseFloat(id).toFixed(1)]) {
-              solution = SHEET_KOLOM_D_MAP[parseFloat(id).toFixed(1)];
             }
           }
 
+          const refDefaultItem = TMS_DEFAULT_CAPA.find(d => d.id === id);
+
           if (!item.subTasks || !Array.isArray(item.subTasks) || item.subTasks.length === 0) {
-            item.subTasks = parseSubTasksFromText(solution, status);
+            item.subTasks = parseSubTasksFromText(solution, status, dueDate, pic);
           }
 
-          if (item.subTasks && item.subTasks.length > 1) {
+          // Lengkapi atribut dueDate, pic, dan nextPdca pada setiap sub-aktivitas
+          item.subTasks.forEach((st, sIdx) => {
+            const refSub = refDefaultItem && refDefaultItem.subTasks && refDefaultItem.subTasks[sIdx]
+              ? refDefaultItem.subTasks[sIdx]
+              : null;
+            const isDone = st.status === 'Done' || st.status === 'Closed';
+            if (!st.dueDate) st.dueDate = (refSub && refSub.dueDate) || dueDate || '-';
+            if (!st.pic) st.pic = (refSub && refSub.pic) || pic || 'Erwin (IST)';
+            if (!st.nextPdca) st.nextPdca = (refSub && refSub.nextPdca) || (isDone ? 'Done (Closed)' : 'November 2026');
+          });
+
+          if (item.subTasks && item.subTasks.length > 0) {
             status = computeOverallStatusFromSubTasks(item.subTasks);
             solution = serializeSubTasksToText(item.subTasks);
           }
+
+          // Синkronkan ringkasan PIC & Due Date tingkat topik dari sub-aktivitas
+          const uniquePics = [...new Set(item.subTasks.map(s => s.pic).filter(Boolean))];
+          const uniqueDues = [...new Set(item.subTasks.map(s => s.dueDate).filter(Boolean))];
 
           item.id = id;
           item.category = category;
@@ -1237,8 +1356,8 @@
           item.solution = solution;
           item.rencanaTindakan = solution;
           item.evidence = evidence;
-          item.pic = pic;
-          item.dueDate = dueDate;
+          item.pic = uniquePics.join(', ') || pic;
+          item.dueDate = uniqueDues[0] || dueDate;
           item.status = status;
         });
       }
@@ -1287,20 +1406,25 @@
         const storedSnapshots = localStorage.getItem('pmr_snapshots_history');
         if (storedSnapshots) snapshotsList = JSON.parse(storedSnapshots);
 
-        // AUTO-MIGRASI KE DATA TERBARU "AS OF OCT 2026" TANPA MENGHAPUS FOTO BUKTI
+        // AUTO-MIGRASI KE DATA TERBARU DENGAN TETAP MENYELAMATKAN FOTO PENGGUNA (Termasuk dari ID Lama 1.0..11.0)
         if (storedRelease !== CURRENT_DATA_RELEASE) {
           const existingEvidenceMap = {};
           if (Array.isArray(capaList)) {
             capaList.forEach(c => {
-              if (c.id && c.evidence) existingEvidenceMap[c.id] = c.evidence;
+              if (c.evidence && c.evidence.startsWith('data:image/') && !c.evidence.startsWith('data:image/svg+xml')) {
+                const mappedId = LEGACY_ID_TO_STAGE_MAP[c.id] || c.id;
+                if (mappedId) existingEvidenceMap[mappedId] = c.evidence;
+                if (c.category) existingEvidenceMap[c.category.toLowerCase()] = c.evidence;
+              }
             });
           }
 
           docMeta = JSON.parse(JSON.stringify(TMS_DEFAULT_META));
           pdcaList = JSON.parse(JSON.stringify(TMS_DEFAULT_PDCA));
           capaList = JSON.parse(JSON.stringify(TMS_DEFAULT_CAPA)).map(item => {
-            if (existingEvidenceMap[item.id]) {
-              item.evidence = existingEvidenceMap[item.id];
+            const customImg = existingEvidenceMap[item.id] || (item.category && existingEvidenceMap[item.category.toLowerCase()]);
+            if (customImg) {
+              item.evidence = customImg;
             }
             return item;
           });
@@ -1325,7 +1449,6 @@
 
       normalizeAllData();
 
-      // Pastikan minimal ada 1 snapshot awal dari data Oct 2026 di Riwayat Revisi
       if (!Array.isArray(snapshotsList) || snapshotsList.length === 0) {
         snapshotsList = [createLeanSnapshotObject('Data TMS as of Oct 2026 (Baseline)')];
         try {
@@ -1589,11 +1712,19 @@
       const statusFilter = document.getElementById('capaStatusFilter')?.value || '';
 
       const filtered = capaList.filter(item => {
+        const subMatch = (item.subTasks || []).some(st =>
+          (st.text && st.text.toLowerCase().includes(search)) ||
+          (st.pic && st.pic.toLowerCase().includes(search)) ||
+          (st.dueDate && st.dueDate.toLowerCase().includes(search)) ||
+          (st.nextPdca && st.nextPdca.toLowerCase().includes(search)) ||
+          (st.status && st.status.toLowerCase().includes(search))
+        );
         const matchesSearch = !search ||
           (item.category && item.category.toLowerCase().includes(search)) ||
           (item.solution && item.solution.toLowerCase().includes(search)) ||
           (item.pic && item.pic.toLowerCase().includes(search)) ||
-          (item.id && item.id.toLowerCase().includes(search));
+          (item.id && item.id.toLowerCase().includes(search)) ||
+          subMatch;
 
         const matchesCat = !catFilter || item.category === catFilter;
         const matchesType = !typeFilter || item.type === typeFilter;
@@ -1610,7 +1741,7 @@
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="10" class="p-8 text-center text-slate-400 italic">
+            <td colspan="8" class="p-8 text-center text-slate-400 italic">
               Tidak ada data tindakan CAPA yang cocok dengan filter.
             </td>
           </tr>
@@ -1625,7 +1756,7 @@
 
       filtered.forEach((item, index) => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.className = "hover:bg-slate-50/70 transition border-b border-slate-200 align-top";
         tr.draggable = true;
         tr.dataset.index = index;
 
@@ -1637,105 +1768,125 @@
         if (item.status === 'In Progress') statusClass = "bg-amber-100 text-amber-800 border-amber-300";
         if (item.status === 'Closed') statusClass = "bg-emerald-100 text-emerald-800 border-emerald-300";
 
-        // Foto bukti thumbnail
+        const imgSrc = item.evidence || DEFAULT_EVIDENCE_BY_STAGE[item.id] || '';
+
+        // Foto bukti thumbnail + tombol ganti foto instan 1-klik
         let evidenceHtml = `
-          <div class="evidence-thumb-container mx-auto bg-slate-100 border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">
-            <span>-</span>
+          <div class="evidence-thumb-container mx-auto bg-slate-100 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 text-[10px] gap-1 cursor-pointer hover:bg-slate-200/70 transition" onclick="triggerQuickRowPhotoUpload('${item.id}', event)">
+            <span>📷 Upload Bukti</span>
           </div>
         `;
-        if (item.evidence) {
+        if (imgSrc) {
           evidenceHtml = `
-            <div class="evidence-thumb-container mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-2xs relative group cursor-pointer" onclick="openImageLightboxById('${item.id}')">
-              <img src="${item.evidence}" alt="Bukti" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
-              <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                <svg class="w-4 h-4 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+            <div class="evidence-thumb-container mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-2xs relative group bg-white">
+              <img src="${imgSrc}" alt="Bukti ${escapeHtml(item.id)}" class="w-full h-full object-contain bg-white cursor-pointer" onclick="openImageLightboxById('${item.id}')">
+              <div class="no-print absolute inset-x-0 bottom-0 bg-slate-900/80 opacity-0 group-hover:opacity-100 transition flex items-center justify-between px-1.5 py-1 text-[9px] text-white font-bold">
+                <button type="button" onclick="openImageLightboxById('${item.id}')" class="hover:text-blue-300">🔍 Zoom</button>
+                <button type="button" onclick="triggerQuickRowPhotoUpload('${item.id}', event)" class="hover:text-emerald-300">📷 Ganti</button>
               </div>
             </div>
           `;
         }
 
-        const idBadge = item.id ? `<span class="inline-block bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold mr-1.5">${item.id}</span>` : '';
-        const displaySolution = item.solution || item.rencanaTindakan || SHEET_KOLOM_D_MAP[item.id] || '-';
+        const idBadge = item.id ? `<span class="inline-block bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold mb-1">${item.id}</span>` : '';
 
-        // Render Kolom Rencana Tindakan: Sub-aktivitas mandiri
-        let solutionCellHtml = "";
-        const subTasks = item.subTasks && Array.isArray(item.subTasks) ? item.subTasks : [];
+        // Render Tabel Detail Countermeasure (No | Countermeasure | Status | Due Date | PIC | Jadwal Next PDCA)
+        const subTasks = item.subTasks && Array.isArray(item.subTasks) && item.subTasks.length > 0
+          ? item.subTasks
+          : parseSubTasksFromText(item.solution || '', item.status, item.dueDate, item.pic);
 
-        if (subTasks.length > 1) {
-          const totalSubs = subTasks.length;
-          const doneSubs = subTasks.filter(st => st.status === 'Done' || st.status === 'Closed').length;
-          const pct = Math.round((doneSubs / totalSubs) * 100);
+        const totalSubs = subTasks.length;
+        const doneSubs = subTasks.filter(st => st.status === 'Done' || st.status === 'Closed').length;
+        const pct = totalSubs > 0 ? Math.round((doneSubs / totalSubs) * 100) : 0;
 
-          let subListHtml = "";
-          subTasks.forEach((st, sIdx) => {
-            const rawStatus = (st.status || 'Open').trim();
-            const lowerStatus = rawStatus.toLowerCase();
+        let subRowsHtml = "";
+        subTasks.forEach((st, sIdx) => {
+          const rawStatus = (st.status || 'Open').trim();
+          const lowerStatus = rawStatus.toLowerCase();
 
-            let pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
-            let pillLabel = "○ Open";
+          let pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+          let pillLabel = "○ Open";
 
-            if (lowerStatus === 'done' || lowerStatus === 'closed') {
-              pillClass = "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold";
-              pillLabel = "✓ Done";
-            } else if (lowerStatus === 'on trial' || lowerStatus === 'trial') {
-              pillClass = "bg-amber-100 text-amber-800 border-amber-300 font-bold";
-              pillLabel = "⏳ On Trial";
-            } else if (lowerStatus === 'in progress' || lowerStatus === 'progress') {
-              pillClass = "bg-blue-100 text-blue-800 border-blue-300 font-bold";
-              pillLabel = "⚡ In Progress";
-            } else if (lowerStatus === 'open' || lowerStatus === 'pending') {
-              pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
-              pillLabel = "○ Open";
-            } else {
-              // Status custom seperti "Copy by IST", "Develop IST", "Discuss ACC", "UR by AFS", "QRIS - On Trial"
-              pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
-              pillLabel = escapeHtml(rawStatus);
-            }
+          if (lowerStatus === 'done' || lowerStatus === 'closed') {
+            pillClass = "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold";
+            pillLabel = "✓ Done";
+          } else if (lowerStatus === 'on trial' || lowerStatus === 'trial') {
+            pillClass = "bg-amber-100 text-amber-800 border-amber-300 font-bold";
+            pillLabel = "⏳ On Trial";
+          } else if (lowerStatus === 'in progress' || lowerStatus === 'progress') {
+            pillClass = "bg-blue-100 text-blue-800 border-blue-300 font-bold";
+            pillLabel = "⚡ In Progress";
+          } else if (lowerStatus === 'open' || lowerStatus === 'pending') {
+            pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+            pillLabel = "○ Open";
+          } else {
+            pillClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+            pillLabel = escapeHtml(rawStatus);
+          }
 
-            subListHtml += `
-              <div class="subtask-item flex items-center justify-between gap-1.5 py-1 px-1.5 rounded-lg border border-slate-100 bg-white/95 shadow-3xs">
-                <div class="flex items-start gap-1 flex-grow min-w-0">
-                  <span class="text-[10px] font-bold text-slate-400 shrink-0 mt-0.5">${sIdx + 1}.</span>
-                  <span class="text-[11px] text-slate-800 leading-snug">${escapeHtml(st.text)}</span>
-                </div>
-                <button type="button" onclick="toggleSubTaskStatus('${item.id}', ${sIdx}, event)" class="subtask-pill px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0 border ${pillClass}" title="Klik untuk ubah progres poin ini">
+          const stDueDate = st.dueDate || item.dueDate || '-';
+          const stPic = st.pic || item.pic || 'Erwin (IST)';
+          const stNextPdca = st.nextPdca || ((lowerStatus === 'done' || lowerStatus === 'closed') ? 'Done (Closed)' : 'November 2026');
+
+          subRowsHtml += `
+            <tr class="border-t border-slate-200/80 hover:bg-slate-50/90">
+              <td class="py-1 px-1.5 text-center font-mono text-[10px] font-bold text-slate-400 w-6">${sIdx + 1}</td>
+              <td class="py-1 px-2 text-[11px] text-slate-800 font-medium leading-snug">${escapeHtml(st.text)}</td>
+              <td class="py-1 px-1.5 text-center whitespace-nowrap w-28">
+                <button type="button" onclick="toggleSubTaskStatus('${item.id}', ${sIdx}, event)" class="subtask-pill px-2 py-0.5 rounded-full text-[9px] font-bold border ${pillClass}" title="Klik untuk ubah progres poin ini">
                   ${pillLabel}
                 </button>
-              </div>
-            `;
-          });
-
-          solutionCellHtml = `
-            <div class="space-y-1.5 py-0.5">
-              <div class="flex items-center justify-between text-[10px]">
-                <span class="font-bold text-slate-500 uppercase tracking-tight">Progres Sub-Aktivitas</span>
-                <span class="font-black font-mono ${pct === 100 ? 'text-emerald-700' : 'text-amber-700'}">${doneSubs}/${totalSubs} Selesai (${pct}%)</span>
-              </div>
-              <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                <div class="${pct === 100 ? 'bg-emerald-500' : 'bg-amber-500'} h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
-              </div>
-              <div class="space-y-1 pt-0.5">
-                ${subListHtml}
-              </div>
-            </div>
+              </td>
+              <td class="py-1 px-2 text-[10px] font-mono text-slate-700 whitespace-nowrap w-24">${escapeHtml(stDueDate)}</td>
+              <td class="py-1 px-2 text-[10px] font-semibold text-slate-800 whitespace-nowrap w-28">${escapeHtml(stPic)}</td>
+              <td class="py-1 px-2 text-[10px] font-mono font-bold ${stNextPdca.toLowerCase().includes('done') ? 'text-emerald-700' : 'text-indigo-700'} whitespace-nowrap w-28">${escapeHtml(stNextPdca)}</td>
+            </tr>
           `;
-        } else {
-          solutionCellHtml = `<div class="text-slate-800 leading-relaxed whitespace-pre-line text-[11px]">${escapeHtml(displaySolution)}</div>`;
-        }
+        });
+
+        const solutionCellHtml = `
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold text-slate-500 uppercase tracking-tight">Progres Sub-Aktivitas</span>
+              <span class="font-black font-mono ${pct === 100 ? 'text-emerald-700' : 'text-amber-700'}">${doneSubs}/${totalSubs} Selesai (${pct}%)</span>
+            </div>
+            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+              <div class="${pct === 100 ? 'bg-emerald-500' : 'bg-amber-500'} h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100/90 text-[9px] font-extrabold text-slate-600 uppercase tracking-wider">
+                    <th class="py-1 px-1.5 text-center w-6">No</th>
+                    <th class="py-1 px-2">Countermeasure</th>
+                    <th class="py-1 px-1.5 text-center w-28">Status</th>
+                    <th class="py-1 px-2 w-24">Due Date</th>
+                    <th class="py-1 px-2 w-28">PIC</th>
+                    <th class="py-1 px-2 w-28">Jadwal Next PDCA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${subRowsHtml}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
 
         tr.innerHTML = `
           <td class="p-1 sm:p-2 text-center no-print drag-handle text-slate-400 hover:text-blue-600 transition" title="Geser untuk mengubah urutan">
             <svg class="w-4 h-4 mx-auto cursor-grab" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
           </td>
           <td class="p-2 text-center font-bold text-slate-400 font-mono">${index + 1}</td>
-          <td class="p-2.5 font-bold text-slate-900">${idBadge}${escapeHtml(item.category)}</td>
+          <td class="p-2.5 font-bold text-slate-900">
+            <div>${idBadge}</div>
+            <div class="leading-snug">${escapeHtml(item.category)}</div>
+          </td>
           <td class="p-2 text-center">
             <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black border ${typeBadge}">${item.type}</span>
           </td>
-          <td class="p-2.5">${solutionCellHtml}</td>
+          <td class="p-2">${solutionCellHtml}</td>
           <td class="p-2 text-center td-evidence">${evidenceHtml}</td>
-          <td class="p-2.5 font-medium text-slate-700">${escapeHtml(item.pic)}</td>
-          <td class="p-2.5 font-mono text-[11px] text-slate-600">${escapeHtml(item.dueDate)}</td>
           <td class="p-2 text-center">
             <button onclick="toggleCapaStatus('${item.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-black border transition cursor-pointer ${statusClass}" title="Klik untuk ubah status total">
               ${item.status}
@@ -1758,7 +1909,7 @@
         attachRowDragEvents(tr, 'capa');
         tbody.appendChild(tr);
 
-        // Render Kartu Mobile (khusus mobile screen, hidden on print)
+        // Render Kartu Mobile (khusus layar HP)
         const card = document.createElement('div');
         card.className = "bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-2.5";
         card.innerHTML = `
@@ -1771,19 +1922,18 @@
               ${item.status}
             </button>
           </div>
-          <div class="text-[11px] text-slate-700 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100">
+          <div class="text-[11px] text-slate-700 leading-relaxed">
             ${solutionCellHtml}
           </div>
-          ${item.evidence ? `
-            <div class="w-full h-32 rounded-lg overflow-hidden border border-slate-200 cursor-pointer" onclick="openImageLightboxById('${item.id}')">
-              <img src="${item.evidence}" alt="Bukti" class="w-full h-full object-cover">
+          ${imgSrc ? `
+            <div class="w-full h-36 rounded-lg overflow-hidden border border-slate-200 bg-white cursor-pointer relative" onclick="openImageLightboxById('${item.id}')">
+              <img src="${imgSrc}" alt="Bukti" class="w-full h-full object-contain">
             </div>
           ` : ''}
           <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
-            <span>PIC: <strong class="text-slate-800">${escapeHtml(item.pic)}</strong></span>
-            <span>Due: <strong class="text-slate-800 font-mono">${escapeHtml(item.dueDate)}</strong></span>
-            <div class="flex gap-2">
-              <button onclick="editCapaItem('${item.id}')" class="text-blue-600 font-bold">Edit</button>
+            <button onclick="triggerQuickRowPhotoUpload('${item.id}', event)" class="text-emerald-700 font-bold">📷 Ganti Foto Bukti</button>
+            <div class="flex gap-3">
+              <button onclick="editCapaItem('${item.id}')" class="text-blue-600 font-bold">Edit Detail</button>
               <button onclick="deleteCapaItem('${item.id}')" class="text-rose-600 font-bold">Hapus</button>
             </div>
           </div>
@@ -2094,7 +2244,7 @@
 
     function openCapaModal(editId = null) {
       document.getElementById('capaEditId').value = editId || '';
-      document.getElementById('capaModalTitle').textContent = editId ? 'Ubah Tindakan CAPA' : 'Tambah Tindakan CAPA';
+      document.getElementById('capaModalTitle').textContent = editId ? 'Ubah Tindakan CAPA & Detail Countermeasure' : 'Tambah Tindakan CAPA';
       clearEvidencePhoto();
 
       if (editId) {
@@ -2104,13 +2254,13 @@
           document.getElementById('capaTypeInput').value = item.type || 'Preventive';
           document.getElementById('capaCategoryInput').value = item.category || '';
           document.getElementById('capaSolutionInput').value = item.solution || item.rencanaTindakan || '';
-          document.getElementById('capaPicInput').value = item.pic || '';
-          document.getElementById('capaDueDateInput').value = item.dueDate || '';
+          document.getElementById('capaPicInput').value = item.pic || 'Erwin (IST)';
+          document.getElementById('capaDueDateInput').value = item.dueDate || 'Desember 2026';
           document.getElementById('capaStatusInput').value = item.status || 'Closed';
           if (item.evidence) {
             setEvidencePhotoPreview(item.evidence);
           }
-          renderSubTasksEditor(item.subTasks || parseSubTasksFromText(item.solution, item.status));
+          renderSubTasksEditor(item.subTasks || parseSubTasksFromText(item.solution, item.status, item.dueDate, item.pic));
         }
       } else {
         const nextNum = 'STAGE2.' + (capaList.length + 1);
@@ -2118,10 +2268,12 @@
         document.getElementById('capaTypeInput').value = 'Preventive';
         document.getElementById('capaCategoryInput').value = '';
         document.getElementById('capaSolutionInput').value = '';
-        document.getElementById('capaPicInput').value = '';
-        document.getElementById('capaDueDateInput').value = '';
-        document.getElementById('capaStatusInput').value = 'Closed';
-        renderSubTasksEditor([]);
+        document.getElementById('capaPicInput').value = 'Erwin (IST)';
+        document.getElementById('capaDueDateInput').value = 'Desember 2026';
+        document.getElementById('capaStatusInput').value = 'In Progress';
+        renderSubTasksEditor([
+          { text: "", status: "In Progress", dueDate: "Desember 2026", pic: "Erwin (IST)", nextPdca: "November 2026" }
+        ]);
       }
 
       openModal('capaModal');
@@ -2142,8 +2294,8 @@
 
       if (activeModalSubTasks.length === 0) {
         container.innerHTML = `
-          <div class="text-[11px] text-slate-400 italic py-1">
-            Belum ada butir poin. Tulis di textarea di atas atau klik '+ Tambah Poin'.
+          <div class="text-[11px] text-slate-400 italic py-2 text-center">
+            Belum ada baris countermeasure. Klik '+ Tambah Baris Countermeasure'.
           </div>
         `;
         return;
@@ -2154,27 +2306,41 @@
       activeModalSubTasks.forEach((st, idx) => {
         const isCustom = !standardStatuses.includes(st.status);
         const div = document.createElement('div');
-        div.className = "flex flex-wrap sm:flex-nowrap items-center gap-1.5 bg-white p-2 rounded-lg border border-slate-200 text-xs shadow-3xs";
+        div.className = "grid grid-cols-1 sm:grid-cols-12 gap-1.5 items-center bg-white p-2 rounded-lg border border-slate-200 text-xs shadow-3xs";
         div.innerHTML = `
-          <span class="font-bold text-slate-400 text-[10px] w-4 text-center shrink-0">${idx + 1}.</span>
-          <input type="text" value="${escapeHtml(st.text)}" oninput="updateSubTaskText(${idx}, this.value)" class="flex-grow min-w-[150px] px-2 py-1 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium text-slate-800">
-          <select onchange="handleSubTaskSelectChange(${idx}, this.value)" class="text-[11px] font-bold px-2 py-1 border rounded shrink-0 ${st.status === 'Open' || isCustom ? 'text-rose-700 bg-rose-50 border-rose-300' : 'text-slate-800 bg-slate-50'}">
-            <option value="Done" ${st.status === 'Done' || st.status === 'Closed' ? 'selected' : ''}>✓ Done</option>
-            <option value="On Trial" ${st.status === 'On Trial' ? 'selected' : ''}>⏳ On Trial</option>
-            <option value="In Progress" ${st.status === 'In Progress' ? 'selected' : ''}>⚡ In Progress</option>
-            <option value="Open" ${st.status === 'Open' ? 'selected' : ''}>○ Open</option>
-            <option value="__custom__" ${isCustom ? 'selected' : ''}>✏️ Custom / Lain-lain...</option>
-          </select>
-          ${isCustom ? `
-            <input type="text"
-                   id="customStatusInput_${idx}"
-                   value="${escapeHtml(st.status || 'Lain-lain')}"
-                   placeholder="Ketik status (mis: Copy by IST)..."
-                   oninput="updateSubTaskCustomStatusText(${idx}, this.value)"
-                   class="w-36 sm:w-44 px-2 py-1 text-[11px] font-bold border-2 border-rose-400 bg-rose-50 text-rose-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 placeholder:text-rose-300 shadow-2xs shrink-0"
-                   title="Ketik nama status bebas (contoh: Copy by IST, Develop IST, Discuss ACC, UR by AFS)">
-          ` : ''}
-          <button type="button" onclick="removeSubTaskRow(${idx})" class="text-rose-500 hover:text-rose-700 font-bold px-1 text-sm shrink-0">&times;</button>
+          <div class="sm:col-span-4 flex items-center gap-1.5">
+            <span class="font-bold text-slate-400 text-[10px] w-4 text-center shrink-0">${idx + 1}.</span>
+            <input type="text" data-field="text" value="${escapeHtml(st.text)}" placeholder="Uraian countermeasure..." oninput="activeModalSubTasks[${idx}].text = this.value" class="w-full px-2 py-1 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium text-slate-800">
+          </div>
+          <div class="sm:col-span-3 flex items-center gap-1">
+            <select data-field="statusSelect" onchange="handleSubTaskSelectChange(${idx}, this.value)" class="w-full text-[11px] font-bold px-1.5 py-1 border rounded ${st.status === 'Open' || isCustom ? 'text-rose-700 bg-rose-50 border-rose-300' : 'text-slate-800 bg-slate-50'}">
+              <option value="Done" ${st.status === 'Done' || st.status === 'Closed' ? 'selected' : ''}>✓ Done</option>
+              <option value="On Trial" ${st.status === 'On Trial' ? 'selected' : ''}>⏳ On Trial</option>
+              <option value="In Progress" ${st.status === 'In Progress' ? 'selected' : ''}>⚡ In Progress</option>
+              <option value="Open" ${st.status === 'Open' ? 'selected' : ''}>○ Open</option>
+              <option value="__custom__" ${isCustom ? 'selected' : ''}>✏️ Custom...</option>
+            </select>
+            ${isCustom ? `
+              <input type="text"
+                     id="customStatusInput_${idx}"
+                     data-field="customStatus"
+                     value="${escapeHtml(st.status || 'Lain-lain')}"
+                     placeholder="Ketik status..."
+                     oninput="updateSubTaskCustomStatusText(${idx}, this.value)"
+                     class="w-28 px-1.5 py-1 text-[11px] font-bold border-2 border-rose-400 bg-rose-50 text-rose-800 rounded focus:outline-none focus:ring-1 focus:ring-rose-500 shrink-0"
+                     title="Ketik status custom (contoh: Copy by IST, Develop IST, Discuss ACC, UR by AFS)">
+            ` : ''}
+          </div>
+          <div class="sm:col-span-2">
+            <input type="text" data-field="dueDate" value="${escapeHtml(st.dueDate || '')}" placeholder="Due Date..." oninput="activeModalSubTasks[${idx}].dueDate = this.value" class="w-full px-2 py-1 text-[11px] font-mono border border-slate-200 rounded text-slate-700">
+          </div>
+          <div class="sm:col-span-1">
+            <input type="text" data-field="pic" value="${escapeHtml(st.pic || '')}" placeholder="PIC / Dept..." oninput="activeModalSubTasks[${idx}].pic = this.value" class="w-full px-2 py-1 text-[11px] font-semibold border border-slate-200 rounded text-slate-800">
+          </div>
+          <div class="sm:col-span-2 flex items-center gap-1">
+            <input type="text" data-field="nextPdca" value="${escapeHtml(st.nextPdca || '')}" placeholder="Jadwal Next PDCA..." oninput="activeModalSubTasks[${idx}].nextPdca = this.value" class="w-full px-2 py-1 text-[11px] font-mono border border-slate-200 rounded text-indigo-700 font-semibold">
+            <button type="button" onclick="removeSubTaskRow(${idx})" class="text-rose-500 hover:text-rose-700 font-bold px-1 text-sm shrink-0" title="Hapus baris">&times;</button>
+          </div>
         `;
         container.appendChild(div);
       });
@@ -2184,35 +2350,15 @@
       }
     }
 
-    function handleSubTaskSelectChange(idx, val) {
-      if (val === '__custom__') {
-        if (['Done', 'On Trial', 'In Progress', 'Open'].includes(activeModalSubTasks[idx].status)) {
-          activeModalSubTasks[idx].status = 'Lain-lain';
-        }
-        renderSubTasksEditor(activeModalSubTasks, true);
-        setTimeout(() => {
-          const inputEl = document.getElementById(`customStatusInput_${idx}`);
-          if (inputEl) {
-            inputEl.focus();
-            inputEl.select();
-          }
-        }, 50);
-      } else {
-        updateSubTaskStatusInModal(idx, val);
-      }
-    }
-
-    function updateSubTaskCustomStatusText(idx, customVal) {
-      if (!activeModalSubTasks[idx]) return;
-      activeModalSubTasks[idx].status = customVal;
-      document.getElementById('capaSolutionInput').value = serializeSubTasksToText(activeModalSubTasks);
-      document.getElementById('capaStatusInput').value = computeOverallStatusFromSubTasks(activeModalSubTasks);
-    }
-
     function addSubTaskRow() {
+      const defaultDue = document.getElementById('capaDueDateInput').value || 'Desember 2026';
+      const defaultPic = document.getElementById('capaPicInput').value || 'Erwin (IST)';
       activeModalSubTasks.push({
         text: `Langkah tindakan #${activeModalSubTasks.length + 1}`,
-        status: "Done"
+        status: "In Progress",
+        dueDate: defaultDue,
+        pic: defaultPic,
+        nextPdca: "November 2026"
       });
       renderSubTasksEditor(activeModalSubTasks, true);
     }
@@ -2254,9 +2400,6 @@
       const id = document.getElementById('capaIdInput').value.trim() || ('STAGE2.' + (capaList.length + 1));
       const type = document.getElementById('capaTypeInput').value;
       const category = document.getElementById('capaCategoryInput').value.trim();
-      let solution = document.getElementById('capaSolutionInput').value.trim();
-      const pic = document.getElementById('capaPicInput').value.trim();
-      const dueDate = document.getElementById('capaDueDateInput').value.trim();
       let status = document.getElementById('capaStatusInput').value;
       const evidence = document.getElementById('capaEvidenceBase64').value || '';
 
@@ -2269,10 +2412,18 @@
       if (subTaskContainer && activeModalSubTasks.length > 0) {
         const rows = subTaskContainer.children;
         for (let i = 0; i < rows.length && i < activeModalSubTasks.length; i++) {
-          const textInput = rows[i].querySelector('input[type="text"]:not([id^="customStatusInput_"])');
-          const select = rows[i].querySelector('select');
-          const customInput = rows[i].querySelector('input[id^="customStatusInput_"]');
+          const textInput = rows[i].querySelector('input[data-field="text"]');
+          const select = rows[i].querySelector('select[data-field="statusSelect"]');
+          const customInput = rows[i].querySelector('input[data-field="customStatus"]');
+          const dueInput = rows[i].querySelector('input[data-field="dueDate"]');
+          const picInput = rows[i].querySelector('input[data-field="pic"]');
+          const nextPdcaInput = rows[i].querySelector('input[data-field="nextPdca"]');
+
           if (textInput) activeModalSubTasks[i].text = textInput.value.trim();
+          if (dueInput) activeModalSubTasks[i].dueDate = dueInput.value.trim() || '-';
+          if (picInput) activeModalSubTasks[i].pic = picInput.value.trim() || 'Erwin (IST)';
+          if (nextPdcaInput) activeModalSubTasks[i].nextPdca = nextPdcaInput.value.trim() || '-';
+
           if (select) {
             if (select.value === '__custom__' && customInput) {
               activeModalSubTasks[i].status = customInput.value.trim() || 'Lain-lain';
@@ -2283,14 +2434,17 @@
         }
       }
 
-      let subTasks = activeModalSubTasks && activeModalSubTasks.length > 0
-        ? activeModalSubTasks
-        : parseSubTasksFromText(solution, status);
-
-      if (subTasks.length > 1) {
-        status = computeOverallStatusFromSubTasks(subTasks);
-        solution = serializeSubTasksToText(subTasks);
+      let subTasks = activeModalSubTasks.filter(st => st.text && st.text.trim().length > 0);
+      if (subTasks.length === 0) {
+        subTasks = [{ text: category, status: status, dueDate: "Desember 2026", pic: "Erwin (IST)", nextPdca: "November 2026" }];
       }
+
+      status = computeOverallStatusFromSubTasks(subTasks);
+      const solution = serializeSubTasksToText(subTasks);
+      const uniquePics = [...new Set(subTasks.map(s => s.pic).filter(Boolean))];
+      const uniqueDues = [...new Set(subTasks.map(s => s.dueDate).filter(Boolean))];
+      const summaryPic = uniquePics.join(', ') || 'Erwin (IST)';
+      const summaryDue = uniqueDues[0] || 'Desember 2026';
 
       if (editId) {
         const item = capaList.find(c => c.id === editId);
@@ -2300,11 +2454,11 @@
           item.category = category;
           item.solution = solution;
           item.rencanaTindakan = solution;
-          item.pic = pic;
-          item.dueDate = dueDate;
+          item.pic = summaryPic;
+          item.dueDate = summaryDue;
           item.status = status;
           item.subTasks = subTasks;
-          if (evidence) item.evidence = evidence;
+          item.evidence = evidence || DEFAULT_EVIDENCE_BY_STAGE[id] || item.evidence;
         }
       } else {
         capaList.push({
@@ -2313,24 +2467,38 @@
           category,
           solution,
           rencanaTindakan: solution,
-          pic,
-          dueDate,
+          pic: summaryPic,
+          dueDate: summaryDue,
           status,
-          evidence,
+          evidence: evidence || DEFAULT_EVIDENCE_BY_STAGE[id] || '',
           subTasks
         });
       }
 
       closeModal('capaModal');
-      saveAllToStorage(true, "Tindakan & progres tersimpan!");
+      saveAllToStorage(true, "Tindakan & detail countermeasure tersimpan!");
       renderCapaCategoryFilter();
       renderCapaTable();
       renderKPI();
     }
 
-    function handleEvidenceFileUpload(e) {
+    // Fungsi Upload / Ganti Foto Langsung dari Baris Tabel (1-Klik)
+    function triggerQuickRowPhotoUpload(capaId, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      quickUploadTargetId = capaId;
+      const fileInput = document.getElementById('quickRowPhotoInput');
+      if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
+      }
+    }
+
+    function handleQuickRowPhotoSelected(e) {
       const file = e.target.files[0];
-      if (!file) return;
+      if (!file || !quickUploadTargetId) return;
 
       const reader = new FileReader();
       reader.onload = function(evt) {
@@ -2356,8 +2524,14 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
 
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
-          setEvidencePhotoPreview(compressedBase64);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.78);
+          const item = capaList.find(c => c.id === quickUploadTargetId);
+          if (item) {
+            item.evidence = compressedBase64;
+            saveAllToStorage(true, `Foto bukti ${item.id} diperbarui!`);
+            renderCapaTable();
+          }
+          quickUploadTargetId = null;
         };
         img.src = evt.target.result;
       };
