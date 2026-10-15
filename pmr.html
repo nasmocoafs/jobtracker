@@ -6,6 +6,8 @@
   <title>Universal PMR & CAPA Master - Toyota Mobile Service</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ExcelJS CDN for Native Styled .xlsx Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -362,9 +364,10 @@
         </div>
       </div>
 
-      <!-- Export Excel -->
-      <button onclick="exportToCsv()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-2.5 py-2 rounded-xl flex items-center gap-1 transition">
-        <span>Excel (.csv)</span>
+      <!-- Export Excel (.xlsx) -->
+      <button onclick="exportToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition" title="Unduh Laporan dalam Format Microsoft Excel (.xlsx) Rapi Sesuai Tabel">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>Excel (.xlsx)</span>
       </button>
 
       <!-- Print PDF Button -->
@@ -3528,32 +3531,511 @@
       reader.readAsText(file);
     }
 
-    function exportToCsv() {
-      let csv = "BAGIAN 1: INFORMASI DOKUMEN\n";
-      csv += `Judul,${csvSafe(docMeta.title)}\n`;
-      csv += `Subjudul,${csvSafe(docMeta.subtitle)}\n`;
-      csv += `Entitas,${csvSafe(docMeta.entity)}\n`;
-      csv += `No Dokumen,${csvSafe(docMeta.docNumber)}\n`;
-      csv += `Periode,${csvSafe(docMeta.period)}\n\n`;
+    // ============================================================================
+    // EXPORT KE FORMAT MICROSOFT EXCEL (.XLSX) RAPI SESUAI TABEL + FOTO BUKTI
+    // ============================================================================
+    async function exportToExcel() {
+      showToast("Menyiapkan file Excel (.xlsx)...", "⏳");
 
-      csv += "BAGIAN 2: LOG AKTIVITAS PDCA\n";
-      csv += "No,Tahap,Agenda,PIC / Dept,Tanggal,Output Hasil\n";
+      if (typeof ExcelJS === 'undefined') {
+        exportFallbackHtmlExcel();
+        return;
+      }
+
+      try {
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'Universal PMR & CAPA Master';
+        workbook.created = new Date();
+
+        const ws = workbook.addWorksheet('Laporan PMR & CAPA', {
+          pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+          views: [{ showGridLines: true }]
+        });
+
+        // Definisi Lebar 13 Kolom Presisi
+        ws.columns = [
+          { key: 'colA', width: 6 },   // A: No
+          { key: 'colB', width: 13 },  // B: ID Stage / Tahap
+          { key: 'colC', width: 32 },  // C: Kategori / Topik / Agenda PDCA
+          { key: 'colD', width: 13 },  // D: Jenis Tindakan
+          { key: 'colE', width: 6 },   // E: No Sub-Poin
+          { key: 'colF', width: 44 },  // F: Detail Countermeasure
+          { key: 'colG', width: 18 },  // G: Status Poin
+          { key: 'colH', width: 16 },  // H: Due Date
+          { key: 'colI', width: 19 },  // I: PIC / Dept
+          { key: 'colJ', width: 18 },  // J: Jadwal Next PDCA
+          { key: 'colK', width: 14 },  // K: Progres Topik
+          { key: 'colL', width: 14 },  // L: Status Total
+          { key: 'colM', width: 22 }   // M: Foto Bukti
+        ];
+
+        const borderThin = {
+          top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+          left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+          bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+          right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+        };
+
+        const borderDark = {
+          top: { style: 'thin', color: { argb: 'FF94A3B8' } },
+          left: { style: 'thin', color: { argb: 'FF94A3B8' } },
+          bottom: { style: 'thin', color: { argb: 'FF94A3B8' } },
+          right: { style: 'thin', color: { argb: 'FF94A3B8' } }
+        };
+
+        // 1. KOP HEADER DOKUMEN (Baris 1 - 3)
+        ws.mergeCells('A1:I1');
+        ws.getCell('A1').value = docMeta.title || TMS_DEFAULT_META.title;
+        ws.getCell('A1').font = { name: 'Calibri', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+        ws.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+        ws.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+
+        ws.mergeCells('J1:M1');
+        ws.getCell('J1').value = docMeta.subtitle || TMS_DEFAULT_META.subtitle;
+        ws.getCell('J1').font = { name: 'Calibri', size: 10, italic: true, bold: true, color: { argb: 'FFE2E8F0' } };
+        ws.getCell('J1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+        ws.getCell('J1').alignment = { vertical: 'middle', horizontal: 'right' };
+        ws.getRow(1).height = 28;
+
+        // Baris 2: Strip Metadata
+        ws.mergeCells('A2:C2');
+        ws.getCell('A2').value = `Unit / Entitas: ${docMeta.entity || '-'}`;
+        ws.mergeCells('D2:F2');
+        ws.getCell('D2').value = `No. Dokumen: ${docMeta.docNumber || '-'}`;
+        ws.mergeCells('G2:I2');
+        ws.getCell('G2').value = `Periode: ${docMeta.period || '-'}`;
+        ws.mergeCells('J2:M2');
+        ws.getCell('J2').value = `Tgl Cetak: ${docMeta.printDate || '-'}`;
+
+        ['A2', 'D2', 'G2', 'J2'].forEach(ref => {
+          const cell = ws.getCell(ref);
+          cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF1E293B' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+          cell.alignment = { vertical: 'middle', horizontal: ref === 'J2' ? 'right' : 'left', indent: 1 };
+        });
+        for (let c = 1; c <= 13; c++) ws.getRow(2).getCell(c).border = borderThin;
+        ws.getRow(2).height = 20;
+
+        // Baris 4: Ringkasan KPI
+        const totalCapa = capaList.length;
+        const closedCapa = capaList.filter(c => c.status === 'Closed').length;
+        const inProgCapa = capaList.filter(c => c.status === 'In Progress').length;
+        const openCapa = capaList.filter(c => c.status === 'Open').length;
+        const closedPct = totalCapa > 0 ? Math.round((closedCapa / totalCapa) * 100) : 0;
+
+        ws.mergeCells('A4:C4');
+        ws.getCell('A4').value = `TOTAL TINDAKAN: ${totalCapa} Item`;
+        ws.getCell('A4').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+        ws.getCell('A4').font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF0F172A' } };
+
+        ws.mergeCells('D4:F4');
+        ws.getCell('D4').value = `SELESAI (CLOSED): ${closedCapa} (${closedPct}%)`;
+        ws.getCell('D4').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+        ws.getCell('D4').font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF065F46' } };
+
+        ws.mergeCells('G4:I4');
+        ws.getCell('G4').value = `SEDANG BERJALAN (IN PROGRESS): ${inProgCapa}`;
+        ws.getCell('G4').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFBEB' } };
+        ws.getCell('G4').font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF92400E' } };
+
+        ws.mergeCells('J4:M4');
+        ws.getCell('J4').value = `TERTUNDA (OPEN): ${openCapa}`;
+        ws.getCell('J4').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF1F2' } };
+        ws.getCell('J4').font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF9F1239' } };
+
+        for (let c = 1; c <= 13; c++) {
+          ws.getRow(4).getCell(c).border = borderThin;
+          ws.getRow(4).getCell(c).alignment = { vertical: 'middle', horizontal: 'center' };
+        }
+        ws.getRow(4).height = 22;
+
+        // =========================================================================
+        // BAGIAN 1: AKTIVITAS PDCA & INVESTIGASI LAPANGAN (GENBA)
+        // =========================================================================
+        let curRow = 6;
+        ws.mergeCells(`A${curRow}:M${curRow}`);
+        ws.getCell(`A${curRow}`).value = `1. AKTIVITAS PDCA & INVESTIGASI LAPANGAN (GENBA) — ${pdcaList.length} AGENDA`;
+        ws.getCell(`A${curRow}`).font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+        ws.getCell(`A${curRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1D4ED8' } };
+        ws.getCell(`A${curRow}`).alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+        ws.getRow(curRow).height = 22;
+
+        curRow++;
+        ws.getCell(`A${curRow}`).value = 'NO';
+        ws.getCell(`B${curRow}`).value = 'TAHAP';
+        ws.mergeCells(`C${curRow}:E${curRow}`);
+        ws.getCell(`C${curRow}`).value = 'AGENDA / AKTIVITAS PDCA & GENBA';
+        ws.mergeCells(`F${curRow}:G${curRow}`);
+        ws.getCell(`F${curRow}`).value = 'PIC & DEPARTEMEN';
+        ws.getCell(`H${curRow}`).value = 'TANGGAL';
+        ws.mergeCells(`I${curRow}:M${curRow}`);
+        ws.getCell(`I${curRow}`).value = 'OUTPUT / RINGKASAN HASIL';
+
+        for (let c = 1; c <= 13; c++) {
+          const cell = ws.getRow(curRow).getCell(c);
+          cell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF1E293B' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+          cell.border = borderDark;
+          cell.alignment = { vertical: 'middle', horizontal: (c <= 2 || c === 8) ? 'center' : 'left', wrapText: true };
+        }
+        ws.getRow(curRow).height = 20;
+
+        pdcaList.forEach((item, idx) => {
+          curRow++;
+          ws.getCell(`A${curRow}`).value = idx + 1;
+          ws.getCell(`B${curRow}`).value = item.stage || 'Act';
+          ws.mergeCells(`C${curRow}:E${curRow}`);
+          ws.getCell(`C${curRow}`).value = item.title || '';
+          ws.mergeCells(`F${curRow}:G${curRow}`);
+          ws.getCell(`F${curRow}`).value = item.pic || '';
+          ws.getCell(`H${curRow}`).value = item.date || '';
+          ws.mergeCells(`I${curRow}:M${curRow}`);
+          ws.getCell(`I${curRow}`).value = item.output || '';
+
+          let stageBg = 'FFDBEAFE', stageFg = 'FF1E40AF';
+          if (item.stage === 'Act') { stageBg = 'FFD1FAE5'; stageFg = 'FF065F46'; }
+          else if (item.stage === 'Check') { stageBg = 'FFF3E8FF'; stageFg = 'FF6B21A8'; }
+          else if (item.stage === 'Do') { stageBg = 'FFFEF3C7'; stageFg = 'FF92400E'; }
+
+          for (let c = 1; c <= 13; c++) {
+            const cell = ws.getRow(curRow).getCell(c);
+            cell.border = borderThin;
+            cell.font = { name: 'Calibri', size: 9.5, bold: (c === 2 || c === 3), color: { argb: 'FF0F172A' } };
+            cell.alignment = { vertical: 'middle', horizontal: (c === 1 || c === 2 || c === 8) ? 'center' : 'left', wrapText: true };
+          }
+          ws.getCell(`B${curRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: stageBg } };
+          ws.getCell(`B${curRow}`).font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: stageFg } };
+
+          const estLines = Math.ceil((item.output || '').length / 65);
+          ws.getRow(curRow).height = Math.max(20, estLines * 14);
+        });
+
+        // =========================================================================
+        // BAGIAN 2: MATRIKS TINDAK LANJUT CAPA & DETAIL COUNTERMEASURE
+        // =========================================================================
+        curRow += 2;
+        ws.mergeCells(`A${curRow}:M${curRow}`);
+        ws.getCell(`A${curRow}`).value = `2. MATRIKS TINDAK LANJUT: CORRECTIVE & PREVENTIVE ACTION (CAPA) — ${capaList.length} TOPIK`;
+        ws.getCell(`A${curRow}`).font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+        ws.getCell(`A${curRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4338CA' } };
+        ws.getCell(`A${curRow}`).alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+        ws.getRow(curRow).height = 22;
+
+        curRow++;
+        const capaHeaders = [
+          'NO', 'ID STAGE', 'KATEGORI / TOPIK MASALAH', 'JENIS',
+          'NO POIN', 'DETAIL COUNTERMEASURE / RENCANA TINDAK LANJUT',
+          'STATUS POIN', 'DUE DATE', 'PIC / DEPT', 'JADWAL NEXT PDCA',
+          'PROGRES', 'STATUS TOTAL', 'FOTO BUKTI'
+        ];
+        capaHeaders.forEach((hText, i) => {
+          const cell = ws.getRow(curRow).getCell(i + 1);
+          cell.value = hText;
+          cell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF1E293B' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+          cell.border = borderDark;
+          cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        });
+        ws.getRow(curRow).height = 24;
+
+        capaList.forEach((item, idx) => {
+          const subTasks = (item.subTasks && item.subTasks.length > 0)
+            ? item.subTasks
+            : parseSubTasksFromText(item.solution || '', item.status, item.dueDate, item.pic);
+
+          const numSubs = Math.max(1, subTasks.length);
+          const doneSubs = subTasks.filter(st => st.status === 'Done' || st.status === 'Closed').length;
+          const pct = Math.round((doneSubs / numSubs) * 100);
+          const startRow = curRow + 1;
+          const endRow = startRow + numSubs - 1;
+
+          // Pastikan tinggi baris cukup untuk menampung foto bukti (total tinggi >= 72pt)
+          const minRowHeightForPhoto = Math.ceil(74 / numSubs);
+
+          subTasks.forEach((st, sIdx) => {
+            curRow++;
+            const r = ws.getRow(curRow);
+
+            // Isi kolom induk pada baris pertama setiap grup topik
+            if (sIdx === 0) {
+              ws.getCell(`A${curRow}`).value = idx + 1;
+              ws.getCell(`B${curRow}`).value = item.id || '';
+              ws.getCell(`C${curRow}`).value = item.category || '';
+              ws.getCell(`D${curRow}`).value = item.type || 'Preventive';
+              ws.getCell(`K${curRow}`).value = `${doneSubs}/${numSubs} (${pct}%)`;
+              ws.getCell(`L${curRow}`).value = item.status || 'Closed';
+            }
+
+            // Isi kolom detail countermeasure per sub-aktivitas
+            const rawStatus = (st.status || 'Open').trim();
+            const lowerStatus = rawStatus.toLowerCase();
+            const stDue = st.dueDate || item.dueDate || '-';
+            const stPic = st.pic || item.pic || 'Erwin (IST)';
+            const stNext = st.nextPdca || ((lowerStatus === 'done' || lowerStatus === 'closed') ? 'Done (Closed)' : 'November 2026');
+
+            ws.getCell(`E${curRow}`).value = sIdx + 1;
+            ws.getCell(`F${curRow}`).value = st.text || '';
+            ws.getCell(`G${curRow}`).value = rawStatus;
+            ws.getCell(`H${curRow}`).value = stDue;
+            ws.getCell(`I${curRow}`).value = stPic;
+            ws.getCell(`J${curRow}`).value = stNext;
+
+            // Styling per sel pada baris ini
+            for (let c = 1; c <= 13; c++) {
+              const cell = r.getCell(c);
+              cell.border = borderThin;
+              cell.font = { name: 'Calibri', size: 9.5, color: { argb: 'FF0F172A' } };
+              const isCentered = [1, 2, 4, 5, 7, 8, 10, 11, 12, 13].includes(c);
+              cell.alignment = { vertical: 'middle', horizontal: isCentered ? 'center' : 'left', wrapText: true };
+            }
+
+            // Warna Status Sub-Aktivitas (Kolom G)
+            const statusCell = ws.getCell(`G${curRow}`);
+            if (lowerStatus === 'done' || lowerStatus === 'closed') {
+              statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+              statusCell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF065F46' } };
+            } else if (lowerStatus === 'on trial' || lowerStatus === 'trial') {
+              statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+              statusCell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF92400E' } };
+            } else if (lowerStatus === 'in progress' || lowerStatus === 'progress') {
+              statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+              statusCell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF1E40AF' } };
+            } else {
+              statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE4E6' } };
+              statusCell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF9F1239' } };
+            }
+
+            const textLines = Math.ceil((st.text || '').length / 42);
+            r.height = Math.max(22, minRowHeightForPhoto, textLines * 14);
+          });
+
+          // Merge vertikal untuk kolom induk apabila sub-aktivitas > 1 baris
+          if (endRow > startRow) {
+            ['A', 'B', 'C', 'D', 'K', 'L', 'M'].forEach(colLetter => {
+              ws.mergeCells(`${colLetter}${startRow}:${colLetter}${endRow}`);
+            });
+          }
+
+          // Format tebal untuk ID, Kategori, Jenis, dan Progres
+          ws.getCell(`B${startRow}`).font = { name: 'Consolas', size: 9.5, bold: true, color: { argb: 'FF1E293B' } };
+          ws.getCell(`C${startRow}`).font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF0F172A' } };
+          ws.getCell(`D${startRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3E8FF' } };
+          ws.getCell(`D${startRow}`).font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF6B21A8' } };
+          ws.getCell(`K${startRow}`).font = { name: 'Consolas', size: 9.5, bold: true, color: { argb: pct === 100 ? 'FF065F46' : 'FF92400E' } };
+
+          // Warna Status Total (Kolom L)
+          const totalStatusCell = ws.getCell(`L${startRow}`);
+          if (item.status === 'Closed') {
+            totalStatusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+            totalStatusCell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF065F46' } };
+          } else if (item.status === 'In Progress') {
+            totalStatusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+            totalStatusCell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF92400E' } };
+          } else {
+            totalStatusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE4E6' } };
+            totalStatusCell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF9F1239' } };
+          }
+
+          // Sematkan Gambar Foto Bukti di Kolom M
+          const imgSrc = (!isBrokenSvgEvidence(item.evidence) ? item.evidence : '') || DEFAULT_EVIDENCE_BY_STAGE[item.id] || '';
+          if (imgSrc && imgSrc.startsWith('data:image/')) {
+            try {
+              const ext = imgSrc.indexOf('image/png') !== -1 ? 'png' : 'jpeg';
+              const imageId = workbook.addImage({
+                base64: imgSrc,
+                extension: ext
+              });
+              ws.addImage(imageId, {
+                tl: { col: 12.06, row: (startRow - 1) + 0.08 },
+                ext: { width: 138, height: 86 }
+              });
+            } catch (imgErr) {
+              ws.getCell(`M${startRow}`).value = 'Terlampir';
+            }
+          } else {
+            ws.getCell(`M${startRow}`).value = '-';
+          }
+        });
+
+        // =========================================================================
+        // BAGIAN 3: LEMBAR PENGESAHAN LINTAS DEPARTEMEN (APPROVAL)
+        // =========================================================================
+        if (signersList && signersList.length > 0) {
+          curRow += 2;
+          ws.mergeCells(`A${curRow}:M${curRow}`);
+          ws.getCell(`A${curRow}`).value = '3. LEMBAR PENGESAHAN LINTAS DEPARTEMEN (CROSS-DEPARTMENT APPROVAL)';
+          ws.getCell(`A${curRow}`).font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FFFFFFFF' } };
+          ws.getCell(`A${curRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+          ws.getCell(`A${curRow}`).alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+          ws.getRow(curRow).height = 20;
+
+          const roleRow = curRow + 1;
+          const stampRow = curRow + 2;
+          const nameRow = curRow + 3;
+          const dateRow = curRow + 4;
+
+          ws.getRow(roleRow).height = 18;
+          ws.getRow(stampRow).height = 28;
+          ws.getRow(nameRow).height = 18;
+          ws.getRow(dateRow).height = 16;
+
+          const colRanges = [
+            ['A', 'B'], ['C', 'D'], ['E', 'G'], ['H', 'J'], ['K', 'M']
+          ];
+
+          signersList.slice(0, 5).forEach((s, idx) => {
+            const [cStart, cEnd] = colRanges[idx] || ['K', 'M'];
+            ws.mergeCells(`${cStart}${roleRow}:${cEnd}${roleRow}`);
+            ws.mergeCells(`${cStart}${stampRow}:${cEnd}${stampRow}`);
+            ws.mergeCells(`${cStart}${nameRow}:${cEnd}${nameRow}`);
+            ws.mergeCells(`${cStart}${dateRow}:${cEnd}${dateRow}`);
+
+            const rCell = ws.getCell(`${cStart}${roleRow}`);
+            rCell.value = s.role || '';
+            rCell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF1E293B' } };
+            rCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+            rCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+            const stCell = ws.getCell(`${cStart}${stampRow}`);
+            stCell.value = s.approved ? 'APPROVED' : '( ................................ )';
+            stCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: s.approved ? 'FF047857' : 'FF64748B' } };
+            stCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+            const nCell = ws.getCell(`${cStart}${nameRow}`);
+            nCell.value = s.name || '';
+            nCell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF0F172A' } };
+            nCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+            const dCell = ws.getCell(`${cStart}${dateRow}`);
+            dCell.value = `Tgl: ${s.date || '-'}`;
+            dCell.font = { name: 'Consolas', size: 8.5, color: { argb: 'FF475569' } };
+            dCell.alignment = { vertical: 'middle', horizontal: 'center' };
+          });
+
+          for (let rIdx = roleRow; rIdx <= dateRow; rIdx++) {
+            for (let c = 1; c <= 13; c++) {
+              ws.getRow(rIdx).getCell(c).border = borderThin;
+            }
+          }
+        }
+
+        // Tulis dan Unduh File .xlsx
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const cleanDocNo = (docMeta.docNumber || 'TMS').replace(/[\/\\?%*:|"<>]/g, '_');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `PMR_CAPA_Report_${cleanDocNo}.xlsx`;
+        a.click();
+        showToast("File Excel (.xlsx) rapi berhasil diunduh!", "📊");
+      } catch (err) {
+        console.error("ExcelJS error, menggunakan fallback tabel Excel:", err);
+        exportFallbackHtmlExcel();
+      }
+    }
+
+    // Fallback HTML Table ke .xls jika koneksi CDN terputus
+    function exportFallbackHtmlExcel() {
+      let html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="UTF-8"><style>
+          table { border-collapse: collapse; font-family: Calibri, Arial, sans-serif; font-size: 10pt; }
+          th, td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: middle; }
+          .header-dark { background-color: #0f172a; color: #ffffff; font-weight: bold; font-size: 13pt; }
+          .sec-pdca { background-color: #1d4ed8; color: #ffffff; font-weight: bold; }
+          .sec-capa { background-color: #4338ca; color: #ffffff; font-weight: bold; }
+          .th-gray { background-color: #e2e8f0; color: #1e293b; font-weight: bold; text-align: center; }
+          .done { background-color: #d1fae5; color: #065f46; font-weight: bold; text-align: center; }
+          .prog { background-color: #fef3c7; color: #92400e; font-weight: bold; text-align: center; }
+          .open { background-color: #ffe4e6; color: #9f1239; font-weight: bold; text-align: center; }
+        </style></head><body>
+        <table>
+          <tr><td colspan="12" class="header-dark">${escapeHtml(docMeta.title)} — ${escapeHtml(docMeta.subtitle)}</td></tr>
+          <tr>
+            <td colspan="3"><b>Unit / Entitas:</b> ${escapeHtml(docMeta.entity)}</td>
+            <td colspan="3"><b>No. Dokumen:</b> ${escapeHtml(docMeta.docNumber)}</td>
+            <td colspan="3"><b>Periode:</b> ${escapeHtml(docMeta.period)}</td>
+            <td colspan="3"><b>Tgl Cetak:</b> ${escapeHtml(docMeta.printDate)}</td>
+          </tr>
+          <tr><td colspan="12"></td></tr>
+          <tr><td colspan="12" class="sec-pdca">1. AKTIVITAS PDCA & INVESTIGASI LAPANGAN (GENBA)</td></tr>
+          <tr class="th-gray">
+            <th>No</th><th>Tahap</th><th colspan="3">Agenda / Aktivitas PDCA & Genba</th>
+            <th colspan="2">PIC & Departemen</th><th>Tanggal</th><th colspan="4">Output / Ringkasan Hasil</th>
+          </tr>
+      `;
       pdcaList.forEach((p, idx) => {
-        csv += `${idx + 1},${csvSafe(p.stage)},${csvSafe(p.title)},${csvSafe(p.pic)},${csvSafe(p.date)},${csvSafe(p.output)}\n`;
+        html += `<tr>
+          <td align="center">${idx + 1}</td>
+          <td align="center"><b>${escapeHtml(p.stage)}</b></td>
+          <td colspan="3"><b>${escapeHtml(p.title)}</b></td>
+          <td colspan="2">${escapeHtml(p.pic)}</td>
+          <td align="center">${escapeHtml(p.date)}</td>
+          <td colspan="4">${escapeHtml(p.output)}</td>
+        </tr>`;
       });
 
-      csv += "\nBAGIAN 3: MATRIKS CAPA TRACKER\n";
-      csv += "ID,Kategori,Jenis,Rencana Tindakan (Kolom D),PIC / Dept,Due Date,Status,Ada Bukti Foto\n";
-      capaList.forEach(c => {
-        csv += `${csvSafe(c.id)},${csvSafe(c.category)},${csvSafe(c.type)},${csvSafe(c.solution)},${csvSafe(c.pic)},${csvSafe(c.dueDate)},${csvSafe(c.status)},${c.evidence ? 'Ya' : 'Tidak'}\n`;
+      html += `
+        <tr><td colspan="12"></td></tr>
+        <tr><td colspan="12" class="sec-capa">2. MATRIKS TINDAK LANJUT: CORRECTIVE & PREVENTIVE ACTION (CAPA)</td></tr>
+        <tr class="th-gray">
+          <th>No</th><th>ID Stage</th><th>Kategori / Topik Masalah</th><th>Jenis</th>
+          <th>No Poin</th><th>Detail Countermeasure</th><th>Status Poin</th>
+          <th>Due Date</th><th>PIC / Dept</th><th>Jadwal Next PDCA</th><th>Progres</th><th>Status Total</th>
+        </tr>
+      `;
+
+      capaList.forEach((item, idx) => {
+        const subs = (item.subTasks && item.subTasks.length > 0)
+          ? item.subTasks
+          : parseSubTasksFromText(item.solution || '', item.status, item.dueDate, item.pic);
+        const span = Math.max(1, subs.length);
+        const doneCount = subs.filter(s => s.status === 'Done' || s.status === 'Closed').length;
+        const pct = Math.round((doneCount / span) * 100);
+
+        subs.forEach((st, sIdx) => {
+          const stClass = (st.status === 'Done' || st.status === 'Closed') ? 'done' : (st.status === 'On Trial' || st.status === 'In Progress' ? 'prog' : 'open');
+          const totClass = item.status === 'Closed' ? 'done' : (item.status === 'In Progress' ? 'prog' : 'open');
+          html += `<tr>`;
+          if (sIdx === 0) {
+            html += `
+              <td rowspan="${span}" align="center">${idx + 1}</td>
+              <td rowspan="${span}" align="center"><b>${escapeHtml(item.id)}</b></td>
+              <td rowspan="${span}"><b>${escapeHtml(item.category)}</b></td>
+              <td rowspan="${span}" align="center">${escapeHtml(item.type)}</td>
+            `;
+          }
+          html += `
+            <td align="center">${sIdx + 1}</td>
+            <td>${escapeHtml(st.text)}</td>
+            <td class="${stClass}">${escapeHtml(st.status)}</td>
+            <td align="center">${escapeHtml(st.dueDate || item.dueDate)}</td>
+            <td>${escapeHtml(st.pic || item.pic)}</td>
+            <td align="center">${escapeHtml(st.nextPdca || '-')}</td>
+          `;
+          if (sIdx === 0) {
+            html += `
+              <td rowspan="${span}" align="center"><b>${doneCount}/${span} (${pct}%)</b></td>
+              <td rowspan="${span}" class="${totClass}">${escapeHtml(item.status)}</td>
+            `;
+          }
+          html += `</tr>`;
+        });
       });
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      html += `</table></body></html>`;
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `PMR_CAPA_Report_${Date.now()}.csv`;
+      a.download = `PMR_CAPA_Report_${Date.now()}.xls`;
       a.click();
-      showToast("Ekspor Excel (.csv) siap diunduh!", "📊");
+      showToast("File Tabel Excel (.xls) berhasil diunduh!", "📊");
+    }
+
+    function exportToCsv() {
+      exportToExcel();
     }
 
     function csvSafe(str) {
